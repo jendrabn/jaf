@@ -23,6 +23,8 @@ class AuthLogoutDeleteTest extends TestCase
 
     $response->assertOk()
       ->assertExactJson(['data' => true]);
+
+    $this->assertEquals(0, $user->tokens->count());
   }
 
   /** @test */

@@ -41,4 +41,13 @@ class AuthController extends Controller
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }
+
+  public function logout(): JsonResponse
+  {
+    auth()->user()->tokens()->delete();
+
+    return response()
+      ->json(['data' => true])
+      ->setStatusCode(Response::HTTP_OK);
+  }
 }
