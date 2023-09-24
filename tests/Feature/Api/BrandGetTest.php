@@ -24,7 +24,7 @@ class BrandGetTest extends TestCase
 
     $response->assertOk()
       ->assertJsonStructure(['data' => ['*' => ['id', 'name', 'slug',]]])
-      ->assertJson(['data' => $brands])
+      ->assertExactJson(['data' => $brands])
       ->assertJsonCount(3, 'data');
   }
 }

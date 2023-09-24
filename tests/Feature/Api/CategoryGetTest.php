@@ -24,7 +24,7 @@ class CategoryGetTest extends TestCase
 
     $response->assertOk()
       ->assertJsonStructure(['data' => ['*' => ['id', 'name', 'slug',]]])
-      ->assertJson(['data' => $categories])
+      ->assertExactJson(['data' => $categories])
       ->assertJsonCount(3, 'data');
   }
 }
