@@ -32,3 +32,4 @@ Route::get('/brands', [ProductController::class, 'getAllBrands']);
 
 // Auth
 Route::post('/auth/register', [AuthController::class, 'register']);
+Route::post('/auth/login', [AuthController::class, 'login']);

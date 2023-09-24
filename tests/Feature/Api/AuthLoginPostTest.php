@@ -4,10 +4,11 @@
 
 namespace Tests\Feature\Api;
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Requests\Api\LoginRequest;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Validation\Rule;
 use Tests\TestCase;
 
 class AuthLoginPostTest extends TestCase
@@ -37,6 +38,7 @@ class AuthLoginPostTest extends TestCase
         'email' => [
           'required',
           'string',
+          'email',
         ],
         'password' => [
           'required',
