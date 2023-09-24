@@ -12,7 +12,8 @@ class CategoryGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  public function test_can_get_all_categories()
+  /** @test */
+  public function can_get_all_categories()
   {
     $this->seed(ProductCategorySeeder::class);
     $categories = ProductCategory::all()
