@@ -15,8 +15,6 @@ abstract class TestCase extends BaseTestCase
   {
     $users = User::factory()->count($count)->create($data);
 
-    $users->each(fn ($user) => $user->assignRole($role));
-
     return $count > 1 ? $users : $users->first();
   }
 }

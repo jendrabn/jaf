@@ -1,5 +1,7 @@
 <?php
 
+// tests/Feature/Api/BrandGetTest.php
+
 namespace Tests\Feature\Api;
 
 use App\Models\ProductBrand;
@@ -23,7 +25,6 @@ class BrandGetTest extends TestCase
     $response = $this->getJson('/api/brands');
 
     $response->assertOk()
-      ->assertJsonStructure(['data' => ['*' => ['id', 'name', 'slug',]]])
       ->assertExactJson(['data' => $brands])
       ->assertJsonCount(3, 'data');
   }

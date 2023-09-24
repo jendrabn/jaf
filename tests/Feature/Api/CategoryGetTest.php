@@ -23,7 +23,6 @@ class CategoryGetTest extends TestCase
     $response = $this->getJson('/api/categories');
 
     $response->assertOk()
-      ->assertJsonStructure(['data' => ['*' => ['id', 'name', 'slug',]]])
       ->assertExactJson(['data' => $categories])
       ->assertJsonCount(3, 'data');
   }

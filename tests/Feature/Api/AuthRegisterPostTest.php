@@ -1,5 +1,7 @@
 <?php
 
+// tests/Feature/Api/AuthRegisterPostTest.php
+
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\AuthController;

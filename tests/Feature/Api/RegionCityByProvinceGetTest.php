@@ -27,7 +27,6 @@ class RegionCityByProvinceGetTest extends TestCase
     $response = $this->getJson('/api/region/cities/' . 6);
 
     $response->assertOk()
-      ->assertJsonStructure(['data' => ['*' => ['id', 'type', 'name',]]])
       ->assertExactJson(['data' => $cities])
       ->assertJsonCount(6, 'data');
   }

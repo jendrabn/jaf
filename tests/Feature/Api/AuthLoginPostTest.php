@@ -6,7 +6,6 @@ namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Requests\Api\LoginRequest;
-use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -21,7 +20,6 @@ class AuthLoginPostTest extends TestCase
   {
     parent::setUp();
     $this->loginRoute = '/api/auth/login';
-    $this->seed(RolesAndPermissionsSeeder::class);
   }
 
   /** @test */
