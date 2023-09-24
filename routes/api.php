@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RegionController;
@@ -28,3 +29,6 @@ Route::get('/region/cities/{province}', [RegionController::class, 'getCitiesByPr
 // Product
 Route::get('/categories', [ProductController::class, 'getAllCategories']);
 Route::get('/brands', [ProductController::class, 'getAllBrands']);
+
+// Auth
+Route::post('/auth/register', [AuthController::class, 'register']);
