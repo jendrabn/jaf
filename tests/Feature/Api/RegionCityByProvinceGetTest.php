@@ -24,7 +24,7 @@ class RegionCityByProvinceGetTest extends TestCase
       ->map(fn ($city) => $city->only(['id', 'type', 'name',]))
       ->toArray();
 
-    $response = $this->getJson('/api/location/cities/' . 6);
+    $response = $this->getJson('/api/region/cities/' . 6);
 
     $response->assertOk()
       ->assertJsonStructure(['data' => ['*' => ['id', 'type', 'name',]]])
@@ -37,7 +37,7 @@ class RegionCityByProvinceGetTest extends TestCase
   {
     $this->seed([ProvinceSeeder::class]);
 
-    $response = $this->getJson('/api/location/cities/' . 50);
+    $response = $this->getJson('/api/region/cities/' . 50);
 
     $response->assertNotFound()
       ->assertJsonStructure(['message']);

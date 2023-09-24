@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CityResource;
 use App\Http\Resources\ProvinceResource;
 use App\Models\Province;
 use Illuminate\Http\JsonResponse;
@@ -14,6 +15,13 @@ class RegionController extends Controller
   public function getAllProvinces(): JsonResponse
   {
     return ProvinceResource::collection(Province::all())
+      ->response()
+      ->setStatusCode(Response::HTTP_OK);
+  }
+
+  public function getCitiesByProvinceId(Province $province): JsonResponse
+  {
+    return CityResource::collection($province->cities)
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }

@@ -23,3 +23,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // Region
 Route::get('/region/provinces', [RegionController::class, 'getAllProvinces']);
+Route::get('/region/cities/{province}', [RegionController::class, 'getCitiesByProvinceId']);
