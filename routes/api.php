@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\RegionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,3 +20,6 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
   return $request->user();
 });
+
+// Region
+Route::get('/region/provinces', [RegionController::class, 'getAllProvinces']);
