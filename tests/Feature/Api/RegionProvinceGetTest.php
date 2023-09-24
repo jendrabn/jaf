@@ -27,7 +27,7 @@ class RegionProvinceGetTest extends TestCase
 
     $response->assertOk()
       ->assertJsonStructure(['data' => ['*' => ['id', 'name']]])
-      ->assertJsonCount(34, 'data')
-      ->assertJson(['data' => $provinces]);
+      ->assertJson(['data' => $provinces])
+      ->assertJsonCount(34, 'data');
   }
 }
