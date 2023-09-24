@@ -9,6 +9,7 @@ use App\Http\Requests\Api\LoginRequest;
 use App\Http\Requests\Api\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -30,9 +31,9 @@ class AuthController extends Controller
     $user = User::whereEmail($request->email)->first();
 
     if (!$user || !Hash::check($request->password, $user->password)) {
-      return response()
+      throw new HttpResponseException(response()
         ->json(['message' => 'The provided credentials are incorrect.'])
-        ->setStatusCode(Response::HTTP_UNAUTHORIZED);
+        ->setStatusCode(Response::HTTP_UNAUTHORIZED));
     }
 
     $user->auth_token = $user->createToken('auth_token')->plainTextToken;
