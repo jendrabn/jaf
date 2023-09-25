@@ -34,3 +34,4 @@ Route::get('/brands', [ProductController::class, 'getAllBrands']);
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::delete('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+Route::post('/auth/forgot_password', [AuthController::class, 'sendPasswordResetLink']);

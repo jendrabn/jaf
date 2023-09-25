@@ -22,6 +22,12 @@ class ForgotPasswordRequest extends FormRequest
    */
   public function rules(): array
   {
-    return [];
+    return [
+      'email' => [
+        'required',
+        'email',
+        Rule::exists('users', 'email'),
+      ],
+    ];
   }
 }

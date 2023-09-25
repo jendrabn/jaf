@@ -5,6 +5,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\ForgotPasswordRequest;
 use App\Http\Requests\Api\LoginRequest;
 use App\Http\Requests\Api\RegisterRequest;
 use App\Http\Resources\UserResource;
@@ -13,7 +14,9 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\UnauthorizedException;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
@@ -46,6 +49,20 @@ class AuthController extends Controller
   public function logout(): JsonResponse
   {
     auth()->user()->tokens()->delete();
+
+    return response()
+      ->json(['data' => true])
+      ->setStatusCode(Response::HTTP_OK);
+  }
+
+  public function sendPasswordResetLink(ForgotPasswordRequest $request): JsonResponse
+  {
+    $status = Password::sendResetLink($request->only('email'));
+
+    throw_if(
+      $status !== Password::RESET_LINK_SENT,
+      ValidationException::withMessages(['email' => $status])
+    );
 
     return response()
       ->json(['data' => true])

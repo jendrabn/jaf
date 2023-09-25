@@ -60,6 +60,8 @@ class AuthForgotPasswordPostTest extends TestCase
           config('app.url') . '/reset_password?token=' . $notification->token . '&email=' . $user->email,
           $mail['actionUrl']
         );
+
+        return true;
       }
     );
   }
