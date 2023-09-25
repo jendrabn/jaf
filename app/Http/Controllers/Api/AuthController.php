@@ -33,11 +33,14 @@ class AuthController extends Controller
   {
     $user = User::whereEmail($request->email)->first();
 
-    if (!$user || !Hash::check($request->password, $user->password)) {
-      throw new HttpResponseException(response()
-        ->json(['message' => 'The provided credentials are incorrect.'])
-        ->setStatusCode(Response::HTTP_UNAUTHORIZED));
-    }
+    throw_if(
+      !$user || !Hash::check($request->password, $user->password),
+      new HttpResponseException(
+        response()
+          ->json(['message' => 'The provided credentials are incorrect.'])
+          ->setStatusCode(Response::HTTP_UNAUTHORIZED)
+      )
+    );
 
     $user->auth_token = $user->createToken('auth_token')->plainTextToken;
 
