@@ -17,7 +17,7 @@ class AuthLogoutDeleteTest extends TestCase
   {
     $user = $this->createUser();
 
-    $response = $this->deleteJson('/api/auth/logout', $this->authBearerToken($user));
+    $response = $this->deleteJson('/api/auth/logout', [], $this->authBearerToken($user));
 
     $response->assertOk()
       ->assertExactJson(['data' => true]);
