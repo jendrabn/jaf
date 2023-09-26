@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\ProfileRequest;
+use App\Http\Requests\Api\UpdatePasswordRequest;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,6 +26,15 @@ class UserController extends Controller
 
     return (new UserResource($user))
       ->response()
+      ->setStatusCode(Response::HTTP_OK);
+  }
+
+  public function updatePassword(UpdatePasswordRequest $request): JsonResponse
+  {
+    auth()->user()->update($request->only('password'));
+
+    return response()
+      ->json(['data' => true])
       ->setStatusCode(Response::HTTP_OK);
   }
 }
