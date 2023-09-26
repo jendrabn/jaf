@@ -56,7 +56,7 @@ class AuthResetPasswordPutTest extends TestCase
     $token = Password::createToken($user);
     $newPassword = 'newPassword123';
 
-    $response = $this->postJson('/api/auth/reset_password', [
+    $response = $this->putJson('/api/auth/reset_password', [
       'email' => $user->email,
       'token' => $token,
       'password' => $newPassword,
@@ -76,7 +76,7 @@ class AuthResetPasswordPutTest extends TestCase
   /** @test */
   public function returns_validation_error_if_all_fields_are_invalid()
   {
-    $response = $this->postJson('/api/auth/reset_password', [
+    $response = $this->putJson('/api/auth/reset_password', [
       'email' => 'not-email',
       'token' => '',
       'password' => 'new-password',

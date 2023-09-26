@@ -8,14 +8,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\ForgotPasswordRequest;
 use App\Http\Requests\Api\LoginRequest;
 use App\Http\Requests\Api\RegisterRequest;
+use App\Http\Requests\Api\ResetPasswordRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\UnauthorizedException;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -64,6 +66,31 @@ class AuthController extends Controller
 
     throw_if(
       $status !== Password::RESET_LINK_SENT,
+      ValidationException::withMessages(['email' => $status])
+    );
+
+    return response()
+      ->json(['data' => true])
+      ->setStatusCode(Response::HTTP_OK);
+  }
+
+  public function resetPassword(ResetPasswordRequest $request): JsonResponse
+  {
+    $status = Password::reset(
+      $request->validated(),
+      function (User $user, string $password) {
+        $user->forceFill([
+          'password' => $password
+        ])->setRememberToken(Str::random(60));
+
+        $user->save();
+
+        event(new PasswordReset($user));
+      }
+    );
+
+    throw_unless(
+      $status === Password::PASSWORD_RESET,
       ValidationException::withMessages(['email' => $status])
     );
 
