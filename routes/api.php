@@ -18,10 +18,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-  return $request->user();
-});
-
 // Region
 Route::get('/region/provinces', [RegionController::class, 'getAllProvinces']);
 Route::get('/region/cities/{province}', [RegionController::class, 'getCitiesByProvinceId']);
