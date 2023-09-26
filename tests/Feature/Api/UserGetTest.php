@@ -1,5 +1,7 @@
 <?php
 
+// tests\Feature\Api\UserGetTest.php
+
 namespace Tests\Feature\Api;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,9 +17,7 @@ class UserGetTest extends TestCase
   {
     $user = $this->createUser();
 
-    $response = $this->getJson('/api/user', headers: [
-      'Authorization' => 'Bearer ' . $user->createToken('auth_token')->plainTextToken
-    ]);
+    $response = $this->getJson('/api/user', headers: $this->authBearerToken($user));
 
     $response->assertOk()
       ->assertExactJson([
@@ -26,7 +26,7 @@ class UserGetTest extends TestCase
           'name' => $user->name,
           'email' => $user->email,
           'phone' => $user->phone,
-          'sex' => $user->sex,
+          'sex' => (string) $user->sex,
           'birth_date' => $user->birth_date,
         ]
       ]);
@@ -35,9 +35,7 @@ class UserGetTest extends TestCase
   /** @test */
   public function returns_unauthenticated_error_if_user_is_not_authenticated()
   {
-    $response = $this->getJson('/api/user', headers: [
-      'Authorization' => 'Bearer wrong-token'
-    ]);
+    $response = $this->getJson('/api/user');
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);
