@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 */
 // User Account
 Route::get('/user', [UserController::class, 'getUser'])->middleware('auth:sanctum');
+Route::put('/user', [UserController::class, 'updateProfile'])->middleware('auth:sanctum');
 
 // Region
 Route::get('/region/provinces', [RegionController::class, 'getAllProvinces']);
