@@ -12,14 +12,14 @@ use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
-  public function getUser(): JsonResponse
+  public function get(): JsonResponse
   {
     return (new UserResource(auth()->user()))
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }
 
-  public function updateProfile(ProfileRequest $request): JsonResponse
+  public function update(ProfileRequest $request): JsonResponse
   {
     $user = auth()->user();
     $user->update($request->validated());

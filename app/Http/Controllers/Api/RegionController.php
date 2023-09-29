@@ -12,14 +12,14 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RegionController extends Controller
 {
-  public function getAllProvinces(): JsonResponse
+  public function provinces(): JsonResponse
   {
     return ProvinceResource::collection(Province::all())
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }
 
-  public function getCitiesByProvinceId(Province $province): JsonResponse
+  public function cities(Province $province): JsonResponse
   {
     return CityResource::collection($province->cities)
       ->response()

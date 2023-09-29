@@ -20,18 +20,18 @@ use Illuminate\Support\Facades\Route;
 |
 */
 // User Account
-Route::get('/user', [UserController::class, 'getUser'])->middleware('auth:sanctum');
-Route::put('/user', [UserController::class, 'updateProfile'])->middleware('auth:sanctum');
+Route::get('/user', [UserController::class, 'get'])->middleware('auth:sanctum');
+Route::put('/user', [UserController::class, 'update'])->middleware('auth:sanctum');
 Route::put('/user/change_password', [UserController::class, 'updatePassword'])->middleware('auth:sanctum');
 
 // Region
-Route::get('/region/provinces', [RegionController::class, 'getAllProvinces']);
-Route::get('/region/cities/{province}', [RegionController::class, 'getCitiesByProvinceId']);
+Route::get('/region/provinces', [RegionController::class, 'provinces']);
+Route::get('/region/cities/{province}', [RegionController::class, 'cities']);
 
 // Product
-Route::get('/categories', [ProductController::class, 'getAllCategories']);
-Route::get('/brands', [ProductController::class, 'getAllBrands']);
-Route::get('/products', [ProductController::class, 'index']);
+Route::get('/categories', [ProductController::class, 'categories']);
+Route::get('/brands', [ProductController::class, 'brands']);
+Route::get('/products', [ProductController::class, 'list']);
 
 // Auth
 Route::post('/auth/register', [AuthController::class, 'register']);

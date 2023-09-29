@@ -15,21 +15,21 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ProductController extends Controller
 {
-  public function getAllCategories(): JsonResponse
+  public function categories(): JsonResponse
   {
     return ProductCategoryResource::collection(ProductCategory::all())
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }
 
-  public function getAllBrands(): JsonResponse
+  public function brands(): JsonResponse
   {
     return ProductBrandResource::collection(ProductBrand::all())
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }
 
-  public function index(Request $request, ProductService $productService): JsonResponse
+  public function list(Request $request, ProductService $productService): JsonResponse
   {
     return (new ProductCollection($productService->getProducts($request)))
       ->response()

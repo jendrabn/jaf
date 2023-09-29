@@ -18,7 +18,7 @@ class UserPutTest extends TestCase
   /** @test */
   public function update_profile_uses_the_correct_form_request()
   {
-    $this->assertActionUsesFormRequest(UserController::class, 'updateProfile', ProfileRequest::class);
+    $this->assertActionUsesFormRequest(UserController::class, 'update', ProfileRequest::class);
   }
 
   /** @test */
