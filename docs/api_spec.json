@@ -743,7 +743,7 @@
             "style": "form",
             "schema": {
               "type": "string",
-              "enum": ["relevancy", "newest", "sales", "expensive", "cheapest"]
+              "enum": ["newest", "oldest", "sales", "expensive", "cheapest"]
             }
           },
           {
