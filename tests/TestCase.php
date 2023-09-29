@@ -80,7 +80,7 @@ abstract class TestCase extends BaseTestCase
       'price' => $product->price,
       'stock' => $product->stock,
       'weight' => $product->weight,
-      'sold_count' => $product->sold_count,
+      'sold_count' => $product->sold_count ?? 0,
       'is_wishlist' => $product->is_wishlist,
     ];
   }

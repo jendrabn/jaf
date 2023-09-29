@@ -31,6 +31,7 @@ Route::get('/region/cities/{province}', [RegionController::class, 'getCitiesByPr
 // Product
 Route::get('/categories', [ProductController::class, 'getAllCategories']);
 Route::get('/brands', [ProductController::class, 'getAllBrands']);
+Route::get('/products', [ProductController::class, 'index']);
 
 // Auth
 Route::post('/auth/register', [AuthController::class, 'register']);
