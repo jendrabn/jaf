@@ -2,6 +2,8 @@
 
 namespace Tests;
 
+use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
@@ -83,5 +85,39 @@ abstract class TestCase extends BaseTestCase
       'sold_count' => $product->sold_count ?? 0,
       'is_wishlist' => $product->is_wishlist,
     ];
+  }
+
+
+  protected function createProductWithSales(?array $quantities = [1], ?string $status = Order::STATUS_COMPLETED): Product
+  {
+    $sequence = [];
+    foreach ($quantities as $quantity) {
+      $sequence[] = [
+        'quantity' => $quantity,
+        'order_id' => Order::factory()->for(User::factory()->create())
+          ->create(compact('status'))->id
+      ];
+    }
+
+    return Product::factory()
+      ->has(OrderItem::factory(count($sequence))->sequence(...$sequence))
+      ->create();
+  }
+
+  protected function addImageToProduct(Collection|Product $products, ?int $count = 1)
+  {
+    if ($products instanceof Collection) {
+      return $products->each(
+        fn ($product) => $this->addImageToProduct($product)
+      );
+    }
+
+    for ($i = 0; $i < $count; $i++) {
+      $file = fake()->image(storage_path('app/public'), 50, 50);
+
+      $products->addMedia($file)->toMediaCollection('images');
+    }
+
+    return $products;
   }
 }
