@@ -12,6 +12,7 @@ use App\Models\Province;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Http\UploadedFile;
 use JMac\Testing\Traits\AdditionalAssertions;
 
 abstract class TestCase extends BaseTestCase
@@ -148,8 +149,11 @@ abstract class TestCase extends BaseTestCase
     ];
   }
 
-  protected function createProductWithSales(?array $quantities = [1], ?string $status = Order::STATUS_COMPLETED): Product
-  {
+  protected function createProductWithSales(
+    ?array $data = [],
+    ?array $quantities = [1],
+    ?string $status = Order::STATUS_COMPLETED
+  ): Product {
     $sequence = [];
     foreach ($quantities as $quantity) {
       $sequence[] = [
@@ -161,7 +165,7 @@ abstract class TestCase extends BaseTestCase
 
     return Product::factory()
       ->has(OrderItem::factory(count($sequence))->sequence(...$sequence))
-      ->create();
+      ->create($data);
   }
 
   protected function addImageToProduct(Collection|Product $products, ?int $count = 1)
@@ -173,9 +177,8 @@ abstract class TestCase extends BaseTestCase
     }
 
     for ($i = 0; $i < $count; $i++) {
-      $file = fake()->image(storage_path('app/public'), 50, 50);
-
-      $products->addMedia($file)->toMediaCollection('images');
+      $products->addMedia(UploadedFile::fake()->image('product.jpg'))
+        ->toMediaCollection('images');
     }
 
     return $products;

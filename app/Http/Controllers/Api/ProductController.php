@@ -13,10 +13,12 @@ use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProductController extends Controller
 {
@@ -41,15 +43,16 @@ class ProductController extends Controller
       ->setStatusCode(Response::HTTP_OK);
   }
 
-  public function get(Request $request, Product $product): JsonResponse
+  public function get(Product $product): JsonResponse
   {
-    $product = $product->query()->withCount([
-      'orderItems as sold_count' => fn (Builder $q) =>
-      $q->select(DB::raw('IFNULL(SUM(quantity), 0)'))
-        ->whereHas('order', fn ($q) => $q->where('status', Order::STATUS_COMPLETED))
-    ])->first();
+    throw_if(
+      !$product->is_publish,
+      new HttpResponseException(response()
+        ->json(['message' => 'Not found'])
+        ->setStatusCode(Response::HTTP_NOT_FOUND))
+    );
 
-    return (new ProductDetailResource($product))
+    return (new ProductDetailResource($product->withSoldCount()->first()))
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }

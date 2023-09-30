@@ -22,7 +22,7 @@ class ProductByIdGetTest extends TestCase
   /** @test */
   public function can_get_product_by_id()
   {
-    $product = $this->createProductWithSales([2, 3]);
+    $product = $this->createProductWithSales(quantities: [2, 3]);
     $this->addImageToProduct($product, 3);
 
     $response = $this->getJson($this->uri . '/' . $product->id);
@@ -57,6 +57,16 @@ class ProductByIdGetTest extends TestCase
     $product = $this->createProduct();
 
     $response = $this->getJson($this->uri . '/' . $product->id + 1);
+    $response->assertNotFound()
+      ->assertJsonStructure(['message']);
+  }
+
+  /** @test */
+  public function returns_not_found_error_if_product_is_unpublished()
+  {
+    $product = $this->createProduct(['is_publish' => false]);
+
+    $response = $this->getJson($this->uri . '/' . $product->id);
     $response->assertNotFound()
       ->assertJsonStructure(['message']);
   }

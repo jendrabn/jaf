@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Spatie\Image\Manipulations;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -72,5 +74,17 @@ class Product extends Model implements HasMedia
   public function isWishlist(): Attribute
   {
     return Attribute::get(fn () => false);
+  }
+
+  public function published()
+  {
+    return $this->where('is_publish', true);
+  }
+
+  public function scopeWithSoldCount()
+  {
+    return $this->withCount(['orderItems as sold_count' =>
+    fn (Builder $builder) => $builder->select(DB::raw('IFNULL(SUM(quantity), 0)'))
+      ->whereHas('order', fn (Builder $builder) => $builder->where('status', Order::STATUS_COMPLETED))]);
   }
 }
