@@ -20,6 +20,8 @@ class AuthRegisterPostTest extends TestCase
 {
   use RefreshDatabase;
 
+  private string $uri = '/api/auth/register';
+
   /** @test */
   public function register_uses_the_correct_form_request()
   {
@@ -67,7 +69,7 @@ class AuthRegisterPostTest extends TestCase
       'password_confirmation' => 'seCret123'
     ];
 
-    $response = $this->postJson('/api/auth/register', $data);
+    $response = $this->postJson($this->uri, $data);
 
     $response->assertCreated()
       ->assertExactJson(['data' => [
@@ -98,7 +100,7 @@ class AuthRegisterPostTest extends TestCase
       'password_confirmation' => 'seCret'
     ];
 
-    $response = $this->postJson('/api/auth/register', $data);
+    $response = $this->postJson($this->uri, $data);
 
     $response->assertUnprocessable()
       ->assertJsonValidationErrors(['name', 'email', 'password']);

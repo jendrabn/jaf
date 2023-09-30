@@ -13,7 +13,7 @@ class UserPutTest extends TestCase
 {
   use RefreshDatabase;
 
-  public string $userRoute = '/api/user';
+  private string $uri = '/api/user';
 
   /** @test */
   public function update_profile_uses_the_correct_form_request()
@@ -70,7 +70,7 @@ class UserPutTest extends TestCase
   /** @test */
   public function returns_unauthenticated_error_if_user_is_not_authenticated()
   {
-    $response = $this->putJson($this->userRoute);
+    $response = $this->putJson($this->uri);
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);
@@ -88,7 +88,7 @@ class UserPutTest extends TestCase
       'birth_date' => '1970-09-26'
     ];
 
-    $response = $this->putJson($this->userRoute, $data, $this->authBearerToken($user));
+    $response = $this->putJson($this->uri, $data, $this->authBearerToken($user));
 
     $response->assertOk()
       ->assertExactJson([
@@ -111,7 +111,7 @@ class UserPutTest extends TestCase
       'birth_date' => '1970'
     ];
 
-    $response = $this->putJson($this->userRoute, $data, $this->authBearerToken($user));
+    $response = $this->putJson($this->uri, $data, $this->authBearerToken($user));
 
     $response->assertUnprocessable()
       ->assertJsonValidationErrors(array_keys($data));

@@ -14,7 +14,7 @@ class UserChangePasswordPutTest extends TestCase
 {
   use RefreshDatabase;
 
-  public string $changePasswordRoute = '/api/user/change_password';
+  private string $uri = '/api/user/change_password';
 
   /** @test */
   public function update_password_uses_the_correct_form_request()
@@ -46,7 +46,7 @@ class UserChangePasswordPutTest extends TestCase
   /** @test */
   public function returns_unauthenticated_error_if_user_is_not_authenticated()
   {
-    $response = $this->putJson($this->changePasswordRoute);
+    $response = $this->putJson($this->uri);
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);
@@ -66,7 +66,7 @@ class UserChangePasswordPutTest extends TestCase
     ];
 
     $response = $this->putJson(
-      $this->changePasswordRoute,
+      $this->uri,
       $data,
       $this->authBearerToken($user)
     );
@@ -89,7 +89,7 @@ class UserChangePasswordPutTest extends TestCase
       'password_confirmation' => 'New',
     ];
 
-    $response = $this->putJson($this->changePasswordRoute, $data, $this->authBearerToken($user));
+    $response = $this->putJson($this->uri, $data, $this->authBearerToken($user));
 
     $response->assertUnprocessable()
       ->assertJsonValidationErrors(['current_password', 'password']);

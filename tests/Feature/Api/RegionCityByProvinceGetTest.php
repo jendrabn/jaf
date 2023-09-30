@@ -15,19 +15,18 @@ class RegionCityByProvinceGetTest extends TestCase
 {
   use RefreshDatabase;
 
+  private string $uri = '/api/region/cities';
+
   /** @test */
   public function can_get_cities_by_province_id()
   {
     $this->seed([ProvinceSeeder::class, CitySeeder::class]);
-    $cities = City::where('province_id', 6)
-      ->get()
-      ->map(fn ($city) => $city->only(['id', 'type', 'name',]))
-      ->toArray();
+    $cities = City::where('province_id', 6)->get();
 
-    $response = $this->getJson('/api/region/cities/' . 6);
+    $response = $this->getJson($this->uri . '/' . 6);
 
     $response->assertOk()
-      ->assertExactJson(['data' => $cities])
+      ->assertExactJson(['data' => $this->formatCityData($cities)])
       ->assertJsonCount(6, 'data');
   }
 
@@ -36,7 +35,7 @@ class RegionCityByProvinceGetTest extends TestCase
   {
     $this->seed([ProvinceSeeder::class]);
 
-    $response = $this->getJson('/api/region/cities/' . 50);
+    $response = $this->getJson($this->uri . '/' . 50);
 
     $response->assertNotFound()
       ->assertJsonStructure(['message']);

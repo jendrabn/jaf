@@ -12,30 +12,25 @@ class UserGetTest extends TestCase
 {
   use RefreshDatabase;
 
+  private string $uri = '/api/user';
+
   /** @test */
   public function can_get_user_profile()
   {
     $user = $this->createUser();
 
-    $response = $this->getJson('/api/user', headers: $this->authBearerToken($user));
+    $response = $this->getJson($this->uri, headers: $this->authBearerToken($user));
 
     $response->assertOk()
       ->assertExactJson([
-        'data' => [
-          'id' => $user->id,
-          'name' => $user->name,
-          'email' => $user->email,
-          'phone' => $user->phone,
-          'sex' => (string) $user->sex,
-          'birth_date' => $user->birth_date,
-        ]
+        'data' => $this->formatUserData($user)
       ]);
   }
 
   /** @test */
   public function returns_unauthenticated_error_if_user_is_not_authenticated()
   {
-    $response = $this->getJson('/api/user');
+    $response = $this->getJson($this->uri);
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);

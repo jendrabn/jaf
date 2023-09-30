@@ -2,11 +2,13 @@
 
 namespace Tests;
 
+use App\Models\City;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
+use App\Models\Province;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
@@ -49,6 +51,47 @@ abstract class TestCase extends BaseTestCase
     $brands =  ProductBrand::factory()->count($count)->create($data);
 
     return $count > 1 ? $brands : $brands->first();
+  }
+
+  protected function formatUserData(User $data): array
+  {
+    return [
+      'id' => $data['id'],
+      'name' => $data['name'],
+      'email' => $data['email'],
+      'phone' => $data['phone'],
+      'sex' => $data['sex'],
+      'birth_date' => $data['birth_date'],
+    ];
+  }
+
+  protected function formatCityData(City|Collection $data): array
+  {
+    if ($data instanceof Collection) {
+      return $data->map(
+        fn ($data) => $this->formatCityData($data)
+      )->values()->toArray();
+    }
+
+    return [
+      'id' => $data['id'],
+      'type' => $data['type'],
+      'name' => $data['name'],
+    ];
+  }
+
+  protected function formatProvinceData(Province|Collection $data): array
+  {
+    if ($data instanceof Collection) {
+      return $data->map(
+        fn ($data) => $this->formatProvinceData($data)
+      )->values()->toArray();
+    }
+
+    return [
+      'id' => $data['id'],
+      'name' => $data['name'],
+    ];
   }
 
   protected function formatCategoryData(ProductCategory|Collection $data): array

@@ -19,7 +19,7 @@ class UserResource extends JsonResource
       'name' => $this->name,
       'email' => $this->email,
       'phone' => $this->phone,
-      'sex' => $this->sex,
+      'sex' => $this->sex ? (int) $this->sex : null,
       'birth_date' => $this->birth_date,
       'auth_token' => $this->whenNotNull($this->auth_token)
     ];

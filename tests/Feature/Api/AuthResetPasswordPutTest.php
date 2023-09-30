@@ -16,6 +16,8 @@ class AuthResetPasswordPutTest extends TestCase
 {
   use RefreshDatabase;
 
+  private string $uri = '/api/auth/reset_password';
+
   /** @test */
   public function reset_password_uses_the_correct_form_request()
   {
@@ -56,7 +58,7 @@ class AuthResetPasswordPutTest extends TestCase
     $token = Password::createToken($user);
     $newPassword = 'newPassword123';
 
-    $response = $this->putJson('/api/auth/reset_password', [
+    $response = $this->putJson($this->uri, [
       'email' => $user->email,
       'token' => $token,
       'password' => $newPassword,
@@ -76,7 +78,7 @@ class AuthResetPasswordPutTest extends TestCase
   /** @test */
   public function returns_validation_error_if_all_fields_are_invalid()
   {
-    $response = $this->putJson('/api/auth/reset_password', [
+    $response = $this->putJson($this->uri, [
       'email' => 'not-email',
       'token' => '',
       'password' => 'new-password',

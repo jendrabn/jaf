@@ -12,18 +12,18 @@ class CategoryGetTest extends TestCase
 {
   use RefreshDatabase;
 
+  private string $uri = '/api/categories';
+
   /** @test */
   public function can_get_all_categories()
   {
     $this->seed(ProductCategorySeeder::class);
-    $categories = ProductCategory::all()
-      ->map(fn ($category) => $category->only(['id', 'name', 'slug',]))
-      ->toArray();
+    $categories = ProductCategory::all();
 
-    $response = $this->getJson('/api/categories');
+    $response = $this->getJson($this->uri);
 
     $response->assertOk()
-      ->assertExactJson(['data' => $categories])
+      ->assertExactJson(['data' => $this->formatCategoryData($categories)])
       ->assertJsonCount(3, 'data');
   }
 }

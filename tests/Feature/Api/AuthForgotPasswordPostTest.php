@@ -17,6 +17,8 @@ class AuthForgotPasswordPostTest extends TestCase
 {
   use RefreshDatabase;
 
+  private string $uri = '/api/auth/forgot_password';
+
   /** @test */
   public function send_password_reset_link_uses_the_correct_form_request()
   {
@@ -45,7 +47,7 @@ class AuthForgotPasswordPostTest extends TestCase
 
     $user = $this->createUser();
 
-    $response = $this->postJson('/api/auth/forgot_password', $user->only('email'));
+    $response = $this->postJson($this->uri, $user->only('email'));
 
     $response->assertOk()
       ->assertExactJson(['data' => true]);
@@ -69,7 +71,7 @@ class AuthForgotPasswordPostTest extends TestCase
   /** @test */
   public function returns_validation_error_if_all_fields_are_invalid()
   {
-    $response = $this->postJson('/api/auth/forgot_password', [
+    $response = $this->postJson($this->uri, [
       'email' => 'jcenagmail.com',
     ]);
 

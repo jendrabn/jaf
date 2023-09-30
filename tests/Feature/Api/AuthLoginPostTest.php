@@ -14,13 +14,7 @@ class AuthLoginPostTest extends TestCase
 {
   use RefreshDatabase;
 
-  public string $loginRoute;
-
-  protected function setUp(): void
-  {
-    parent::setUp();
-    $this->loginRoute = '/api/auth/login';
-  }
+  private string $uri = '/api/auth/login';
 
   /** @test */
   public function login_uses_the_correct_form_request()
@@ -52,7 +46,7 @@ class AuthLoginPostTest extends TestCase
   {
     $user = $this->createUser(['password' => $password = 'seCret123']);
 
-    $response = $this->postJson($this->loginRoute, [
+    $response = $this->postJson($this->uri, [
       'email' => $user->email,
       'password' => $password,
     ]);
@@ -79,7 +73,7 @@ class AuthLoginPostTest extends TestCase
   /** @test */
   public function returns_unauthenticated_error_if_email_doenot_exist()
   {
-    $response = $this->postJson($this->loginRoute, [
+    $response = $this->postJson($this->uri, [
       'email' => 'ghost@gmail.com',
       'password' => 'seCret123',
     ]);
@@ -93,7 +87,7 @@ class AuthLoginPostTest extends TestCase
   {
     $user = $this->createUser(['password' => 'seCret123']);
 
-    $response = $this->postJson($this->loginRoute, [
+    $response = $this->postJson($this->uri, [
       'email' => $user->email,
       'password' => 'seCret',
     ]);
@@ -105,7 +99,7 @@ class AuthLoginPostTest extends TestCase
   /** @test */
   public function returns_validation_error_if_all_fields_are_invalid()
   {
-    $response = $this->postJson($this->loginRoute, [
+    $response = $this->postJson($this->uri, [
       'email' => 'jcenagmail.com',
       'password' => '',
     ]);

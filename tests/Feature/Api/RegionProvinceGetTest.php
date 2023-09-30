@@ -14,19 +14,18 @@ class RegionProvinceGetTest extends TestCase
 {
   use RefreshDatabase;
 
+  private string $uri = '/api/region/provinces';
+
   /** @test */
   public function can_get_all_provinces()
   {
     $this->seed(ProvinceSeeder::class);
+    $provinces = Province::all();
 
-    $provinces = Province::all()
-      ->map(fn ($province) => $province->only(['id', 'name']))
-      ->toArray();
-
-    $response = $this->getJson('/api/region/provinces');
+    $response = $this->getJson($this->uri);
 
     $response->assertOk()
-      ->assertExactJson(['data' => $provinces])
+      ->assertExactJson(['data' => $this->formatProvinceData($provinces)])
       ->assertJsonCount(34, 'data');
   }
 }

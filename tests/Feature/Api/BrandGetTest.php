@@ -14,18 +14,18 @@ class BrandGetTest extends TestCase
 {
   use RefreshDatabase;
 
+  private string $uri = '/api/brands';
+
   /** @test */
   public function can_get_all_brands()
   {
     $this->seed(ProductBrandSeeder::class);
-    $brands = ProductBrand::all()
-      ->map(fn ($brand) => $brand->only(['id', 'name', 'slug',]))
-      ->toArray();
+    $brands = ProductBrand::all();
 
-    $response = $this->getJson('/api/brands');
+    $response = $this->getJson($this->uri);
 
     $response->assertOk()
-      ->assertExactJson(['data' => $brands])
+      ->assertExactJson(['data' => $this->formatBrandData($brands)])
       ->assertJsonCount(3, 'data');
   }
 }
