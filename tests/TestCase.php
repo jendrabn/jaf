@@ -10,9 +10,7 @@ use App\Models\ProductCategory;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use Illuminate\Http\UploadedFile;
 use JMac\Testing\Traits\AdditionalAssertions;
-use Illuminate\Support\Str;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -32,19 +30,9 @@ abstract class TestCase extends BaseTestCase
     return $isHeader ? ['Authorization' => 'Bearer ' . $token] : $token;
   }
 
-  protected function createProduct(?array $data = [], int $count = 1, int $imageCount = 0)
+  protected function createProduct(?array $data = [], int $count = 1): Product|Collection
   {
     $products = Product::factory()->count($count)->create($data);
-
-    if ($imageCount > 0) {
-      $products->each(function ($product) use ($imageCount) {
-        foreach (range(1, $imageCount) as $num) {
-          $image = UploadedFile::fake()->image(Str::random(10) . '.jpg');
-
-          $product->addMedia($image)->toMediaCollection('images');
-        }
-      });
-    }
 
     return $count > 1 ? $products : $products->first();
   }
@@ -63,30 +51,59 @@ abstract class TestCase extends BaseTestCase
     return $count > 1 ? $brands : $brands->first();
   }
 
-  protected function expectedProduct(Product|Collection $product): array
+  protected function formatCategoryData(ProductCategory|Collection $data): array
   {
-    if ($product instanceof Collection) {
-      return $product->map(fn ($product) => $this->expectedProduct($product))
-        ->values()
-        ->toArray();
+    if ($data instanceof Collection) {
+      return $data->map(
+        fn ($data) => $this->formatCategoryData($data)
+      )->values()->toArray();
     }
 
     return [
-      'id' => $product->id,
-      'name' => $product->name,
-      'slug' => $product->slug,
-      'image' => $product->image,
-      'category' => $product->category->only('id', 'name', 'slug'),
-      'brand' => $product->brand->only('id', 'name', 'slug'),
-      'sex' => $product->sex,
-      'price' => $product->price,
-      'stock' => $product->stock,
-      'weight' => $product->weight,
-      'sold_count' => $product->sold_count ?? 0,
-      'is_wishlist' => $product->is_wishlist,
+      'id' => $data['id'],
+      'name' => $data['name'],
+      'slug' => $data['slug'],
     ];
   }
 
+  protected function formatBrandData(ProductBrand|Collection $data): array
+  {
+    if ($data instanceof Collection) {
+      return $data->map(
+        fn ($data) => $this->formatBrandData($data)
+      )->values()->toArray();
+    }
+
+    return [
+      'id' => $data['id'],
+      'name' => $data['name'],
+      'slug' => $data['slug'],
+    ];
+  }
+
+  protected function formatProductData(Product|Collection $data): array
+  {
+    if ($data instanceof Collection) {
+      return $data->map(
+        fn ($data) => $this->formatProductData($data)
+      )->values()->toArray();
+    }
+
+    return [
+      'id' => $data['id'],
+      'name' => $data['name'],
+      'slug' => $data['slug'],
+      'image' => $data['image'],
+      'category' => $this->formatCategoryData($data['category']),
+      'brand' => $this->formatBrandData($data['brand']),
+      'sex' => $data['sex'],
+      'price' => $data['price'],
+      'stock' => $data['stock'],
+      'weight' => $data['weight'],
+      'sold_count' => $data['sold_count'] ?? 0,
+      'is_wishlist' => $data['is_wishlist'] ?? false,
+    ];
+  }
 
   protected function createProductWithSales(?array $quantities = [1], ?string $status = Order::STATUS_COMPLETED): Product
   {
