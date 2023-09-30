@@ -32,6 +32,7 @@ Route::get('/region/cities/{province}', [RegionController::class, 'cities']);
 Route::get('/categories', [ProductController::class, 'categories']);
 Route::get('/brands', [ProductController::class, 'brands']);
 Route::get('/products', [ProductController::class, 'list']);
+Route::get('/products/{product}', [ProductController::class, 'get']);
 
 // Auth
 Route::post('/auth/register', [AuthController::class, 'register']);
