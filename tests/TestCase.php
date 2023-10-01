@@ -2,6 +2,8 @@
 
 namespace Tests;
 
+use App\Models\Bank;
+use App\Models\Cart;
 use App\Models\City;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -10,6 +12,7 @@ use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\Province;
 use App\Models\User;
+use App\Models\UserAddress;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Http\UploadedFile;
@@ -68,85 +71,104 @@ abstract class TestCase extends BaseTestCase
 
   protected function formatCityData(City|Collection $data): array
   {
-    if ($data instanceof Collection) {
-      return $data->map(
-        fn ($data) => $this->formatCityData($data)
-      )->values()->toArray();
-    }
-
-    return [
-      'id' => $data['id'],
-      'type' => $data['type'],
-      'name' => $data['name'],
-    ];
+    return $data instanceof Collection
+      ? $data->map(fn ($data) => $this->formatCityData($data))->values()->toArray()
+      : [
+        'id' => $data['id'],
+        'type' => $data['type'],
+        'name' => $data['name'],
+      ];
   }
 
   protected function formatProvinceData(Province|Collection $data): array
   {
-    if ($data instanceof Collection) {
-      return $data->map(
-        fn ($data) => $this->formatProvinceData($data)
-      )->values()->toArray();
-    }
-
-    return [
-      'id' => $data['id'],
-      'name' => $data['name'],
-    ];
+    return $data instanceof Collection
+      ? $data->map(fn ($data) => $this->formatProvinceData($data))->values()->toArray()
+      : [
+        'id' => $data['id'],
+        'name' => $data['name'],
+      ];
   }
 
   protected function formatCategoryData(ProductCategory|Collection $data): array
   {
-    if ($data instanceof Collection) {
-      return $data->map(
-        fn ($data) => $this->formatCategoryData($data)
-      )->values()->toArray();
-    }
-
-    return [
-      'id' => $data['id'],
-      'name' => $data['name'],
-      'slug' => $data['slug'],
-    ];
+    return $data instanceof Collection
+      ? $data->map(fn ($data) => $this->formatCategoryData($data))->values()->toArray()
+      : [
+        'id' => $data['id'],
+        'name' => $data['name'],
+        'slug' => $data['slug'],
+      ];
   }
 
   protected function formatBrandData(ProductBrand|Collection $data): array
   {
-    if ($data instanceof Collection) {
-      return $data->map(
-        fn ($data) => $this->formatBrandData($data)
-      )->values()->toArray();
-    }
+    return $data instanceof Collection
+      ? $data->map(fn ($data) => $this->formatBrandData($data))->values()->toArray()
+      : [
+        'id' => $data['id'],
+        'name' => $data['name'],
+        'slug' => $data['slug'],
+      ];
+  }
 
+  protected function formatCartData(Cart|Collection $data): array
+  {
+    return $data instanceof Collection
+      ? $data->map(fn ($data) => $this->formatCartData($data))->values()->toArray()
+      : [
+        'id' => $data['id'],
+        'product' => $this->formatProductData($data['product']),
+        'quantity' => $data['quantity'],
+      ];
+  }
+
+  protected function formatBankData(Bank|Collection $data): array
+  {
+    return $data instanceof Collection
+      ? $data->map(fn ($data) => $this->formatBankData($data))->values()->toArray()
+      : [
+        'id' => $data['id'],
+        'name' => $data['name'],
+        'code' => $data['code'],
+        'account_name' => $data['account_name'],
+        'account_number' => $data['account_number'],
+        'logo' => $data['logo']
+      ];
+  }
+
+  protected function formatUserAddressData(UserAddress $data): array
+  {
     return [
       'id' => $data['id'],
       'name' => $data['name'],
-      'slug' => $data['slug'],
+      'phone' => $data['phone'],
+      'province' => $this->formatProvinceData($data['city']['province']),
+      'city' => $this->formatCityData($data['city']),
+      'district' => $data['district'],
+      'postal_code' => $data['postal_code'],
+      'address' => $data['address'],
     ];
   }
 
   protected function formatProductData(Product|Collection $data): array
   {
-    if ($data instanceof Collection) {
-      return $data->map(
-        fn ($data) => $this->formatProductData($data)
-      )->values()->toArray();
-    }
-
-    return [
-      'id' => $data['id'],
-      'name' => $data['name'],
-      'slug' => $data['slug'],
-      'image' => $data['image'],
-      'category' => $this->formatCategoryData($data['category']),
-      'brand' => $this->formatBrandData($data['brand']),
-      'sex' => $data['sex'],
-      'price' => $data['price'],
-      'stock' => $data['stock'],
-      'weight' => $data['weight'],
-      'sold_count' => $data['sold_count'] ?? 0,
-      'is_wishlist' => $data['is_wishlist'] ?? false,
-    ];
+    return $data instanceof Collection
+      ?  $data->map(fn ($data) => $this->formatProductData($data))->values()->toArray()
+      : [
+        'id' => $data['id'],
+        'name' => $data['name'],
+        'slug' => $data['slug'],
+        'image' => $data['image'],
+        'category' => $this->formatCategoryData($data['category']),
+        'brand' => $this->formatBrandData($data['brand']),
+        'sex' => $data['sex'],
+        'price' => $data['price'],
+        'stock' => $data['stock'],
+        'weight' => $data['weight'],
+        'sold_count' => $data['sold_count'] ?? 0,
+        'is_wishlist' => $data['is_wishlist'] ?? false,
+      ];
   }
 
   protected function createProductWithSales(

@@ -17,7 +17,7 @@ return new class extends Migration
       $table->string('code', 3)->nullable();
       $table->string('account_name', 100);
       $table->string('account_number', 100);
-      $table->string('logo');
+      $table->string('logo')->nullable();
       $table->timestamps();
     });
   }

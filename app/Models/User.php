@@ -27,7 +27,7 @@ class User extends Authenticatable implements CanResetPassword
     'password' => 'hashed',
   ];
 
-  public function addresses()
+  public function address()
   {
     return $this->hasOne(UserAddress::class);
   }

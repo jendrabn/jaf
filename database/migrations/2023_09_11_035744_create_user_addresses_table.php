@@ -17,8 +17,8 @@ return new class extends Migration
       $table->foreignId('city_id');
       $table->string('district', 100);
       $table->string('name', 100);
-      $table->string('phone', 15);
-      $table->string('postal_code', 5);
+      $table->string('phone', 25);
+      $table->string('postal_code', 25);
       $table->string('address');
       $table->timestamps();
     });
