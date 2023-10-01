@@ -127,8 +127,8 @@ class ProductGetTest extends TestCase
     $product3 = $this->createProductWithSales(status: Order::STATUS_PROCESSING);
     $product4 = $this->createProductWithSales(status: Order::STATUS_ON_DELIVERY);
     $product5 = $this->createProductWithSales(status: Order::STATUS_CANCELLED);
-    $product6 = $this->createProductWithSales([3, 2], Order::STATUS_COMPLETED);
-    $product7 = $this->createProductWithSales([2, 1], Order::STATUS_COMPLETED);
+    $product6 = $this->createProductWithSales(quantities: [3, 2], status: Order::STATUS_COMPLETED);
+    $product7 = $this->createProductWithSales(quantities: [2, 1], status: Order::STATUS_COMPLETED);
 
     $response = $this->attemptToGetProduct(['sort_by' => 'sales']);
 
