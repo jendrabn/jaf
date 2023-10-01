@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CheckoutRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class CheckoutRequest extends FormRequest
    */
   public function authorize(): bool
   {
-    return false;
+    return true;
   }
 
   /**
@@ -22,7 +23,15 @@ class CheckoutRequest extends FormRequest
   public function rules(): array
   {
     return [
-      //
+      'cart_ids' => [
+        'required',
+        'array',
+      ],
+      'cart_ids.*' => [
+        'integer',
+        Rule::exists('carts', 'id')
+          ->where('user_id', $this->user()->id),
+      ]
     ];
   }
 }

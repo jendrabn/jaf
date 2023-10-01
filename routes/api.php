@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RegionController;
@@ -40,5 +41,8 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 Route::delete('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::post('/auth/forgot_password', [AuthController::class, 'sendPasswordResetLink']);
 Route::put('/auth/reset_password', [AuthController::class, 'resetPassword']);
+
+// Checkout
+Route::post('/checkout', [CheckoutController::class, 'checkout'])->middleware(['auth:sanctum']);
 
 Route::fallback(fn () => abort(400));
