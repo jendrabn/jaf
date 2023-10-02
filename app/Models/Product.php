@@ -18,7 +18,15 @@ class Product extends Model implements HasMedia
 
   protected $guarded = [];
 
-  protected $appends = ['image', 'images', 'is_wishlist'];
+  protected $appends = [
+    'image',
+    'images',
+    'is_wishlist'
+  ];
+
+  protected $casts = [
+    'sex' => 'integer',
+  ];
 
   public function wishlists()
   {

@@ -15,6 +15,9 @@ class Shipping extends Model
   const STATUS_PROCESSING = 'processing';
   const STATUS_SHIPPED = 'shipped';
 
+  const MAX_WEIGHT = 25000;
+  const COURIERS = ['jne', 'tiki', 'pos'];
+
   public function order()
   {
     return $this->belongsTo(Order::class);

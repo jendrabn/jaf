@@ -25,6 +25,7 @@ class User extends Authenticatable implements CanResetPassword
   protected $casts = [
     'email_verified_at' => 'datetime',
     'password' => 'hashed',
+    'sex' => 'integer'
   ];
 
   public function address()
