@@ -11,11 +11,14 @@ use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\Province;
+use App\Models\Shipping;
 use App\Models\User;
 use App\Models\UserAddress;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Http\Client\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use JMac\Testing\Traits\AdditionalAssertions;
 
 abstract class TestCase extends BaseTestCase
@@ -204,5 +207,28 @@ abstract class TestCase extends BaseTestCase
     }
 
     return $products;
+  }
+
+  public function fakeHttpRajaOngkir(): void
+  {
+    $url =  config('shop.rajaongkir.base_url') . '/cost';
+
+    Http::fake([
+      $url => function (Request $request) {
+        if ($request->method() === 'POST') {
+
+          foreach (Shipping::COURIERS as $courier) {
+
+            if ($request->data()['courier'] === $courier) {
+              $file = file_get_contents(
+                base_path('tests/fixtures/rajaongkir/' . $courier . '.json')
+              );
+
+              return Http::response($file);
+            }
+          }
+        }
+      }
+    ]);
   }
 }
