@@ -15,6 +15,13 @@ class HomePageGetTest extends TestCase
 
   private string $uri = '/api/home_page';
 
+  protected function tearDown(): void
+  {
+    Banner::all()->each(
+      fn ($banner) => $banner->clearMediaCollection(Banner::MEDIA_COLLECTION_NAME)
+    );
+  }
+
   /** @test */
   public function can_get_banners_and_latest_products_for_home_page()
   {
@@ -42,5 +49,7 @@ class HomePageGetTest extends TestCase
         'products' => $this->formatProductData($products->sortByDesc('id')->take(10))
       ]
     ]);
+
+    $this->assertStringStartsWith('http', $response['data']['banners'][0]['image']);
   }
 }

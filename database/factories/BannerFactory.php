@@ -29,8 +29,8 @@ class BannerFactory extends Factory
     return $this->afterCreating(
       function (Banner $banner) {
         $file = UploadedFile::fake()->image('banner.jpg');
-        $banner->addMedia($file)
-          ->toMediaCollection('banner_images');
+
+        $banner->addMedia($file)->toMediaCollection(Banner::MEDIA_COLLECTION_NAME);
       }
     );
   }

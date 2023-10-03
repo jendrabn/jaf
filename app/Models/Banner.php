@@ -13,6 +13,10 @@ class Banner extends Model implements HasMedia
 {
   use HasFactory, InteractsWithMedia;
 
+  public const MEDIA_COLLECTION_NAME = 'banner_images';
+
+  protected $mediaLibraryDisk = 'banners';
+
   protected $guarded = [];
 
   protected $appends = [
@@ -27,7 +31,7 @@ class Banner extends Model implements HasMedia
   public function image(): Attribute
   {
     return Attribute::get(
-      fn () => $this->getFirstMediaUrl('banner_images')
+      fn () => $this->getFirstMediaUrl(self::MEDIA_COLLECTION_NAME) ?? null
     );
   }
 }

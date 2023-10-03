@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CheckoutController;
+use App\Http\Controllers\Api\HomePageController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RegionController;
@@ -46,5 +47,8 @@ Route::put('/auth/reset_password', [AuthController::class, 'resetPassword']);
 // Checkout
 Route::post('/checkout', [CheckoutController::class, 'checkout'])->middleware(['auth:sanctum']);
 Route::post('/shipping_costs', [CheckoutController::class, 'shippingCost']);
+
+// Home Page
+Route::get('/home_page', HomePageController::class);
 
 Route::fallback(fn () => abort(400));
