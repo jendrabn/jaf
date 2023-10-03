@@ -28,7 +28,7 @@ class ProductSimilarByIdGetTest extends TestCase
       ->sequence(['name' => 'Bvlgari ' . fake()->sentence(2)])
       ->create();
 
-    $response = $this->post('/api/products/' . $products[0]->id . '/similars');
+    $response = $this->getJson('/api/products/' . $products[0]->id . '/similars');
 
     $response->assertExactJson([
       'data' => $this->formatProductData(
@@ -43,7 +43,7 @@ class ProductSimilarByIdGetTest extends TestCase
   {
     $product = $this->createProduct();
 
-    $response = $this->post('/api/products/' . $product->id + 1 . '/similars');
+    $response = $this->getJson('/api/products/' . $product->id + 1 . '/similars');
 
     $response->assertNotFound()
       ->assertJsonStructure(['message']);

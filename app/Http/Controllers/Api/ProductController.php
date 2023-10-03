@@ -56,4 +56,17 @@ class ProductController extends Controller
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }
+
+  public function similars(Product $product): JsonResponse
+  {
+    $products = Product::published()
+      ->where('name', 'like', '%' . $product->name . '%')
+      ->latest('id')
+      ->take(5)
+      ->get();
+
+    return (new ProductCollection($products))
+      ->response()
+      ->setStatusCode(Response::HTTP_OK);
+  }
 }
