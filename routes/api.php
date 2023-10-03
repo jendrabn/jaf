@@ -44,5 +44,6 @@ Route::put('/auth/reset_password', [AuthController::class, 'resetPassword']);
 
 // Checkout
 Route::post('/checkout', [CheckoutController::class, 'checkout'])->middleware(['auth:sanctum']);
+Route::post('/shipping_costs', [CheckoutController::class, 'shippingCost']);
 
 Route::fallback(fn () => abort(400));

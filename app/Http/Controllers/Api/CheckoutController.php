@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\CheckoutRequest;
+use App\Http\Requests\Api\ShippingCostRequest;
 use App\Http\Resources\BankResource;
 use App\Http\Resources\CartResource;
 use App\Http\Resources\UserAddressResource;
@@ -63,5 +64,15 @@ class CheckoutController extends Controller
         'total_price' => $totalPrice,
       ]
     ])->setStatusCode(Response::HTTP_OK);
+  }
+
+  public function shippingCost(ShippingCostRequest $request, RajaOngkirService $rajaOngkirService): JsonResponse
+  {
+    $validatedData = $request->validated();
+    $costs = $rajaOngkirService->getCosts($validatedData['destination'], $validatedData['weight']);
+
+    return response()
+      ->json(['data' => $costs])
+      ->setStatusCode(Response::HTTP_OK);
   }
 }

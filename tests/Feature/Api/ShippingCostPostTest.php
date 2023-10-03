@@ -5,6 +5,8 @@ namespace Tests\Feature\Api;
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Requests\Api\ShippingCostRequest;
 use App\Models\Shipping;
+use Database\Seeders\CitySeeder;
+use Database\Seeders\ProvinceSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -18,6 +20,8 @@ class ShippingCostPostTest extends TestCase
   /** @test */
   public function can_get_shipping_cost()
   {
+    $this->seed([ProvinceSeeder::class, CitySeeder::class]);
+    $this->fakeHttpRajaOngkir();
     $data = [
       'destination' => 154, // Kota Jakarta Timur
       'weight' => 1500
