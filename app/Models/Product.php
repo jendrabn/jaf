@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -55,9 +55,7 @@ class Product extends Model implements HasMedia
 
   public function registerMediaConversions(Media $media = null): void
   {
-    $this
-      ->addMediaConversion('images')
-      ->nonQueued();
+    $this->addMediaConversion('images');
   }
 
   public function images(): Attribute
@@ -84,15 +82,24 @@ class Product extends Model implements HasMedia
     return Attribute::get(fn () => false);
   }
 
-  public function published()
+  public function scopePublished()
   {
     return $this->where('is_publish', true);
   }
 
-  public function scopeWithSoldCount()
+  protected static function booted(): void
   {
-    return $this->withCount(['orderItems as sold_count' =>
-    fn (Builder $builder) => $builder->select(DB::raw('IFNULL(SUM(quantity), 0)'))
-      ->whereHas('order', fn (Builder $builder) => $builder->where('status', Order::STATUS_COMPLETED))]);
+    static::addGlobalScope(
+      'sold_count',
+      fn (Builder $builder) =>
+      $builder->withCount([
+        'orderItems as sold_count' =>
+        fn (Builder $builder) => $builder->select(DB::raw('IFNULL(SUM(quantity), 0)'))
+          ->whereHas(
+            'order',
+            fn (Builder $builder) => $builder->where('status', Order::STATUS_COMPLETED)
+          )
+      ])
+    );
   }
 }

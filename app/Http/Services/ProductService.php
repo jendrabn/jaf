@@ -16,14 +16,7 @@ class ProductService
   {
     $page = $request->get('page', 1);
 
-    // Get product with sold count
-    $products = Product::query()
-      ->where('is_publish', true)
-      ->withCount([
-        'orderItems as sold_count' => fn (Builder $q) =>
-        $q->select(DB::raw('IFNULL(SUM(quantity), 0)'))
-          ->whereHas('order', fn ($q) => $q->where('status', Order::STATUS_COMPLETED))
-      ]);
+    $products = Product::published();
 
     // Filter
     $products->when(

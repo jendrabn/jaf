@@ -52,7 +52,7 @@ class ProductController extends Controller
         ->setStatusCode(Response::HTTP_NOT_FOUND))
     );
 
-    return (new ProductDetailResource($product->withSoldCount()->first()))
+    return (new ProductDetailResource($product->first()))
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }
