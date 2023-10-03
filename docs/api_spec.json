@@ -1467,13 +1467,8 @@
       }
     },
     "/api/shipping_costs": {
-      "get": {
+      "post": {
         "description": "API untuk mendapatkan pilihan pengiriman/ongkos kirim (jne, pos & tiki)",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/auth"
-          }
-        ],
         "requestBody": {
           "required": true,
           "content": {
