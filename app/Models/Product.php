@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Spatie\Image\Manipulations;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -15,6 +14,8 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 class Product extends Model implements HasMedia
 {
   use HasFactory, InteractsWithMedia;
+
+  public const MEDIA_COLLECTION_NAME = 'product_images';
 
   protected $guarded = [];
 
@@ -55,26 +56,28 @@ class Product extends Model implements HasMedia
 
   public function registerMediaConversions(Media $media = null): void
   {
-    $this->addMediaConversion('images');
+    // No conversion
   }
 
   public function images(): Attribute
   {
-    $files = $this->getMedia('images');
+    return Attribute::get(function () {
+      $files = $this->getMedia(self::MEDIA_COLLECTION_NAME);
 
-    $images = [];
-    foreach ($files as $file) {
-      $images[] = $file->getUrl('images');
-    }
+      $images = [];
+      foreach ($files as $file) {
+        $images[] = $file->getUrl() ?? null;
+      }
 
-    return Attribute::get(fn () => $images);
+      return $images;
+    });
   }
 
   public function image(): Attribute
   {
-    $file = $this->getFirstMedia('images');
-
-    return  Attribute::get(fn () => $file ? $file->getUrl('images') : null);
+    return  Attribute::get(
+      fn () => $this->getFirstMediaUrl(self::MEDIA_COLLECTION_NAME) ?? null
+    );
   }
 
   public function isWishlist(): Attribute

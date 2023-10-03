@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Http\UploadedFile;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Product>
@@ -38,8 +39,9 @@ class ProductFactory extends Factory
     return $this->afterCreating(
       function (Product $product) use ($count) {
         for ($i = 0; $i < $count; $i++) {
-          $product->addMedia(fake()->image(null, 10, 10))
-            ->toMediaCollection('images');
+          $file = UploadedFile::fake()->image('product.jpg');
+
+          $product->addMedia($file)->toMediaCollection(Product::MEDIA_COLLECTION_NAME);
         }
       }
     );
