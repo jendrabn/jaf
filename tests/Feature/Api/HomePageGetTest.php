@@ -15,13 +15,6 @@ class HomePageGetTest extends TestCase
 
   private string $uri = '/api/home_page';
 
-  protected function tearDown(): void
-  {
-    Banner::all()->each(
-      fn ($banner) => $banner->clearMediaCollection(Banner::MEDIA_COLLECTION_NAME)
-    );
-  }
-
   /** @test */
   public function can_get_banners_and_latest_products_for_home_page()
   {

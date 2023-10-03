@@ -3,6 +3,7 @@
 namespace Tests;
 
 use App\Models\Bank;
+use App\Models\Banner;
 use App\Models\Cart;
 use App\Models\City;
 use App\Models\Order;
@@ -24,6 +25,17 @@ use JMac\Testing\Traits\AdditionalAssertions;
 abstract class TestCase extends BaseTestCase
 {
   use CreatesApplication, AdditionalAssertions;
+
+  protected function tearDown(): void
+  {
+    Banner::all()->each(
+      fn ($banner) => $banner->clearMediaCollection(Banner::MEDIA_COLLECTION_NAME)
+    );
+
+    Product::all()->each(
+      fn ($product) => $product->clearMediaCollection(Product::MEDIA_COLLECTION_NAME)
+    );
+  }
 
   protected function createUser(?array $data = [], int $count = 1): User|Collection
   {
