@@ -56,12 +56,13 @@ class OrderGetTest extends TestCase
           'name' => $item['name'],
           'price' => $item['price'],
           'weight' => $item['weight'],
+          'quantity' => $item['quantity'],
         ]
       )->toArray(),
       'status' => $order['status'],
       'total_amount' => $order['invoice']['amount'],
       'payment_due_date' => $order['invoice']['due_date'],
-      'created_at' => $order['created_at']
+      'created_at' => $order['created_at']->toISOString()
     ]);
   }
 
@@ -110,10 +111,11 @@ class OrderGetTest extends TestCase
     foreach ($statuses as $status) {
       $response = $this->attemptToGetOrderAndExpectOk(compact('status'));
 
-      $response->assertJsonCount(3, 'data')->json('data');
+      $response->assertJsonCount(3, 'data');
+
       $this->assertEquals(
         Arr::pluck($orders[$status]->sortByDesc('id'), 'id'),
-        Arr::pluck($response, 'id')
+        Arr::pluck($response['data'], 'id')
       );
     }
   }
@@ -123,12 +125,12 @@ class OrderGetTest extends TestCase
   {
     $orders = $this->createOrder(['user_id' => $this->user->id], 3);
 
-    $response = $this->attemptToGetOrderAndExpectOk();
+    $response = $this->attemptToGetOrderAndExpectOk(['sort_by' => 'newest']);
 
-    $response->assertJsonCount(3, 'data')->json('data');
+    $response->assertJsonCount(3, 'data');
     $this->assertEquals(
       Arr::pluck($orders->sortByDesc('id'), 'id'),
-      Arr::pluck($response, 'id')
+      Arr::pluck($response['data'], 'id')
     );
   }
 
@@ -137,12 +139,12 @@ class OrderGetTest extends TestCase
   {
     $orders = $this->createOrder(['user_id' => $this->user->id], 3);
 
-    $response = $this->attemptToGetOrderAndExpectOk();
+    $response = $this->attemptToGetOrderAndExpectOk(['sort_by' => 'oldest']);
 
-    $response->assertJsonCount(3, 'data')->json('data');
+    $response->assertJsonCount(3, 'data');
     $this->assertEquals(
       Arr::pluck($orders->sortBy('id'), 'id'),
-      Arr::pluck($response, 'id')
+      Arr::pluck($response['data'], 'id')
     );
   }
 

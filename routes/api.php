@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\HomePageController;
 use App\Http\Controllers\Api\LocationController;
+use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RegionController;
 use App\Http\Controllers\Api\UserController;
@@ -50,5 +51,8 @@ Route::post('/shipping_costs', [CheckoutController::class, 'shippingCost']);
 
 // Home Page
 Route::get('/home_page', HomePageController::class);
+
+// Order
+Route::get('/orders', [OrderController::class, 'list'])->middleware(['auth:sanctum']);
 
 Route::fallback(fn () => abort(400));
