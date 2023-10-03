@@ -2,6 +2,9 @@
 
 namespace Tests\Feature\Api;
 
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Product;
 use Database\Seeders\ProductBrandSeeder;
 use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -11,7 +14,7 @@ class ProductByIdGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/products';
+  private string $uri = '/api/products/';
 
   protected function setUp(): void
   {
@@ -22,32 +25,44 @@ class ProductByIdGetTest extends TestCase
   /** @test */
   public function can_get_product_by_id()
   {
-    $product = $this->createProductWithSales(quantities: [2, 3]);
-    $this->addImageToProduct($product, 3);
+    $product = Product::factory()
+      ->has(
+        OrderItem::factory()
+          ->count(2)
+          ->sequence(
+            [
+              'order_id' => $this->createOrder(['status' => Order::STATUS_COMPLETED])->id,
+              'quantity' => 2,
+            ],
+            [
+              'order_id' => $this->createOrder(['status' => Order::STATUS_COMPLETED])->id,
+              'quantity' => 3
+            ]
+          )
+      )
+      ->hasImages(3)
+      ->create();
 
-    $response = $this->getJson($this->uri . '/' . $product->id);
+    $response = $this->getJson($this->uri . $product->id);
 
     $response->assertOk()
-      ->assertJsonStructure([
+      ->assertExactJson([
         "data" => [
-          "id",
-          "name",
-          "slug",
-          "images",
-          "category",
-          "description",
-          "brand",
-          "sex",
-          "price",
-          "stock",
-          "weight",
-          "sold_count",
-          "is_wishlist",
+          "id" => $product->id,
+          "name" => $product->name,
+          "slug" => $product->slug,
+          "images" => $product->images,
+          "category" => $this->formatCategoryData($product->category),
+          "description" => $product->description,
+          "brand" => $this->formatBrandData($product->brand),
+          "sex" => $product->sex,
+          "price" => $product->price,
+          "stock" => $product->stock,
+          "weight" => $product->weight,
+          "sold_count" => 5,
+          "is_wishlist" => false,
         ]
       ])
-      ->assertJsonPath('data.name', $product->name)
-      ->assertJsonPath('data.images', $product->images)
-      ->assertJsonPath('data.sold_count', 5)
       ->assertJsonCount(3, 'data.images');
   }
 
@@ -56,7 +71,8 @@ class ProductByIdGetTest extends TestCase
   {
     $product = $this->createProduct();
 
-    $response = $this->getJson($this->uri . '/' . $product->id + 1);
+    $response = $this->getJson($this->uri . $product->id + 1);
+
     $response->assertNotFound()
       ->assertJsonStructure(['message']);
   }
@@ -66,7 +82,8 @@ class ProductByIdGetTest extends TestCase
   {
     $product = $this->createProduct(['is_publish' => false]);
 
-    $response = $this->getJson($this->uri . '/' . $product->id);
+    $response = $this->getJson($this->uri . $product->id);
+
     $response->assertNotFound()
       ->assertJsonStructure(['message']);
   }

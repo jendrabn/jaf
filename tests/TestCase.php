@@ -60,6 +60,16 @@ abstract class TestCase extends BaseTestCase
     return $count > 1 ? $brands : $brands->first();
   }
 
+  public function createOrder(?array $data = [], ?int $count = 1)
+  {
+    $orders = Order::factory()
+      ->count($count)
+      ->for(User::factory()->create())
+      ->create($data);
+
+    return $count > 1 ? $orders : $orders->first();
+  }
+
   protected function formatUserData(User $data): array
   {
     return [

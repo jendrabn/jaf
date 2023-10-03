@@ -1,7 +1,8 @@
 <?php
-
+// database/factories/ProductFactory.php
 namespace Database\Factories;
 
+use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -30,5 +31,17 @@ class ProductFactory extends Factory
       'is_publish' => true,
       'sex' => fake()->randomElement([1, 2, 3]),
     ];
+  }
+
+  public function hasImages(int $count = 1)
+  {
+    return $this->afterCreating(
+      function (Product $product) use ($count) {
+        for ($i = 0; $i < $count; $i++) {
+          $product->addMedia(fake()->image(null, 10, 10))
+            ->toMediaCollection('images');
+        }
+      }
+    );
   }
 }
