@@ -26,7 +26,7 @@ class RajaOngkirService
     foreach ($couriers as $courier) {
       $costs = array_merge(
         $costs,
-        $this->fetchCost($this->origin, $destination, $weight, $courier)
+        $this->fetchCost($destination, $weight, $courier)
       );
     }
 
@@ -41,7 +41,6 @@ class RajaOngkirService
       ->withHeader('key', $this->key)
       ->post($this->baseUrl . '/cost', compact('origin', 'destination', 'weight', 'courier'))
       ->throwUnlessStatus(Response::HTTP_OK);
-
 
     $results = $response->object()->rajaongkir->results[0] ?? [];
     $costs = [];
