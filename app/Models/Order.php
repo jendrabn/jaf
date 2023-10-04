@@ -9,14 +9,18 @@ class Order extends Model
 {
   use HasFactory;
 
-  protected $guarded = [];
-
   const STATUS_PENDING_PAYMENT = 'pending_payment';
   const STATUS_PENDING = 'pending';
   const STATUS_PROCESSING = 'processing';
   const STATUS_ON_DELIVERY = 'on_delivery';
   const STATUS_COMPLETED = 'completed';
   const STATUS_CANCELLED = 'cancelled';
+
+  protected $guarded = [];
+
+  protected $casts = [
+    'due_date' => 'datetime'
+  ];
 
   public function user()
   {

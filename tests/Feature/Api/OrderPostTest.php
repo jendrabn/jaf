@@ -35,7 +35,13 @@ class OrderPostTest extends TestCase
   protected function setUp(): void
   {
     parent::setUp();
-    $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class, BankSeeder::class]);
+    $this->seed([
+      ProductCategorySeeder::class,
+      ProductBrandSeeder::class,
+      BankSeeder::class,
+      ProvinceSeeder::class,
+      CitySeeder::class
+    ]);
     $this->user = $this->createUser();
     $this->bank = Bank::first();
     $this->payload = [
@@ -54,12 +60,13 @@ class OrderPostTest extends TestCase
       'bank_id' => $this->bank->id,
       'notes' => fake()->sentence()
     ];
+
+    $this->fakeHttpRajaOngkir();
   }
 
   /** @test */
   public function can_create_order()
   {
-    $this->seed([ProvinceSeeder::class, CitySeeder::class]);
     $cart1 = $this->createCart(2, ['price' => 25000, 'stock' => 5, 'weight' => 500]);
     $cart2 = $this->createCart(1, ['price' => 50000, 'stock' => 5, 'weight' => 500]);
     $totalWeight = 1500;
@@ -72,7 +79,7 @@ class OrderPostTest extends TestCase
     $this->assertDatabaseCount('orders', 1);
 
     $order = Order::first();
-    $paymentDueDate = $order['created_at']->addDays(1)->toISOString();
+    $paymentDueDate = $order['created_at']->addDays(1);
 
     $response->assertCreated()
       ->assertExactJson([
@@ -86,7 +93,7 @@ class OrderPostTest extends TestCase
             'account_name' => $this->bank['account_name'],
             'account_number' => $this->bank['account_number']
           ],
-          'payment_due_date' => $paymentDueDate,
+          'payment_due_date' => $paymentDueDate->toISOString(),
           'created_at' => $order['created_at']->toISOString()
         ]
       ]);
@@ -165,11 +172,12 @@ class OrderPostTest extends TestCase
 
     $this->assertDatabaseHas('products', [
       'id' => $cart1['product']['id'],
-      'stock' => $cart1['product']['stock'] - $cart1['quantity']
+      'stock' => 3
     ]);
+
     $this->assertDatabaseHas('products', [
       'id' => $cart2['product']['id'],
-      'stock' => $cart2['product']['stock'] - $cart2['quantity']
+      'stock' => 4
     ]);
   }
 
@@ -181,7 +189,7 @@ class OrderPostTest extends TestCase
 
     $this->attemptToCreateOrderAndExpectFail422(
       'shipping_service',
-      ['cart_ids' => [$cart1->id, $cart2->id]],
+      ['cart_ids' => [$cart1->id, $cart2->id], 'shipping_service' => 'INVALID'],
     );
   }
 
@@ -259,7 +267,7 @@ class OrderPostTest extends TestCase
         'cart_ids.*' => [
           'required',
           'integer',
-          Rule::exists('carts')->where('user_id', $this->user->id)
+          Rule::exists('carts', 'id')->where('user_id', $this->user->id)
         ],
         'shipping_address.name' => [
           'required',

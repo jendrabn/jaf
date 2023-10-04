@@ -13,7 +13,7 @@ class CreateOrderRequest extends FormRequest
    */
   public function authorize(): bool
   {
-    return false;
+    return true;
   }
 
   /**
@@ -23,8 +23,76 @@ class CreateOrderRequest extends FormRequest
    */
   public function rules(): array
   {
-    return [
-      //
+    return  [
+      'cart_ids' => [
+        'required',
+        'array',
+      ],
+      'cart_ids.*' => [
+        'required',
+        'integer',
+        Rule::exists('carts', 'id')->where('user_id', $this->user()->id)
+      ],
+      'shipping_address.name' => [
+        'required',
+        'string',
+        'min:1',
+        'max:30',
+      ],
+      'shipping_address.phone' => [
+        'required',
+        'string',
+        'starts_with:08,62,+62',
+        'min:10',
+        'max:15',
+      ],
+      'shipping_address.city_id' => [
+        'required',
+        'integer',
+        'exists:cities,id',
+      ],
+      'shipping_address.district' => [
+        'required',
+        'string',
+        'min:1',
+        'max:100',
+      ],
+      'shipping_address.postal_code' => [
+        'required',
+        'string',
+        'min:5',
+        'max:5',
+      ],
+      'shipping_address.address' => [
+        'required',
+        'string',
+        'min:1',
+        'max:255',
+      ],
+      'shipping_courier' => [
+        'required',
+        'string',
+        Rule::in(Shipping::COURIERS)
+      ],
+      'shipping_service' => [
+        'required',
+        'string'
+      ],
+      'payment_method' => [
+        'required',
+        'string',
+        'in:bank',
+      ],
+      'bank_id' => [
+        'required',
+        'integer',
+        'exists:banks,id',
+      ],
+      'notes' => [
+        'nullable',
+        'string',
+        'max:200',
+      ]
     ];
   }
 }
