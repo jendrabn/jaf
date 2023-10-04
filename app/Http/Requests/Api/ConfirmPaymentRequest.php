@@ -11,7 +11,7 @@ class ConfirmPaymentRequest extends FormRequest
    */
   public function authorize(): bool
   {
-    return false;
+    return true;
   }
 
   /**
@@ -22,7 +22,24 @@ class ConfirmPaymentRequest extends FormRequest
   public function rules(): array
   {
     return [
-      //
+      'name' => [
+        'required',
+        'string',
+        'min:1',
+        'max:50',
+      ],
+      'account_name' => [
+        'required',
+        'string',
+        'min:1',
+        'max:50',
+      ],
+      'account_number' => [
+        'required',
+        'string',
+        'min:1',
+        'max:50',
+      ]
     ];
   }
 }

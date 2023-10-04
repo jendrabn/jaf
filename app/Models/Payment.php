@@ -18,12 +18,12 @@ class Payment extends Model
 
   public function bank()
   {
-    return $this->belongsTo(PaymentBank::class);
+    return $this->hasOne(PaymentBank::class);
   }
 
   public function ewallet()
   {
-    return $this->belongsTo(PaymentEwallet::class);
+    return $this->hasOne(PaymentEwallet::class);
   }
 
   public function invoice()

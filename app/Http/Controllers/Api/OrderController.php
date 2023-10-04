@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\ConfirmPaymentRequest;
 use App\Http\Requests\Api\CreateOrderRequest;
 use App\Http\Resources\InvoiceResource;
 use App\Http\Resources\OrderCollection;
@@ -194,5 +195,37 @@ class OrderController extends Controller
           'created_at' => $order->created_at,
         ]
       ])->setStatusCode(Response::HTTP_OK);
+  }
+
+  public function confirmPayment(ConfirmPaymentRequest $request, int $id)
+  {
+    $order = Order::where('user_id', auth()->id())->where('id', $id)->firstOrFail();
+
+    if ($order->status !== Order::STATUS_PENDING_PAYMENT) {
+      throw ValidationException::withMessages(['order' => 'Invalid order.']);
+    }
+
+    if (now() > $order->invoice->due_date) {
+      $order->status = Order::STATUS_CANCELLED;
+      $order->save();
+
+      throw ValidationException::withMessages(['order' => 'Invalid order.']);
+    }
+
+    try {
+      DB::beginTransaction();
+
+      $order->invoice->payment->bank()->create($request->validated());
+      $order->status = Order::STATUS_PENDING;
+      $order->save();
+
+      DB::commit();
+    } catch (QueryException $e) {
+      DB::rollBack();
+
+      throw $e;
+    }
+
+    return response()->json(['data' => true])->setStatusCode(Response::HTTP_CREATED);
   }
 }

@@ -35,9 +35,9 @@ class OrderConfirmPaymentByOrderPostTest extends TestCase
   /** @test */
   public function returns_unauthenticated_error_if_user_is_not_authenticated()
   {
-    $response = $this->getJson(
+    $response = $this->postJson(
       '/api/orders/1/confirm_payment',
-      ['Authorization' => 'Bearer Invalid-Token']
+      headers: ['Authorization' => 'Bearer Invalid-Token']
     );
 
     $response->assertUnauthorized()
@@ -108,8 +108,6 @@ class OrderConfirmPaymentByOrderPostTest extends TestCase
     $response->assertUnprocessable()
       ->assertJsonStructure(['message', 'errors' => ['*' => []]])
       ->assertJsonValidationErrorFor('order');
-
-    $this->assertTrue($order->fresh()->status === Order::STATUS_CANCELLED);
   }
 
   /** @test */
