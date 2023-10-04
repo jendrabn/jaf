@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Invoice extends Model
 {
@@ -16,9 +17,9 @@ class Invoice extends Model
 
   protected $guarded = [];
 
-  public function payment(): BelongsTo
+  public function payment(): HasOne
   {
-    return $this->belongsTo(Payment::class);
+    return $this->hasOne(Payment::class);
   }
 
   public function order(): BelongsTo

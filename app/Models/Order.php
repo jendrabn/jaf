@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,6 +23,10 @@ class Order extends Model
     'due_date' => 'datetime'
   ];
 
+  protected $appends = [
+    'total_quantity'
+  ];
+
   public function user()
   {
     return $this->belongsTo(User::class);
@@ -40,5 +45,12 @@ class Order extends Model
   public function shipping()
   {
     return $this->hasOne(Shipping::class);
+  }
+
+  public function totalQuantity(): Attribute
+  {
+    return Attribute::get(
+      fn () => $this->items->reduce(fn ($carry, $item) => $carry + $item->quantity)
+    );
   }
 }

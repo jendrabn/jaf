@@ -4,7 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\CreateOrderRequest;
+use App\Http\Resources\InvoiceResource;
 use App\Http\Resources\OrderCollection;
+use App\Http\Resources\OrderItemResource;
+use App\Http\Resources\PaymentResource;
+use App\Http\Resources\ShippingResource;
 use App\Http\Services\CartService;
 use App\Http\Services\OrderService;
 use App\Http\Services\RajaOngkirService;
@@ -162,5 +166,33 @@ class OrderController extends Controller
         ]
       ])
       ->setStatusCode(Response::HTTP_CREATED);
+  }
+
+  public function get(Order $order): JsonResponse
+  {
+    return response()
+      ->json([
+        'data' => [
+          'id' => $order->id,
+          'items' => OrderItemResource::collection($order->items),
+          'invoice' => (new InvoiceResource($order->invoice)),
+          'payment' => (new PaymentResource($order->invoice->payment)),
+          'shipping_address' => $order->shipping->address,
+          'shipping' => (new ShippingResource($order->shipping)),
+          'notes' => $order->notes,
+          'cancel_reason' => $order->cancel_reason,
+          'status' => $order->status,
+          'total_quantity' => $order->total_quantity,
+          'total_weight' => $order->shipping->weight,
+          'total_price' => $order->total_price,
+          'shipping_cost' => $order->shipping_cost,
+          'total_amount' => $order->invoice->amount,
+          'payment_due_date' => $order->invoice->due_date,
+          'confirmed_at' => $order->confirmed_at,
+          'completed_at' => $order->completed_at,
+          'cancelled_at' => $order->cancelled_at,
+          'created_at' => $order->created_at,
+        ]
+      ])->setStatusCode(Response::HTTP_OK);
   }
 }

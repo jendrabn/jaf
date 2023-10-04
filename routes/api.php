@@ -55,5 +55,6 @@ Route::get('/home_page', HomePageController::class);
 // Order
 Route::get('/orders', [OrderController::class, 'list'])->middleware(['auth:sanctum']);
 Route::post('/orders', [OrderController::class, 'create'])->middleware(['auth:sanctum']);
+Route::get('/orders/{order}', [OrderController::class, 'get'])->middleware(['auth:sanctum']);
 
 Route::fallback(fn () => abort(400));
