@@ -1,5 +1,5 @@
 <?php
-
+// app\Http\Controllers\Api\OrderController.php
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -15,17 +15,12 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Shipping;
-use App\Models\UserAddress;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-use Symfony\Component\CssSelector\Exception\InternalErrorException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-
-use function PHPUnit\Framework\throwException;
 
 class OrderController extends Controller
 {
@@ -36,135 +31,136 @@ class OrderController extends Controller
       ->setStatusCode(Response::HTTP_OK);
   }
 
-  public function create(CreateOrderRequest $request, CartService $cartService, RajaOngkirService $rajaOngkirService)
+  public function create(CreateOrderRequest $request, CartService $cartService, RajaOngkirService $rajaOngkirService): JsonResponse
   {
     $validatedData = $request->validated();
-    $carts = Cart::whereIn('id', $validatedData['cart_ids'])->get();
     $user = auth()->user();
+    $carts = $user->carts()->whereIn('id', $validatedData['cart_ids'])->get();
     $bank = Bank::where('id', $validatedData['bank_id'])->firstOrFail();
+    $shippingAddress = $validatedData['shipping_address'];
 
-    $carts->each(function ($cart) use ($cartService) {
-      $cartService->validateProduct($cart);
-      $cartService->validateQuantity($cart);
-    });
+    $carts->each(
+      function ($cart) use ($cartService) {
+        $cartService->validateProduct($cart);
+        $cartService->validateQuantity($cart);
+      }
+    );
 
     list($totalQuantity, $totalWeight, $totalPrice) = $cartService->getTotals($carts);
 
     throw_if(
       $totalWeight > Shipping::MAX_WEIGHT,
       ValidationException::withMessages([
-        'cart' => 'The total weight must not be greater than 25kg.'
+        'cart' => 'Berat total pesanan tidak boleh lebih dari 25kg.'
       ])
     );
 
-    $shippingCosts = $rajaOngkirService->getCosts(
-      $validatedData['shipping_address']['city_id'],
-      $totalWeight,
-      [$validatedData['shipping_courier']]
-    );
-
-    $shipping = collect($shippingCosts)
-      ->firstWhere('service', $validatedData['shipping_service']);
+    $shippingService = $rajaOngkirService
+      ->getService(
+        $validatedData['shipping_service'],
+        $shippingAddress['city_id'],
+        $totalWeight,
+        $validatedData['shipping_courier']
+      );
 
     throw_if(
-      !$shipping,
-      ValidationException::withMessages(
-        ['shipping_service' => 'Layanan kurir tidak tersedia!']
-      )
+      !$shippingService,
+      ValidationException::withMessages([
+        'shipping_service' => 'Layanan kurir tidak tersedia.'
+      ])
     );
 
-    $totalAmount = $shipping['cost'] + $totalPrice;
+    $totalAmount = $shippingService['cost'] + $totalPrice;
+
+    DB::beginTransaction();
 
     try {
-      DB::beginTransaction();
-
       $order = Order::create([
-        'user_id' => $user['id'],
+        'user_id' => $user->id,
         'total_price' => $totalPrice,
-        'shipping_cost' => $shipping['cost'],
+        'shipping_cost' => $shippingService['cost'],
         'status' => Order::STATUS_PENDING_PAYMENT,
         'notes' => $validatedData['notes'],
       ]);
 
-
       foreach ($carts as $cart) {
-        $product = $cart['product'];
+        $product = $cart->product;
 
         OrderItem::create([
-          'order_id' => $order['id'],
+          'order_id' => $order->id,
           'product_id' => $product->id,
           'name' => $product->name,
           'weight' => $product->weight,
           'price' => $product->price,
-          'quantity' => $cart['quantity'],
+          'quantity' => $cart->quantity,
         ]);
 
-        $product->decrement('stock', $cart['quantity']);
+        $product->decrement('stock', $cart->quantity);
         $cart->delete();
       }
 
       $invoice = Invoice::create([
-        'order_id' => $order['id'],
-        'number' => sprintf('INV/%s/%s', $order['created_at']->format('YYYYMMDD'), $order['id']),
+        'order_id' => $order->id,
+        'number' => implode('/', [
+          'INV', $order->created_at->format('YYYYMMDD'), $order->id
+        ]),
         'amount' => $totalAmount,
         'status' => Invoice::STATUS_UNPAID,
-        'due_date' => $order['created_at']->addDays(1),
+        'due_date' => $order->created_at->addDays(1),
       ]);
 
       $payment = Payment::create([
-        'invoice_id' => $invoice['id'],
+        'invoice_id' => $invoice->id,
         'method' => $validatedData['payment_method'],
-        'info' => json_encode([
-          'name' => $bank['name'],
-          'code' => $bank['code'],
-          'account_name' => $bank['account_name'],
-          'account_number' => $bank['account_number']
-        ]),
+        'info' => [
+          'name' => $bank->name,
+          'code' => $bank->code,
+          'account_name' => $bank->account_name,
+          'account_number' => $bank->account_number
+        ],
         'amount' => $totalAmount,
         'status' => Payment::STATUS_PENDING
       ]);
 
-      $userAddress = UserAddress::create(
-        array_merge(['user_id' => $user['id'], ...$validatedData['shipping_address']])
-      );
+      $userAddress = $user->address()->updateOrCreate($shippingAddress);
 
-      $shipping =  Shipping::create([
-        'order_id' => $order['id'],
-        'address' => json_encode([
-          'name' =>  $userAddress['name'],
-          'phone' =>  $userAddress['phone'],
-          'province' => $userAddress['city']['province']['name'],
-          'city' => $userAddress['city']['name'],
-          'district' =>  $userAddress['district'],
-          'postal_code' =>  $userAddress['postal_code'],
-          'address' =>  $userAddress['address']
-        ]),
-        'courier' => $shipping['courier'],
-        'courier_name' => $shipping['courier_name'],
-        'service' => $shipping['service'],
-        'service_name' => $shipping['service_name'],
-        'etd' => $shipping['etd'],
+      Shipping::create([
+        'order_id' => $order->id,
+        'address' => [
+          'name' =>  $userAddress->name,
+          'phone' =>  $userAddress->phone,
+          'province' => $userAddress->city->province->name,
+          'city' => $userAddress->city->name,
+          'district' =>  $userAddress->district,
+          'postal_code' =>  $userAddress->postal_code,
+          'address' =>  $userAddress->address
+        ],
+        'courier' => $shippingService['courier'],
+        'courier_name' => $shippingService['courier_name'],
+        'service' => $shippingService['service'],
+        'service_name' => $shippingService['service_name'],
+        'etd' => $shippingService['etd'],
         'weight' => $totalWeight,
-        'status' => Shipping::STATUS_PENDING
+        'status' => Shipping::STATUS_PENDING,
       ]);
 
       DB::commit();
-    } catch (\Exception $e) {
+    } catch (QueryException $e) {
       DB::rollBack();
-
-      throw new InternalErrorException($e->getMessage());
+      throw $e;
     }
 
     return response()
       ->json([
         'data' => [
-          'id' => $order['id'],
+          'id' => $order->id,
           'total_amount' => $totalAmount,
-          'payment_method' => $payment['method'],
-          'payment_info' => json_decode($payment['info'], true),
-          'payment_due_date' => $invoice['due_date']->toISOString(),
-          'created_at' => $order['created_at']
+          'payment_method' => $payment->method,
+          'payment_info' => $payment->info,
+          'payment_due_date' => $invoice->due_date->toISOString(),
+          'created_at' => $order->created_at
         ]
-      ])->setStatusCode(Response::HTTP_CREATED);
+      ])
+      ->setStatusCode(Response::HTTP_CREATED);
   }
 }

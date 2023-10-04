@@ -33,8 +33,10 @@ class RajaOngkirService
     return $costs;
   }
 
-  public function fetchCost(int $origin, int $destination, int $weight, string $courier): array
+  public function fetchCost(int $destination, int $weight, string $courier): array
   {
+    $origin = $this->origin;
+
     $response = Http::acceptJson()
       ->withHeader('key', $this->key)
       ->post($this->baseUrl . '/cost', compact('origin', 'destination', 'weight', 'courier'))
@@ -56,5 +58,13 @@ class RajaOngkirService
     }
 
     return $costs;
+  }
+
+  public function getService(string $service, int $destination, int $weight, string $courier)
+  {
+    $costs = $this->fetchCost($destination, $weight, $courier);
+    $service = collect($costs)->firstWhere('service', $service);
+
+    return $service;
   }
 }
