@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CreateWishlistRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class CreateWishlistRequest extends FormRequest
    */
   public function authorize(): bool
   {
-    return false;
+    return true;
   }
 
   /**
@@ -22,7 +23,11 @@ class CreateWishlistRequest extends FormRequest
   public function rules(): array
   {
     return [
-      //
+      'product_id' => [
+        'required',
+        'integer',
+        Rule::exists('products', 'id')->where('is_publish', true)
+      ]
     ];
   }
 }

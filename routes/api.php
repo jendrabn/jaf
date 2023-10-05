@@ -62,5 +62,6 @@ Route::put('/orders/{id}/confirm_order_delivered', [OrderController::class, 'con
 
 // Wishlist
 Route::get('/wishlist', [WishlistController::class, 'list'])->middleware(['auth:sanctum']);
+Route::post('/wishlist', [WishlistController::class, 'create'])->middleware(['auth:sanctum']);
 
 Route::fallback(fn () => abort(404));
