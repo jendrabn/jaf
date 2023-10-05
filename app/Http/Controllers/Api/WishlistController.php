@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\CreateWishlistRequest;
 use App\Http\Requests\Api\DeleteWishlistRequest;
 use App\Http\Resources\WishlistResource;
-use App\Models\Wishlist;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,7 +14,7 @@ class WishlistController extends Controller
 {
   public function list(): JsonResponse
   {
-    $wishlists = Wishlist::latest('id')->get();
+    $wishlists = $this->wishlists()->latest('id')->get();
 
     return WishlistResource::collection($wishlists)
       ->response()
@@ -24,8 +23,7 @@ class WishlistController extends Controller
 
   public function create(CreateWishlistRequest $request): JsonResponse
   {
-    Wishlist::firstOrCreate([
-      'user_id' => auth()->id(),
+    $this->wishlists()->firstOrCreate([
       'product_id' => $request->validated('product_id')
     ]);
 
@@ -36,12 +34,17 @@ class WishlistController extends Controller
 
   public function delete(DeleteWishlistRequest $request): JsonResponse
   {
-    Wishlist::where('user_id', auth()->id())
+    $this->wishlists()
       ->whereIn('id', $request->validated('wishlist_ids'))
       ->delete();
 
     return response()
       ->json(['data' => true])
       ->setStatusCode(Response::HTTP_OK);
+  }
+
+  private function wishlists()
+  {
+    return auth()->user()->wishlists();
   }
 }
