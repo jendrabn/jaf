@@ -16,7 +16,7 @@ class WishlistGetTest extends TestCase
   use RefreshDatabase;
 
   /** @test */
-  public function unauthenticated_user_cannot_get_all_wish_lists()
+  public function unauthenticated_user_cannot_get_all_wishlists()
   {
     $response = $this->getJson('/api/wishlist', ['Authorization' => 'Bearer Invalid-Token']);
 

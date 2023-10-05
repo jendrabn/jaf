@@ -1,5 +1,5 @@
 <?php
-
+// tests\Feature\Api\OrderGetTest.php
 namespace Tests\Feature\Api;
 
 use App\Models\Invoice;
@@ -27,7 +27,7 @@ class OrderGetTest extends TestCase
   }
 
   /** @test */
-  public function returns_unauthenticated_error_if_user_is_not_authenticated()
+  public function unauthenticated_user_cannot_get_all_orders()
   {
     $response = $this->getJson($this->uri, ['Authorization' => 'Bearer Invalid-Token']);
 
@@ -39,49 +39,49 @@ class OrderGetTest extends TestCase
   public function can_get_all_orders()
   {
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
+
     $order = Order::factory()
       ->has(OrderItem::factory()->for($this->createProduct()), 'items')
       ->has(Invoice::factory())
       ->for($this->user)
       ->create();
 
-    $response = $this->attemptToGetOrderAndExpectOk();
+    $response = $this->attemptToGetOrder();
 
     $response->assertJsonPath('data.0', [
-      'id' => $order['id'],
-      'items' => $order['items']->map(
+      'id' => $order->id,
+      'items' => $order->items->map(
         fn ($item) => [
-          'id' => $item['id'],
-          'product' => $this->formatProductData($item['product']),
-          'name' => $item['name'],
-          'price' => $item['price'],
-          'weight' => $item['weight'],
-          'quantity' => $item['quantity'],
+          'id' => $item->id,
+          'product' => $this->formatProductData($item->product),
+          'name' => $item->name,
+          'price' => $item->price,
+          'weight' => $item->weight,
+          'quantity' => $item->quantity,
         ]
       )->toArray(),
-      'status' => $order['status'],
-      'total_amount' => $order['invoice']['amount'],
-      'payment_due_date' => $order['invoice']['due_date'],
-      'created_at' => $order['created_at']->toISOString()
+      'status' => $order->status,
+      'total_amount' => $order->invoice->amount,
+      'payment_due_date' => $order->invoice->due_date,
+      'created_at' => $order->created_at->toISOString()
     ]);
   }
 
   /** @test */
   public function can_get_all_orders_with_pagination()
   {
-    $this->createOrder(['user_id' => $this->user->id], $total = 13);
+    Order::factory(count: $total = 13)->for($this->user)->create();
 
-    $response = $this->attemptToGetOrderAndExpectOk(['page' => $page = 2]);
+    $response = $this->attemptToGetOrder(['page' => $page = 2]);
 
-    $response
-      ->assertJsonPath('page', [
-        'total' => $total,
-        'per_page' => 10,
-        'current_page' => $page,
-        'last_page' => 2,
-        'from' => 11,
-        'to' => 13
-      ])
+    $response->assertJsonPath('page', [
+      'total' => $total,
+      'per_page' => 10,
+      'current_page' => $page,
+      'last_page' => 2,
+      'from' => 11,
+      'to' => 13
+    ])
       ->assertJsonCount(3, 'data');
   }
 
@@ -96,20 +96,18 @@ class OrderGetTest extends TestCase
       Order::STATUS_COMPLETED,
       Order::STATUS_CANCELLED,
     ];
+
     $orders = [];
 
     foreach ($statuses as $status) {
-      $orders[$status] = $this->createOrder(
-        [
-          'user_id' => $this->user->id,
-          'status' => $status
-        ],
-        3
-      );
+      $orders[$status] = Order::factory()
+        ->count(3)
+        ->for($this->user)
+        ->create(compact('status'));
     }
 
     foreach ($statuses as $status) {
-      $response = $this->attemptToGetOrderAndExpectOk(compact('status'));
+      $response = $this->attemptToGetOrder(compact('status'));
 
       $response->assertJsonCount(3, 'data');
 
@@ -123,9 +121,9 @@ class OrderGetTest extends TestCase
   /** @test */
   public function can_sort_order_by_newest()
   {
-    $orders = $this->createOrder(['user_id' => $this->user->id], 3);
+    $orders = Order::factory(count: 3)->for($this->user)->create();
 
-    $response = $this->attemptToGetOrderAndExpectOk(['sort_by' => 'newest']);
+    $response = $this->attemptToGetOrder(['sort_by' => 'newest']);
 
     $response->assertJsonCount(3, 'data');
     $this->assertEquals(
@@ -137,18 +135,19 @@ class OrderGetTest extends TestCase
   /** @test */
   public function can_sort_order_by_oldest()
   {
-    $orders = $this->createOrder(['user_id' => $this->user->id], 3);
+    $orders = Order::factory(count: 3)->for($this->user)->create();
 
-    $response = $this->attemptToGetOrderAndExpectOk(['sort_by' => 'oldest']);
+    $response = $this->attemptToGetOrder(['sort_by' => 'oldest']);
 
     $response->assertJsonCount(3, 'data');
+
     $this->assertEquals(
       Arr::pluck($orders->sortBy('id'), 'id'),
       Arr::pluck($response['data'], 'id')
     );
   }
 
-  public function attemptToGetOrderAndExpectOk(?array $params = [])
+  public function attemptToGetOrder(?array $params = [])
   {
     $response = $this->getJson(
       $this->uri . '?' . http_build_query($params),
