@@ -1,6 +1,6 @@
 <?php
 // app/Http/Services/ProductService.php
-namespace App\Http\Services;
+namespace App\Services;
 
 use App\Models\Product;
 use Illuminate\Http\Request;

@@ -7,7 +7,7 @@ use App\Http\Resources\ProductBrandResource;
 use App\Http\Resources\ProductCategoryResource;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductDetailResource;
-use App\Http\Services\ProductService;
+use App\Services\ProductService;
 use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;

@@ -2,7 +2,7 @@
 
 // app/Http/Services/RajaOngkirService.php
 
-namespace App\Http\Services;
+namespace App\Services;
 
 use App\Models\Shipping;
 use Illuminate\Support\Facades\Http;
