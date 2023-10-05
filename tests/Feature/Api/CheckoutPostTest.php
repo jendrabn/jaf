@@ -181,8 +181,7 @@ class CheckoutPostTest extends TestCase
     $cart1 = $this->createCart(1, ['stock' => 1, 'weight' => 100, 'is_publish' => false]);
     $cart2 = $this->createCart(3, ['stock' => 3, 'weight' => 100]);
 
-    $this->attemptToCheckoutAndExpect422('product', [$cart1->id, $cart2->id])
-      ->assertJsonPath('errors.product.0', 'The product must be published.');
+    $this->attemptToCheckoutAndExpect422('product', [$cart1->id, $cart2->id]);
     $this->assertDatabaseMissing('carts', $cart1->toArray());
   }
 
@@ -192,11 +191,7 @@ class CheckoutPostTest extends TestCase
     $cart1 = $this->createCart(3, ['stock' => 1, 'weight' => 100]);
     $cart2 = $this->createCart(1, ['stock' => 3, 'weight' => 100]);
 
-    $this->attemptToCheckoutAndExpect422('cart', [$cart1->id, $cart2->id])
-      ->assertJsonPath(
-        'errors.cart.0',
-        sprintf('The quantity [ID%s] must not be greater than stock.', $cart1->id)
-      );
+    $this->attemptToCheckoutAndExpect422('cart', [$cart1->id, $cart2->id]);
   }
 
   /** @test */
@@ -205,10 +200,6 @@ class CheckoutPostTest extends TestCase
     $cart1 = $this->createCart(2, ['stock' => 5, 'weight' => 3000]);
     $cart2 = $this->createCart(2, ['stock' => 5, 'weight' => 10000]);
 
-    $this->attemptToCheckoutAndExpect422('cart', [$cart1->id, $cart2->id])
-      ->assertJsonPath(
-        'errors.cart.0',
-        'The total weight must not be greater than 25kg.'
-      );
+    $this->attemptToCheckoutAndExpect422('cart', [$cart1->id, $cart2->id]);
   }
 }

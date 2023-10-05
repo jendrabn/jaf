@@ -4,45 +4,46 @@ namespace App\Http\Services;
 
 use App\Models\Cart;
 use App\Models\Shipping;
-use Closure;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Validation\ValidationException;
 
 class CartService
 {
-  public function getTotals(Collection|array $carts): array
+  public function getTotalQuantity(Collection $carts): int
   {
-    $totalQuantity = 0;
-    $totalWeight = 0;
-    $totalPrice = 0;
-
-    foreach ($carts as $cart) {
-      $totalQuantity += $cart['quantity'];
-      $totalWeight += $cart['quantity'] * $cart['product']['weight'];
-      $totalPrice += $cart['quantity'] * $cart['product']['price'];
-    }
-
-    return [$totalQuantity, $totalWeight, $totalPrice];
+    return $carts->reduce(
+      fn ($carry, $cart) => $carry + $cart->quantity
+    );
   }
 
-  public function validateProduct(Cart $cart)
+  public function getTotalWeight(Collection $carts): int
   {
-    if (!$cart['product']['is_publish']) {
-
-      $cart->delete();
-
-      throw ValidationException::withMessages([
-        'product' => 'The product must be published.'
-      ]);
-    }
+    return $carts->reduce(
+      fn ($carry, $cart) => $carry + ($cart->quantity * $cart->product->weight)
+    );
+  }
+  public function getTotalPrice(Collection $carts): int
+  {
+    return $carts->reduce(
+      fn ($carry, $cart) => $carry + ($cart->quantity * $cart->product->price)
+    );
   }
 
-  public function validateQuantity(Cart $cart)
+  public function validateProduct(Cart $cart): bool
   {
-    if ($cart['quantity'] > $cart['product']['stock']) {
-      throw ValidationException::withMessages([
-        'cart' => 'The quantity [ID' . $cart['id'] . '] must not be greater than stock.'
-      ]);
-    }
+    if ($cart->product->is_publish) return true;
+
+    $cart->delete();
+
+    return false;
+  }
+
+  public function validateQuantity(Cart $cart): bool
+  {
+    return $cart->quantity < $cart->product->stock;
+  }
+
+  public function validateTotalWeight(int $totalWeight): bool
+  {
+    return $totalWeight < Shipping::MAX_WEIGHT;
   }
 }

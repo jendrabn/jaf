@@ -31,32 +31,47 @@ class OrderController extends Controller
 {
   public function list(Request $request, OrderService $orderService): JsonResponse
   {
-    return (new OrderCollection($orderService->getOrders($request)))
+    $orders = $orderService->getOrders($request);
+
+    return (new OrderCollection($orders))
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }
 
-  public function create(CreateOrderRequest $request, CartService $cartService, RajaOngkirService $rajaOngkirService): JsonResponse
-  {
+  public function create(
+    CreateOrderRequest $request,
+    CartService $cartService,
+    RajaOngkirService $rajaOngkirService
+  ): JsonResponse {
+
     $validatedData = $request->validated();
     $user = auth()->user();
-    $carts = $user->carts()->whereIn('id', $validatedData['cart_ids'])->get();
-    $bank = Bank::where('id', $validatedData['bank_id'])->firstOrFail();
+    $carts = Cart::whereIn('id', $validatedData['cart_ids'])->get();
+    $bank = Bank::findOrFail($validatedData['bank_id']);
     $shippingAddress = $validatedData['shipping_address'];
 
-    $carts->each(
-      function ($cart) use ($cartService) {
-        $cartService->validateProduct($cart);
-        $cartService->validateQuantity($cart);
-      }
-    );
+    foreach ($carts as $cart) {
+      throw_unless(
+        $cartService->validateProduct($cart),
+        ValidationException::withMessages([
+          'product' => 'Produk yang diinginkan sedang tidak tersedia.'
+        ])
+      );
 
-    list($totalQuantity, $totalWeight, $totalPrice) = $cartService->getTotals($carts);
+      throw_unless(
+        $cartService->validateQuantity($cart),
+        ValidationException::withMessages([
+          'cart' => 'Kuantitas melebihi stok yang tersedia.'
+        ])
+      );
+    }
 
-    throw_if(
-      $totalWeight > Shipping::MAX_WEIGHT,
+    $totalWeight = $cartService->getTotalWeight($carts);
+
+    throw_unless(
+      $cartService->validateTotalWeight($totalWeight),
       ValidationException::withMessages([
-        'cart' => 'Berat total pesanan tidak boleh lebih dari 25kg.'
+        'cart' => 'Berat total tidak boleh lebih dari 25kg.'
       ])
     );
 
@@ -71,10 +86,11 @@ class OrderController extends Controller
     throw_if(
       !$shippingService,
       ValidationException::withMessages([
-        'shipping_service' => 'Layanan kurir tidak tersedia.'
+        'shipping_service' => 'Layanan pengiriman yang diinginkan tidak tersedia.'
       ])
     );
 
+    $totalPrice = $cartService->getTotalPrice($carts);
     $totalAmount = $shippingService['cost'] + $totalPrice;
 
     DB::beginTransaction();
@@ -194,7 +210,8 @@ class OrderController extends Controller
           'cancelled_at' => $order->cancelled_at,
           'created_at' => $order->created_at,
         ]
-      ])->setStatusCode(Response::HTTP_OK);
+      ])
+      ->setStatusCode(Response::HTTP_OK);
   }
 
   public function confirmPayment(ConfirmPaymentRequest $request, int $id)

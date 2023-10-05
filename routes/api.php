@@ -36,7 +36,7 @@ Route::get('/categories', [ProductController::class, 'categories']);
 Route::get('/brands', [ProductController::class, 'brands']);
 Route::get('/products', [ProductController::class, 'list']);
 Route::get('/products/{id}', [ProductController::class, 'get']);
-Route::get('/products/{product}/similars', [ProductController::class, 'similars']);
+Route::get('/products/{id}/similars', [ProductController::class, 'similars']);
 
 // Auth
 Route::post('/auth/register', [AuthController::class, 'register']);
