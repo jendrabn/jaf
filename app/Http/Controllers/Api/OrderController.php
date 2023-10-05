@@ -228,4 +228,30 @@ class OrderController extends Controller
 
     return response()->json(['data' => true])->setStatusCode(Response::HTTP_CREATED);
   }
+
+  public function confirmDelivered(int $id): JsonResponse
+  {
+    $order = Order::where('user_id', auth()->id())->findOrFail($id);
+
+    if ($order->status !== Order::STATUS_ON_DELIVERY) {
+      throw ValidationException::withMessages(['order' => 'Invalid order.']);
+    }
+
+    try {
+      DB::beginTransaction();
+
+      $order->status = Order::STATUS_COMPLETED;
+      $order->save();
+      $order->shipping->status = Shipping::STATUS_SHIPPED;
+      $order->shipping->save();
+
+      DB::commit();
+    } catch (QueryException $e) {
+      DB::rollBack();
+
+      throw $e;
+    }
+
+    return response()->json(['data' => true])->setStatusCode(Response::HTTP_OK);
+  }
 }
