@@ -39,7 +39,6 @@ class CheckoutPostTest extends TestCase
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class, BankSeeder::class]);
     $this->user = $this->createUser();
     $this->banks = Bank::all();
-    $this->fakeHttpRajaOngkir();
   }
 
   public function createCart(int $quantity = 1, ?array $productData = []): Cart

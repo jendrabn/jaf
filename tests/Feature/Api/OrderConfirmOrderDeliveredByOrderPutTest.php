@@ -9,9 +9,10 @@ use Database\Seeders\CitySeeder;
 use Database\Seeders\ProvinceSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
-class OrderConfirmPaymentByOrderPutTest extends TestCase
+class OrderConfirmOrderDeliveredByOrderPutTest extends TestCase
 {
   use RefreshDatabase;
 

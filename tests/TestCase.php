@@ -26,12 +26,17 @@ abstract class TestCase extends BaseTestCase
 {
   use CreatesApplication, AdditionalAssertions;
 
+  protected function setUp(): void
+  {
+    parent::setUp();
+    $this->fakeHttpRajaOngkir();
+  }
+
   protected function tearDown(): void
   {
     Banner::all()->each(
       fn ($banner) => $banner->clearMediaCollection(Banner::MEDIA_COLLECTION_NAME)
     );
-
     Product::all()->each(
       fn ($product) => $product->clearMediaCollection(Product::MEDIA_COLLECTION_NAME)
     );

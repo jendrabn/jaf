@@ -21,7 +21,6 @@ class ShippingCostPostTest extends TestCase
   public function can_get_shipping_cost()
   {
     $this->seed([ProvinceSeeder::class, CitySeeder::class]);
-    $this->fakeHttpRajaOngkir();
     $data = [
       'destination' => 154, // Kota Jakarta Timur
       'weight' => 1500

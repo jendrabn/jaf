@@ -60,8 +60,6 @@ class OrderPostTest extends TestCase
       'bank_id' => $this->bank->id,
       'notes' => fake()->sentence()
     ];
-
-    $this->fakeHttpRajaOngkir();
   }
 
   /** @test */
