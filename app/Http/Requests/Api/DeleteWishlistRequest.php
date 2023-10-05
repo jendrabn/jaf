@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class DeleteWishlistRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class DeleteWishlistRequest extends FormRequest
    */
   public function authorize(): bool
   {
-    return false;
+    return true;
   }
 
   /**
@@ -22,7 +23,15 @@ class DeleteWishlistRequest extends FormRequest
   public function rules(): array
   {
     return [
-      //
+      'wishlist_ids' => [
+        'required',
+        'array'
+      ],
+      'wishlist_ids.*' => [
+        'required',
+        'integer',
+        Rule::exists('wishlists', 'id')->where('user_id', $this->user()->id)
+      ]
     ];
   }
 }

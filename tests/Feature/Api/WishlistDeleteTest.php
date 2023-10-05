@@ -42,7 +42,7 @@ class WishlistDeleteTest extends TestCase
       'wishlist_ids.*' => [
         'required',
         'integer',
-        Rule::exists('wishlists', 'id')->where('user_id', $this->user()->id)
+        Rule::exists('wishlists', 'id')->where('user_id', $user->id)
       ]
     ], $rules);
   }
