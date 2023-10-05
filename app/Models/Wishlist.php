@@ -20,4 +20,11 @@ class Wishlist extends Model
   {
     return $this->belongsTo(Product::class);
   }
+
+  protected static function booted(): void
+  {
+    static::addGlobalScope(
+      fn ($q) => $q->whereHas('product', fn ($q) => $q->where('is_publish', true))
+    );
+  }
 }

@@ -15,7 +15,7 @@ class WishlistGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  // /** @test */
+  /** @test */
   public function unauthenticated_user_cannot_get_all_wish_lists()
   {
     $response = $this->getJson('/api/wishlist', ['Authorization' => 'Bearer Invalid-Token']);
@@ -39,10 +39,11 @@ class WishlistGetTest extends TestCase
       )
       ->for($user)
       ->create()
-      ->sortByDesc('id');
+      ->sortByDesc('id')
+      ->values();
 
     Wishlist::factory()
-      ->has(Product::factory()->state(['is_publish' => false]))
+      ->for(Product::factory()->create(['is_publish' => false]))
       ->for($user)
       ->create();
 
@@ -50,12 +51,10 @@ class WishlistGetTest extends TestCase
 
     $response->assertOk()
       ->assertExactJson([
-        'data' => $wishlists->map(
-          fn ($item) => [
-            'id' => $item->id,
-            'product' => $this->formatProductData($item),
-          ]
-        )
+        'data' => $wishlists->map(fn ($item) => [
+          'id' => $item->id,
+          'product' => $this->formatProductData($item->product),
+        ])->toArray()
       ])
       ->assertJsonCount(3, 'data');
   }

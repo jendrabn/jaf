@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RegionController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\WishlistController;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -59,4 +60,7 @@ Route::get('/orders/{order}', [OrderController::class, 'get'])->middleware(['aut
 Route::post('/orders/{id}/confirm_payment', [OrderController::class, 'confirmPayment'])->middleware(['auth:sanctum']);
 Route::put('/orders/{id}/confirm_order_delivered', [OrderController::class, 'confirmDelivered'])->middleware(['auth:sanctum']);
 
-Route::fallback(fn () => abort(400));
+// Wishlist
+Route::get('/wishlist', [WishlistController::class, 'list'])->middleware(['auth:sanctum']);
+
+Route::fallback(fn () => abort(404));
