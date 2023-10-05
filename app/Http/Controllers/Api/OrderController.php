@@ -199,13 +199,13 @@ class OrderController extends Controller
 
   public function confirmPayment(ConfirmPaymentRequest $request, int $id)
   {
-    $order = Order::where('user_id', auth()->id())->where('id', $id)->firstOrFail();
+    $order = Order::where('user_id', auth()->id())->findOrFail($id);
 
     if ($order->status !== Order::STATUS_PENDING_PAYMENT) {
       throw ValidationException::withMessages(['order' => 'Invalid order.']);
     }
 
-    if (now() > $order->invoice->due_date) {
+    if (now()->isAfter($order->invoice->due_date)) {
       $order->status = Order::STATUS_CANCELLED;
       $order->save();
 
