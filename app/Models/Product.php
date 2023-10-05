@@ -27,6 +27,7 @@ class Product extends Model implements HasMedia
 
   protected $casts = [
     'sex' => 'integer',
+    'is_publish' => 'boolean'
   ];
 
   public function wishlists()
