@@ -1,7 +1,5 @@
 <?php
-
 // tests/Feature/Api/ProductGetTest.php
-
 namespace Tests\Feature\Api;
 
 use App\Models\Order;
@@ -15,15 +13,14 @@ use Tests\TestCase;
 
 class ProductGetTest extends TestCase
 {
-  /**
-   * - Search by product name, category & brand (bukan full-text search)
-   * - Sorting by newest, oldest, sales, expensive, cheapest
-   * - Filter by category id, brand id, sex, min price & max price
-   * - Default orderBy jika tidak ada param sort_by atau value sort_by tidak valid
-   *   adalah sort by ID desc (newest)
-   */
-
   use RefreshDatabase;
+
+  /**
+   *  Search by product name, category & brand (belum full-text search)
+   *  Sorting by newest, oldest, sales, expensive, cheapest
+   *  Filter by category_id, brand_id, sex, min_price & max_price
+   *  Default orderBy adalah order by ID desc (newest)
+   */
 
   private string $uri = '/api/products';
 
@@ -36,22 +33,34 @@ class ProductGetTest extends TestCase
   /** @test */
   public function can_get_all_products()
   {
-    $products = $this->createProduct(count: 21);
-    $firstProduct = $this->addImageToProduct($products->first());
+    $products = Product::factory()->count(3)->hasImages()->create()->sortByDesc('id');
+    $this->createProduct(['is_publish' => false]);
+
+    $response = $this->attemptToGetProduct();
+
+    $response->assertJsonPath('data', $this->formatProductData($products))
+      ->assertJsonCount(3, 'data');
+
+    $this->assertNotTrue($response['data'][0]['image'] == '');
+  }
+
+  /** @test */
+  public function can_get_products_by_page()
+  {
+    $this->createProduct(count: 23);
 
     $response = $this->attemptToGetProduct(['page' => 2]);
 
     $response
-      ->assertJsonPath('data.0', $this->formatProductData($firstProduct))
-      ->assertJsonCount(1, 'data')
       ->assertJsonPath('page', [
-        'total' => 21,
+        'total' => 23,
         'per_page' => 20,
         'current_page' => 2,
         'last_page' => 2,
         'from' => 21,
-        'to' => 21,
-      ]);
+        'to' => 23,
+      ])
+      ->assertJsonCount(3, 'data');
   }
 
   /** @test */
@@ -78,19 +87,19 @@ class ProductGetTest extends TestCase
       )
       ->create();
 
-    // By name
+    // Search by product name
     $response = $this->attemptToGetProduct(['search' => 'Bunga Mawar']);
 
     $response->assertJsonPath('data.0', $this->formatProductData($products[0]))
       ->assertJsonCount(1, 'data');
 
-    // By category
+    // Search by category
     $response = $this->attemptToGetProduct(['search' => '100ml']);
 
     $response->assertJsonPath('data.0', $this->formatProductData($products[1]))
       ->assertJsonCount(1, 'data');
 
-    // By brand
+    // Search by brand
     $response = $this->attemptToGetProduct(['search' => 'Musk']);
 
     $response->assertJsonPath('data.0', $this->formatProductData($products[2]))
@@ -122,33 +131,26 @@ class ProductGetTest extends TestCase
   /** @test */
   public function can_sort_products_by_sales()
   {
-    $product1 = $this->createProductWithSales(status: Order::STATUS_PENDING_PAYMENT);
-    $product2 = $this->createProductWithSales(status: Order::STATUS_PENDING);
-    $product3 = $this->createProductWithSales(status: Order::STATUS_PROCESSING);
-    $product4 = $this->createProductWithSales(status: Order::STATUS_ON_DELIVERY);
-    $product5 = $this->createProductWithSales(status: Order::STATUS_CANCELLED);
-    $product6 = $this->createProductWithSales(quantities: [3, 2], status: Order::STATUS_COMPLETED);
-    $product7 = $this->createProductWithSales(quantities: [2, 1], status: Order::STATUS_COMPLETED);
+    $product1 = $this->createProductWithSales(quantities: [3, 2]);
+    $product2 = $this->createProductWithSales(quantities: [2, 1]);
+    $this->createProductWithSales(status: Order::STATUS_PENDING);
+    $this->createProductWithSales(status: Order::STATUS_PROCESSING);
+    $this->createProductWithSales(status: Order::STATUS_ON_DELIVERY);
 
     $response = $this->attemptToGetProduct(['sort_by' => 'sales']);
 
     $response
-      ->assertJsonPath('data.0.id', $product6->id)
+      ->assertJsonPath('data.0.id', $product1->id)
       ->assertJsonPath('data.0.sold_count', 5)
-      ->assertJsonPath('data.1.id', $product7->id)
+      ->assertJsonPath('data.1.id', $product2->id)
       ->assertJsonPath('data.1.sold_count', 3)
-      ->assertJsonCount(7, 'data')
+      ->assertJsonCount(5, 'data')
       ->json();
 
-    $this->assertTrue(
-      count(Arr::where($response['data'], fn ($product) => $product['sold_count'] > 0))
-        === 2
-    );
-
-    $this->assertTrue(
-      count(Arr::where($response['data'], fn ($product) => $product['sold_count'] === 0))
-        === 5
-    );
+    $this->assertCount(3, Arr::where(
+      $response['data'],
+      fn ($product) => $product['sold_count'] === 0
+    ));
   }
 
   /** @test */
@@ -199,8 +201,8 @@ class ProductGetTest extends TestCase
         ['product_category_id' => 1],
         ['product_category_id' => 2],
       )
-      ->create();
-    $products = $products->where('product_category_id', 1)
+      ->create()
+      ->where('product_category_id', 1)
       ->sortByDesc('id');
 
     $response = $this->attemptToGetProduct(['category_id' => 1]);
@@ -219,8 +221,8 @@ class ProductGetTest extends TestCase
         ['product_brand_id' => 1],
         ['product_brand_id' => 2],
       )
-      ->create();
-    $products = $products->where('product_brand_id', 1)
+      ->create()
+      ->where('product_brand_id', 1)
       ->sortByDesc('id');
 
     $response = $this->attemptToGetProduct(['brand_id' => 1]);
@@ -239,8 +241,8 @@ class ProductGetTest extends TestCase
         ['sex' => 1],
         ['sex' => 2],
       )
-      ->create();
-    $products = $products->where('sex', 1)
+      ->create()
+      ->where('sex', 1)
       ->sortByDesc('id');
 
     $response = $this->attemptToGetProduct(['sex' => 1]);
@@ -261,8 +263,8 @@ class ProductGetTest extends TestCase
         ['price' => 5000],
         ['price' => 7000],
       )
-      ->create();
-    $products = $products->whereBetween('price', [$min = 1000, $max = 5000])
+      ->create()
+      ->whereBetween('price', [$min = 1000, $max = 5000])
       ->sortByDesc('id');
 
     $response = $this->attemptToGetProduct(['price_min' => $min, 'price_max' => $max]);
