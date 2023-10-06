@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\CreateCartRequest;
+use App\Http\Requests\Api\DeleteCartRequest;
 use App\Http\Resources\CartResource;
 use App\Services\CartService;
 use Illuminate\Http\JsonResponse;
@@ -32,5 +33,13 @@ class CartController extends Controller
     );
 
     return response()->json(['data' => true], Response::HTTP_CREATED);
+  }
+
+  public function delete(DeleteCartRequest $request): JsonResponse
+  {
+    $user = auth()->user();
+    $user->carts()->whereIn('id', $request->validated('cart_ids'))->delete();
+
+    return response()->json(['data' => true], Response::HTTP_OK);
   }
 }

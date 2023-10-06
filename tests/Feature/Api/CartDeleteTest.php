@@ -45,7 +45,7 @@ class CartDeleteTest extends TestCase
     Cart::factory()->for($this->createUser())->create();
     $cartIds = $carts->pluck('id')->toArray();
 
-    $response = $this->deleteJson($this->uri, $cartIds, $this->authBearerToken($user));
+    $response = $this->deleteJson($this->uri, ['cart_ids' => $cartIds], $this->authBearerToken($user));
 
     $response->assertOk()
       ->assertExactJson(['data' => true]);
