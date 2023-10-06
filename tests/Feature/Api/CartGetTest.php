@@ -15,7 +15,7 @@ class CartGetTest extends TestCase
 
   private string $uri = '/api/carts';
 
-  // /** @test */
+  /** @test */
   public function unauthenticated_user_cannot_add_product_to_cart()
   {
     $response = $this->getJson($this->uri,  ['Authorization' => 'Bearer Invalid-Token']);
@@ -39,7 +39,8 @@ class CartGetTest extends TestCase
       )
       ->for($user)
       ->create()
-      ->sortByDesc('id');
+      ->sortByDesc('id')
+      ->values();
 
     $response = $this->getJson($this->uri, $this->authBearerToken($user));
 
@@ -51,7 +52,7 @@ class CartGetTest extends TestCase
             'product' => $this->formatProductData($cart->product),
             'quantity' => $cart->quantity,
           ]
-        )
+        )->toArray()
       ]);
   }
 }

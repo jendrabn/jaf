@@ -4,12 +4,22 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\CreateCartRequest;
+use App\Http\Resources\CartResource;
 use App\Services\CartService;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class CartController extends Controller
 {
+  public function list(): JsonResponse
+  {
+    $carts = auth()->user()->carts->sortByDesc('id');
+
+    return CartResource::collection($carts)
+      ->response()
+      ->setStatusCode(Response::HTTP_OK);
+  }
+
   public function create(CreateCartRequest $request, CartService $cartService): JsonResponse
   {
     $validatedData = $request->validated();

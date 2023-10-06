@@ -67,6 +67,7 @@ Route::post('/wishlist', [WishlistController::class, 'create'])->middleware(['au
 Route::delete('/wishlist', [WishlistController::class, 'delete'])->middleware(['auth:sanctum']);
 
 // Cart
+Route::get('/carts', [CartController::class, 'list'])->middleware(['auth:sanctum']);
 Route::post('/carts', [CartController::class, 'create'])->middleware(['auth:sanctum']);
 
 // Route::fallback(fn () => abort(404));
