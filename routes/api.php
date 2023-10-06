@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\HomePageController;
 use App\Http\Controllers\Api\LocationController;
@@ -65,4 +66,7 @@ Route::get('/wishlist', [WishlistController::class, 'list'])->middleware(['auth:
 Route::post('/wishlist', [WishlistController::class, 'create'])->middleware(['auth:sanctum']);
 Route::delete('/wishlist', [WishlistController::class, 'delete'])->middleware(['auth:sanctum']);
 
-Route::fallback(fn () => abort(404));
+// Cart
+Route::post('/carts', [CartController::class, 'create'])->middleware(['auth:sanctum']);
+
+// Route::fallback(fn () => abort(404));

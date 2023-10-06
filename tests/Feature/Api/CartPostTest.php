@@ -4,6 +4,7 @@ namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\CartController;
 use App\Http\Requests\Api\CreateCartRequest;
+use App\Models\Cart;
 use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\ProductBrandSeeder;
@@ -89,15 +90,16 @@ class CartPostTest extends TestCase
   /** @test */
   public function cannot_add_product_to_cart_if_quantity_exceeds_stock()
   {
-    $product = Product::factory()->create(['stock' => $stock = 1]);
+    $product = Product::factory()->create(['stock' => 5]);
+    $cart = Cart::factory()->for($product)->for($this->user)->create(['quantity' => 3]);
 
     $response = $this->attemptAddToCart(
-      ['product_id' => $product->id, 'quantity' => $stock + 1]
+      ['product_id' => $product->id, 'quantity' => 3]
     );
 
     $response->assertUnprocessable()
       ->assertJsonValidationErrorFor('cart');
-    $this->assertDatabaseEmpty('carts');
+    $this->assertDatabaseHas('carts',  ['product_id' => $product->id, 'quantity' => 3]);
   }
 
   /** @test */
