@@ -1,5 +1,5 @@
 <?php
-
+// database\seeders\ProductCategorySeeder.php
 namespace Database\Seeders;
 
 use App\Models\ProductCategory;
