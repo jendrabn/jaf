@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api;
 
+use App\Http\Controllers\Api\CartController;
 use App\Http\Requests\Api\CreateCartRequest;
 use App\Http\Requests\Api\UpdateCartRequest;
 use App\Models\Cart;
@@ -79,7 +80,7 @@ class CartPutTest extends TestCase
   }
 
   /** @test */
-  public function create_cart_uses_the_correct_form_request()
+  public function update_cart_uses_the_correct_form_request()
   {
     $this->assertActionUsesFormRequest(
       CartController::class,
@@ -89,7 +90,7 @@ class CartPutTest extends TestCase
   }
 
   /** @test */
-  public function create_cart_request_has_the_correct_validation_rules()
+  public function update_cart_request_has_the_correct_validation_rules()
   {
     $this->assertValidationRules([
       'quantity' => [

@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\CreateCartRequest;
 use App\Http\Requests\Api\DeleteCartRequest;
+use App\Http\Requests\Api\UpdateCartRequest;
 use App\Http\Resources\CartResource;
 use App\Services\CartService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 class CartController extends Controller
@@ -33,6 +35,22 @@ class CartController extends Controller
     );
 
     return response()->json(['data' => true], Response::HTTP_CREATED);
+  }
+
+  public function update(UpdateCartRequest $request, int $id)
+  {
+    $user = auth()->user();
+    $cart = $user->carts()->findOrFail($id);
+    $newQuantity = $cart->quantity + $request->validated('quantity');
+
+    if ($newQuantity > $cart->product->stock) {
+      throw ValidationException::withMessages(['cart' => 'Kuantitas melebihi stok yang tersedia']);
+    }
+
+    $cart->quantity = $newQuantity;
+    $cart->save();
+
+    return response()->json(['data' => true], Response::HTTP_OK);
   }
 
   public function delete(DeleteCartRequest $request): JsonResponse
