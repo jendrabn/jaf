@@ -7,7 +7,6 @@ use App\Http\Requests\Api\CreateCartRequest;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\User;
-use Database\Seeders\ProductBrandSeeder;
 use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -43,6 +42,16 @@ class CartPostTest extends TestCase
 
     $response = $this->attemptAddProductToCart([
       'product_id' => $product->id, 'quantity' => 2
+    ]);
+
+    $response->assertCreated()
+      ->assertExactJson(['data' => true]);
+
+    $this->assertDatabaseCount('carts', 1);
+    $this->assertDatabaseHas('carts', [
+      'user_id' => $this->user->id,
+      'product_id' => $product->id,
+      'quantity' => 2,
     ]);
 
     $response = $this->attemptAddProductToCart([

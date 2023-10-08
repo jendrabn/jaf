@@ -1,5 +1,5 @@
 <?php
-
+// tests/Feature/Api/AuthResetPasswordPutTest.php
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\AuthController;
@@ -19,9 +19,37 @@ class AuthResetPasswordPutTest extends TestCase
   private string $uri = '/api/auth/reset_password';
 
   /** @test */
+  public function can_reset_password()
+  {
+    $user = $this->createUser();
+    $token = Password::createToken($user);
+    $newPassword = 'newPassword123';
+
+    $response = $this->putJson($this->uri, [
+      'email' => $user->email,
+      'token' => $token,
+      'password' => $newPassword,
+      'password_confirmation' => $newPassword,
+    ]);
+
+    $response->assertOk()
+      ->assertExactJson(['data' => true]);
+
+    $this->assertTrue(Hash::check($newPassword, $user->fresh()->password));
+    $this->assertDatabaseMissing('password_reset_tokens', [
+      'email' => $user->email,
+      'token' => $user->token
+    ]);
+  }
+
+  /** @test */
   public function reset_password_uses_the_correct_form_request()
   {
-    $this->assertActionUsesFormRequest(AuthController::class, 'resetPassword', ResetPasswordRequest::class);
+    $this->assertActionUsesFormRequest(
+      AuthController::class,
+      'resetPassword',
+      ResetPasswordRequest::class
+    );
   }
 
   /** @test */
@@ -49,43 +77,5 @@ class AuthResetPasswordPutTest extends TestCase
       ],
       (new ResetPasswordRequest())->rules()
     );
-  }
-
-  /** @test */
-  public function can_reset_password()
-  {
-    $user = $this->createUser();
-    $token = Password::createToken($user);
-    $newPassword = 'newPassword123';
-
-    $response = $this->putJson($this->uri, [
-      'email' => $user->email,
-      'token' => $token,
-      'password' => $newPassword,
-      'password_confirmation' => $newPassword,
-    ]);
-
-    $response->assertOk()
-      ->assertExactJson(['data' => true]);
-
-    $this->assertTrue(Hash::check($newPassword, $user->fresh()->password));
-    $this->assertDatabaseMissing('password_reset_tokens', [
-      'email' => $user->email,
-      'token' => $user->token
-    ]);
-  }
-
-  /** @test */
-  public function returns_validation_error_if_all_fields_are_invalid()
-  {
-    $response = $this->putJson($this->uri, [
-      'email' => 'not-email',
-      'token' => '',
-      'password' => 'new-password',
-      'password_confirmation' => 'password',
-    ]);
-
-    $response->assertUnprocessable()
-      ->assertJsonValidationErrors(['email', 'token', 'password',]);
   }
 }

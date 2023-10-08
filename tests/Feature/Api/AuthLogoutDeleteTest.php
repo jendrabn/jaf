@@ -1,7 +1,5 @@
 <?php
-
 // tests/Feature/Api/AuthLogoutDeleteTest.php
-
 namespace Tests\Feature\Api;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -24,7 +22,7 @@ class AuthLogoutDeleteTest extends TestCase
     $response->assertOk()
       ->assertExactJson(['data' => true]);
 
-    $this->assertEquals(0, $user->tokens->count());
+    $this->assertEquals(0, $user->fresh()->tokens->count());
   }
 
   /** @test */

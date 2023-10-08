@@ -1,5 +1,5 @@
 <?php
-
+// tests/Feature/Api/ProductDetailGetTest.php
 namespace Tests\Feature\Api;
 
 use App\Models\Order;
@@ -10,7 +10,7 @@ use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class ProductByIdGetTest extends TestCase
+class ProductDetailGetTest extends TestCase
 {
   use RefreshDatabase;
 

@@ -17,7 +17,41 @@ class WishlistDeleteTest extends TestCase
   use RefreshDatabase;
 
   /** @test */
-  public function delete_wishlists_uses_the_correct_form_request()
+  public function can_delete_wishlist()
+  {
+    $this->seed(ProductCategorySeeder::class);
+
+    $user = $this->createUser();
+    $wishlist = Wishlist::factory()->count(2)->sequence(
+      ['product_id' => $this->createProduct()->id],
+      ['product_id' => $this->createProduct()->id],
+    )
+      ->for($user)
+      ->create();
+    $data =  ['wishlist_ids' => $wishlist->pluck('id')];
+
+    $response = $this->deleteJson('/api/wishlist', $data, $this->authBearerToken($user));
+
+    $response->assertOk()
+      ->assertExactJson(['data' => true]);
+
+    $this->assertDatabaseEmpty('wishlists');
+  }
+
+  /** @test */
+  public function unauthenticated_user_cannot_delete_wishlist()
+  {
+    $response = $this->deleteJson(
+      '/api/wishlist',
+      ['Authorization' => 'Bearer Invalid-Token']
+    );
+
+    $response->assertUnauthorized()
+      ->assertJsonStructure(['message']);
+  }
+
+  /** @test */
+  public function delete_wishlist_uses_the_correct_form_request()
   {
     $this->assertActionUsesFormRequest(
       WishlistController::class,
@@ -27,9 +61,9 @@ class WishlistDeleteTest extends TestCase
   }
 
   /** @test */
-  public function delete_wishlists_request_has_the_correct_validation_rules()
+  public function delete_wishlist_request_has_the_correct_validation_rules()
   {
-    $user =  $this->createUser();
+    $user = $this->createUser();
     $rules = (new DeleteWishlistRequest())
       ->setUserResolver(fn () => $user)
       ->rules();
@@ -42,44 +76,9 @@ class WishlistDeleteTest extends TestCase
       'wishlist_ids.*' => [
         'required',
         'integer',
-        Rule::exists('wishlists', 'id')->where('user_id', $user->id)
+        Rule::exists('wishlists', 'id')
+          ->where('user_id', $user->id)
       ]
     ], $rules);
-  }
-
-  /** @test */
-  public function unauthenticated_user_cannot_delete_wishlists()
-  {
-    $response = $this->deleteJson('/api/wishlist', ['Authorization' => 'Bearer Invalid-Token']);
-
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
-
-  /** @test */
-  public function can_delete_wishlists()
-  {
-    $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
-
-    $user = $this->createUser();
-    $wishlists = Wishlist::factory()
-      ->count(2)
-      ->sequence(
-        ['product_id' => $this->createProduct()->id],
-        ['product_id' => $this->createProduct()->id],
-      )
-      ->for($user)
-      ->create();
-
-    $response = $this->deleteJson(
-      '/api/wishlist',
-      ['wishlist_ids' => $wishlists->pluck('id')],
-      $this->authBearerToken($user)
-    );
-
-    $response->assertOk()
-      ->assertExactJson(['data' => true]);
-
-    $this->assertDatabaseEmpty('wishlists');
   }
 }

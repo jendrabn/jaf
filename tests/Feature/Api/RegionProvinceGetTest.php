@@ -1,7 +1,5 @@
 <?php
-
 // tests/Feature/Api/RegionProvinceGetTest.php
-
 namespace Tests\Feature\Api;
 
 use App\Models\Province;
@@ -20,12 +18,15 @@ class RegionProvinceGetTest extends TestCase
   public function can_get_all_provinces()
   {
     $this->seed(ProvinceSeeder::class);
+
     $provinces = Province::all();
 
     $response = $this->getJson($this->uri);
 
     $response->assertOk()
-      ->assertExactJson(['data' => $this->formatProvinceData($provinces)])
+      ->assertExactJson([
+        'data' => $this->formatProvinceData($provinces)
+      ])
       ->assertJsonCount(34, 'data');
   }
 }

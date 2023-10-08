@@ -19,6 +19,7 @@ class HomePageGetTest extends TestCase
   public function can_get_banners_and_latest_products_for_home_page()
   {
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
+
     $products = $this->createProduct(count: 12);
     $this->createProduct(['is_publish' => false]);
     $banners = Banner::factory()

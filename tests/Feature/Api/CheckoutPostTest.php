@@ -1,7 +1,5 @@
 <?php
-
 // tests/Feature/Api/CheckoutPostTest.php
-
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\CheckoutController;

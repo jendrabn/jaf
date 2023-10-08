@@ -1,5 +1,5 @@
 <?php
-// tests/Feature/Api/OrderByIdGetTest.php
+// tests/Feature/Api/OrderDetailGetTest.php
 namespace Tests\Feature\Api;
 
 use App\Models\Invoice;
@@ -18,7 +18,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
-class OrderByIdGetTest extends TestCase
+class OrderDetailGetTest extends TestCase
 {
   use RefreshDatabase;
 

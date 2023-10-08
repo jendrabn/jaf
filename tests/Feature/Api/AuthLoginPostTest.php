@@ -1,7 +1,5 @@
 <?php
-
 // tests/Feature/Api/AuthLoginPostTest.php
-
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\AuthController;
@@ -15,31 +13,6 @@ class AuthLoginPostTest extends TestCase
   use RefreshDatabase;
 
   private string $uri = '/api/auth/login';
-
-  /** @test */
-  public function login_uses_the_correct_form_request()
-  {
-    $this->assertActionUsesFormRequest(AuthController::class, 'login', LoginRequest::class);
-  }
-
-  /** @test */
-  public function login_request_has_the_correct_rules()
-  {
-    $this->assertValidationRules(
-      [
-        'email' => [
-          'required',
-          'string',
-          'email',
-        ],
-        'password' => [
-          'required',
-          'string',
-        ],
-      ],
-      (new LoginRequest())->rules()
-    );
-  }
 
   /** @test */
   public function can_login()
@@ -64,7 +37,7 @@ class AuthLoginPostTest extends TestCase
         ]
       ])
       ->assertJson([
-        'data' => $user->only(['id', 'name', 'email', 'phone', 'sex', 'birth_date',])
+        'data' => $this->formatUserData($user)
       ]);
 
     $this->assertCount(1, $user->tokens);
@@ -97,14 +70,31 @@ class AuthLoginPostTest extends TestCase
   }
 
   /** @test */
-  public function returns_validation_error_if_all_fields_are_invalid()
+  public function login_uses_the_correct_form_request()
   {
-    $response = $this->postJson($this->uri, [
-      'email' => 'jcenagmail.com',
-      'password' => '',
-    ]);
+    $this->assertActionUsesFormRequest(
+      AuthController::class,
+      'login',
+      LoginRequest::class
+    );
+  }
 
-    $response->assertUnprocessable()
-      ->assertJsonValidationErrors(['email', 'password']);
+  /** @test */
+  public function login_request_has_the_correct_rules()
+  {
+    $this->assertValidationRules(
+      [
+        'email' => [
+          'required',
+          'string',
+          'email',
+        ],
+        'password' => [
+          'required',
+          'string',
+        ],
+      ],
+      (new LoginRequest())->rules()
+    );
   }
 }

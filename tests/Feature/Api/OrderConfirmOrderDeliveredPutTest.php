@@ -1,5 +1,5 @@
 <?php
-
+// tests/Feature/Api/OrderConfirmOrderDeliveredPutTest.php
 namespace Tests\Feature\Api;
 
 use App\Models\Order;
@@ -12,7 +12,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Mockery\MockInterface;
 use Tests\TestCase;
 
-class OrderConfirmOrderDeliveredByOrderPutTest extends TestCase
+class OrderConfirmOrderDeliveredPutTest extends TestCase
 {
   use RefreshDatabase;
 

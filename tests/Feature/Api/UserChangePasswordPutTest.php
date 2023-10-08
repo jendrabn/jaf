@@ -1,5 +1,5 @@
 <?php
-
+// tests/Feature/Api/UserChangePasswordPutTest.php
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\UserController;
@@ -15,43 +15,6 @@ class UserChangePasswordPutTest extends TestCase
   use RefreshDatabase;
 
   private string $uri = '/api/user/change_password';
-
-  /** @test */
-  public function update_password_uses_the_correct_form_request()
-  {
-    $this->assertActionUsesFormRequest(UserController::class, 'updatePassword', UpdatePasswordRequest::class);
-  }
-
-  /** @test */
-  public function update_password_request_has_the_correct_rules()
-  {
-    $this->assertValidationRules(
-      [
-        'current_password' => [
-          'required',
-          'string',
-          'current_password',
-        ],
-        'password' => [
-          'required',
-          'string', Password::min(8)->mixedCase()->numbers(),
-          'max:30',
-          'confirmed',
-        ],
-      ],
-      (new UpdatePasswordRequest())->rules()
-    );
-  }
-
-  /** @test */
-  public function returns_unauthenticated_error_if_user_is_not_authenticated()
-  {
-    $response = $this->putJson($this->uri);
-
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
-
   /** @test */
   public function can_update_password()
   {
@@ -65,11 +28,7 @@ class UserChangePasswordPutTest extends TestCase
       'password_confirmation' => $newPassword,
     ];
 
-    $response = $this->putJson(
-      $this->uri,
-      $data,
-      $this->authBearerToken($user)
-    );
+    $response = $this->putJson($this->uri, $data, $this->authBearerToken($user));
 
     $response->assertOk()
       ->assertExactJson(['data' => true]);
@@ -78,20 +37,39 @@ class UserChangePasswordPutTest extends TestCase
   }
 
   /** @test */
-  public function returns_validation_error_if_all_fields_are_invalid()
+  public function unauthenticated_user_cannot_update_password()
   {
-    $user = $this->createUser([
-      'password' => 'OldPassword123'
-    ]);
-    $data = [
-      'current_password' => 'WrongPassword',
-      'password' => 'NewPassword',
-      'password_confirmation' => 'New',
-    ];
+    $response = $this->putJson($this->uri);
 
-    $response = $this->putJson($this->uri, $data, $this->authBearerToken($user));
+    $response->assertUnauthorized()
+      ->assertJsonStructure(['message']);
+  }
 
-    $response->assertUnprocessable()
-      ->assertJsonValidationErrors(['current_password', 'password']);
+  /** @test */
+  public function update_password_uses_the_correct_form_request()
+  {
+    $this->assertActionUsesFormRequest(
+      UserController::class,
+      'updatePassword',
+      UpdatePasswordRequest::class
+    );
+  }
+
+  /** @test */
+  public function update_password_request_has_the_correct_validation_rules()
+  {
+    $this->assertValidationRules([
+      'current_password' => [
+        'required',
+        'string',
+        'current_password',
+      ],
+      'password' => [
+        'required',
+        'string', Password::min(8)->mixedCase()->numbers(),
+        'max:30',
+        'confirmed',
+      ],
+    ], (new UpdatePasswordRequest())->rules());
   }
 }

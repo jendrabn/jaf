@@ -1,9 +1,8 @@
 <?php
-
+// tests/Feature/Api/WishlistGetTest.php
 namespace Tests\Feature\Api;
 
 use App\Models\Product;
-use App\Models\User;
 use App\Models\Wishlist;
 use Database\Seeders\ProductBrandSeeder;
 use Database\Seeders\ProductCategorySeeder;
@@ -15,17 +14,10 @@ class WishlistGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  /** @test */
-  public function unauthenticated_user_cannot_get_all_wishlists()
-  {
-    $response = $this->getJson('/api/wishlist', ['Authorization' => 'Bearer Invalid-Token']);
-
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
+  private string $uri = '/api/wishlist';
 
   /** @test */
-  public function can_get_all_wishlists()
+  public function can_get_all_wishlist()
   {
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
 
@@ -47,15 +39,26 @@ class WishlistGetTest extends TestCase
       ->for($user)
       ->create();
 
-    $response = $this->getJson('/api/wishlist', $this->authBearerToken($user));
+    $response = $this->getJson($this->uri, $this->authBearerToken($user));
 
     $response->assertOk()
       ->assertExactJson([
-        'data' => $wishlists->map(fn ($item) => [
-          'id' => $item->id,
-          'product' => $this->formatProductData($item->product),
-        ])->toArray()
+        'data' => $wishlists->map(
+          fn ($item) => [
+            'id' => $item->id,
+            'product' => $this->formatProductData($item->product),
+          ]
+        )->toArray()
       ])
       ->assertJsonCount(3, 'data');
+  }
+
+  /** @test */
+  public function unauthenticated_user_cannot_get_all_wishlist()
+  {
+    $response = $this->getJson($this->uri, ['Authorization' => 'Bearer Invalid-Token']);
+
+    $response->assertUnauthorized()
+      ->assertJsonStructure(['message']);
   }
 }

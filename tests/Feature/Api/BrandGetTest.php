@@ -1,7 +1,5 @@
 <?php
-
 // tests/Feature/Api/BrandGetTest.php
-
 namespace Tests\Feature\Api;
 
 use App\Models\ProductBrand;
@@ -20,6 +18,7 @@ class BrandGetTest extends TestCase
   public function can_get_all_brands()
   {
     $this->seed(ProductBrandSeeder::class);
+
     $brands = ProductBrand::all();
 
     $response = $this->getJson($this->uri);

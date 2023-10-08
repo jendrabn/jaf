@@ -35,9 +35,9 @@ class OrderPostTest extends TestCase
   protected function setUp(): void
   {
     parent::setUp();
+
     $this->seed([
       ProductCategorySeeder::class,
-      ProductBrandSeeder::class,
       BankSeeder::class,
       ProvinceSeeder::class,
       CitySeeder::class

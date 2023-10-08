@@ -1,5 +1,5 @@
 <?php
-
+// tests/Feature/Api/CategoryGetTest.php
 namespace Tests\Feature\Api;
 
 use App\Models\ProductCategory;
@@ -18,12 +18,15 @@ class CategoryGetTest extends TestCase
   public function can_get_all_categories()
   {
     $this->seed(ProductCategorySeeder::class);
+
     $categories = ProductCategory::all();
 
     $response = $this->getJson($this->uri);
 
     $response->assertOk()
-      ->assertExactJson(['data' => $this->formatCategoryData($categories)])
+      ->assertExactJson([
+        'data' => $this->formatCategoryData($categories)
+      ])
       ->assertJsonCount(3, 'data');
   }
 }

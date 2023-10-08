@@ -1,5 +1,5 @@
 <?php
-// tests/Feature/Api/OrderConfirmPaymentByOrderPostTest.php
+// tests/Feature/Api/OrderConfirmPaymentPostTest.php
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\OrderController;
@@ -13,7 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
-class OrderConfirmPaymentByOrderPostTest extends TestCase
+class OrderConfirmPaymentPostTest extends TestCase
 {
   use RefreshDatabase;
 

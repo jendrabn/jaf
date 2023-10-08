@@ -21,22 +21,20 @@ class ShippingCostPostTest extends TestCase
   public function can_get_shipping_cost()
   {
     $this->seed([ProvinceSeeder::class, CitySeeder::class]);
-    $data = [
-      'destination' => 154, // Kota Jakarta Timur
-      'weight' => 1500
-    ];
+
+    $data = ['destination' => 154, 'weight' => 1500];
 
     $response = $this->postJson($this->uri, $data);
 
     $response->assertOk()
       ->assertJsonStructure([
         'data' => ['*' => [
-          "courier",
-          "courier_name",
-          "service",
-          "service_name",
-          "cost",
-          "etd",
+          'courier',
+          'courier_name',
+          'service',
+          'service_name',
+          'cost',
+          'etd',
         ]]
       ])
       ->assertJsonFragment([
@@ -64,8 +62,16 @@ class ShippingCostPostTest extends TestCase
   public function shipping_cost_request_has_the_correct_validation_rules()
   {
     $this->assertValidationRules([
-      'destination' => ['required', 'integer', 'exists:cities,id'],
-      'weight' => ['required', 'integer', 'max:' . Shipping::MAX_WEIGHT],
+      'destination' => [
+        'required',
+        'integer',
+        'exists:cities,id',
+      ],
+      'weight' => [
+        'required',
+        'integer',
+        'max:' . Shipping::MAX_WEIGHT
+      ],
     ], (new ShippingCostRequest())->rules());
   }
 }

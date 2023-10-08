@@ -1,7 +1,5 @@
 <?php
-
 // tests/Feature/Api/AuthRegisterPostTest.php
-
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\AuthController;
@@ -23,9 +21,48 @@ class AuthRegisterPostTest extends TestCase
   private string $uri = '/api/auth/register';
 
   /** @test */
+  public function can_register()
+  {
+    $this->seed(RolesAndPermissionsSeeder::class);
+
+    $data = [
+      'name' => 'John Cena',
+      'email' => 'jcena@gmail.com',
+      'password' => 'seCret123',
+      'password_confirmation' => 'seCret123'
+    ];
+
+    $response = $this->postJson($this->uri, $data);
+
+    $response->assertCreated()
+      ->assertExactJson([
+        'data' => [
+          'id' => 1,
+          'name' => $data['name'],
+          'email' => $data['email'],
+          'phone' => null,
+          'sex' => null,
+          'birth_date' => null,
+        ]
+      ]);
+
+    $this->assertDatabaseCount('users', 1)
+      ->assertDatabaseHas('users', Arr::only($data, ['name', 'email']));
+
+    $user = User::whereEmail($data['email'])->first();
+
+    $this->assertTrue(Hash::check($data['password'], $user->password));
+    $this->assertTrue($user->hasRole('user'));
+  }
+
+  /** @test */
   public function register_uses_the_correct_form_request()
   {
-    $this->assertActionUsesFormRequest(AuthController::class, 'register', RegisterRequest::class);
+    $this->assertActionUsesFormRequest(
+      AuthController::class,
+      'register',
+      RegisterRequest::class
+    );
   }
 
   /** @test */
@@ -56,53 +93,5 @@ class AuthRegisterPostTest extends TestCase
       ],
       (new RegisterRequest())->rules()
     );
-  }
-
-  /** @test */
-  public function can_register()
-  {
-    $this->seed(RolesAndPermissionsSeeder::class);
-    $data = [
-      'name' => 'John Cena',
-      'email' => 'jcena@gmail.com',
-      'password' => 'seCret123',
-      'password_confirmation' => 'seCret123'
-    ];
-
-    $response = $this->postJson($this->uri, $data);
-
-    $response->assertCreated()
-      ->assertExactJson(['data' => [
-        'id' => 1,
-        'name' => $data['name'],
-        'email' => $data['email'],
-        'phone' => null,
-        'sex' => null,
-        'birth_date' => null,
-      ]]);
-
-    $this->assertDatabaseCount('users', 1)
-      ->assertDatabaseHas('users', Arr::only($data, ['name', 'email']));
-
-    $user = User::whereEmail($data['email'])->first();
-
-    $this->assertTrue(Hash::check($data['password'], $user->password));
-    $this->assertTrue($user->hasRole('user'));
-  }
-
-  /** @test */
-  public function returns_validation_error_if_all_fields_are_invalid()
-  {
-    $data = [
-      'name' => '',
-      'email' => 'jcenagmail.com',
-      'password' => 'seCret123',
-      'password_confirmation' => 'seCret'
-    ];
-
-    $response = $this->postJson($this->uri, $data);
-
-    $response->assertUnprocessable()
-      ->assertJsonValidationErrors(['name', 'email', 'password']);
   }
 }

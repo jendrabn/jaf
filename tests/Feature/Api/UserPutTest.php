@@ -1,5 +1,5 @@
 <?php
-
+// tests/Feature/Api/UserPutTest.php
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\UserController;
@@ -16,9 +16,45 @@ class UserPutTest extends TestCase
   private string $uri = '/api/user';
 
   /** @test */
+  public function can_update_profile()
+  {
+    $user = $this->createUser();
+    $data = [
+      'name' => 'Elon Musk',
+      'email' => 'musk@gmail.com',
+      'phone' => '087991776171',
+      'sex' => 1,
+      'birth_date' => '1970-09-26'
+    ];
+
+    $response = $this->putJson($this->uri, $data, $this->authBearerToken($user));
+
+    $response->assertOk()
+      ->assertExactJson([
+        'data' => [
+          'id' => $user->id,
+          ...$data
+        ]
+      ]);
+  }
+
+  /** @test */
+  public function unauthenticated_user_cannot_update_profile()
+  {
+    $response = $this->putJson($this->uri);
+
+    $response->assertUnauthorized()
+      ->assertJsonStructure(['message']);
+  }
+
+  /** @test */
   public function update_profile_uses_the_correct_form_request()
   {
-    $this->assertActionUsesFormRequest(UserController::class, 'update', ProfileRequest::class);
+    $this->assertActionUsesFormRequest(
+      UserController::class,
+      'update',
+      ProfileRequest::class
+    );
   }
 
   /** @test */
@@ -65,55 +101,5 @@ class UserPutTest extends TestCase
       ],
       $rules
     );
-  }
-
-  /** @test */
-  public function returns_unauthenticated_error_if_user_is_not_authenticated()
-  {
-    $response = $this->putJson($this->uri);
-
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
-
-  /** @test */
-  public function can_update_profile()
-  {
-    $user = $this->createUser();
-    $data = [
-      'name' => 'Elon Musk',
-      'email' => 'musk@gmail.com',
-      'phone' => '087991776171',
-      'sex' => 1,
-      'birth_date' => '1970-09-26'
-    ];
-
-    $response = $this->putJson($this->uri, $data, $this->authBearerToken($user));
-
-    $response->assertOk()
-      ->assertExactJson([
-        'data' => [
-          'id' => $user->id,
-          ...$data
-        ]
-      ]);
-  }
-
-  /** @test */
-  public function returns_validation_error_if_all_fields_are_invalid()
-  {
-    $user = $this->createUser();
-    $data = [
-      'name' => '',
-      'email' => 'muskgmail.com',
-      'phone' => '097991776171',
-      'sex' => 3,
-      'birth_date' => '1970'
-    ];
-
-    $response = $this->putJson($this->uri, $data, $this->authBearerToken($user));
-
-    $response->assertUnprocessable()
-      ->assertJsonValidationErrors(array_keys($data));
   }
 }

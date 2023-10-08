@@ -16,15 +16,6 @@ class CartGetTest extends TestCase
   private string $uri = '/api/carts';
 
   /** @test */
-  public function unauthenticated_user_cannot_add_product_to_cart()
-  {
-    $response = $this->getJson($this->uri,  ['Authorization' => 'Bearer Invalid-Token']);
-
-    $response->assertUnauthorized()
-      ->assertExactJson(['message' => 'Unauthenticated.']);
-  }
-
-  /** @test */
   public function can_get_all_carts()
   {
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
@@ -46,13 +37,20 @@ class CartGetTest extends TestCase
 
     $response->assertOk()
       ->assertExactJson([
-        'data' => $carts->map(
-          fn ($cart) => [
-            'id' => $cart->id,
-            'product' => $this->formatProductData($cart->product),
-            'quantity' => $cart->quantity,
-          ]
-        )->toArray()
+        'data' => $carts->map(fn ($cart) => [
+          'id' => $cart->id,
+          'product' => $this->formatProductData($cart->product),
+          'quantity' => $cart->quantity,
+        ])->toArray()
       ]);
+  }
+
+  /** @test */
+  public function unauthenticated_user_cannot_get_all_carts()
+  {
+    $response = $this->getJson($this->uri,  ['Authorization' => 'Bearer Invalid-Token']);
+
+    $response->assertUnauthorized()
+      ->assertExactJson(['message' => 'Unauthenticated.']);
   }
 }

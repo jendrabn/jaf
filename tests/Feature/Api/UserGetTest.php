@@ -1,7 +1,5 @@
 <?php
-
 // tests\Feature\Api\UserGetTest.php
-
 namespace Tests\Feature\Api;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,7 +13,7 @@ class UserGetTest extends TestCase
   private string $uri = '/api/user';
 
   /** @test */
-  public function can_get_user_profile()
+  public function can_get_profile()
   {
     $user = $this->createUser();
 
@@ -28,9 +26,9 @@ class UserGetTest extends TestCase
   }
 
   /** @test */
-  public function returns_unauthenticated_error_if_user_is_not_authenticated()
+  public function unauthenticated_user_cannot_get_profile()
   {
-    $response = $this->getJson($this->uri);
+    $response = $this->putJson($this->uri);
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);

@@ -1,5 +1,5 @@
 <?php
-// tests\Feature\Api\OrderGetTest.php
+// tests/Feature/Api/OrderGetTest.php
 namespace Tests\Feature\Api;
 
 use App\Models\Invoice;

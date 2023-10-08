@@ -1,7 +1,5 @@
 <?php
-
-// tests/Feature/Api/RegionCityByProvinceGetTest.php
-
+// tests/Feature/Api/RegionCityGetTest.php
 namespace Tests\Feature\Api;
 
 use App\Models\City;
@@ -11,22 +9,25 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
-class RegionCityByProvinceGetTest extends TestCase
+class RegionCityGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/region/cities';
+  private string $uri = '/api/region/cities/';
 
   /** @test */
   public function can_get_cities_by_province_id()
   {
     $this->seed([ProvinceSeeder::class, CitySeeder::class]);
+
     $cities = City::where('province_id', 6)->get();
 
-    $response = $this->getJson($this->uri . '/' . 6);
+    $response = $this->getJson($this->uri . 6);
 
     $response->assertOk()
-      ->assertExactJson(['data' => $this->formatCityData($cities)])
+      ->assertExactJson([
+        'data' => $this->formatCityData($cities)
+      ])
       ->assertJsonCount(6, 'data');
   }
 
@@ -35,7 +36,7 @@ class RegionCityByProvinceGetTest extends TestCase
   {
     $this->seed([ProvinceSeeder::class]);
 
-    $response = $this->getJson($this->uri . '/' . 50);
+    $response = $this->getJson($this->uri . 50);
 
     $response->assertNotFound()
       ->assertJsonStructure(['message']);

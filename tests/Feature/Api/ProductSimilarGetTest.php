@@ -1,5 +1,5 @@
 <?php
-// tests/Feature/Api/ProductSimilarByIdGetTest.php
+// tests/Feature/Api/ProductSimilarGetTest.php
 namespace Tests\Feature\Api;
 
 use App\Models\Product;
@@ -9,18 +9,19 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
-class ProductSimilarByIdGetTest extends TestCase
+class ProductSimilarGetTest extends TestCase
 {
   use RefreshDatabase;
 
   protected function setUp(): void
   {
     parent::setUp();
+
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
   }
 
   /** @test */
-  public function can_get_similar_product_by_product_id()
+  public function can_get_similar_products_by_product_id()
   {
     $this->createProduct(count: 3);
     $products = Product::factory()
@@ -30,10 +31,10 @@ class ProductSimilarByIdGetTest extends TestCase
 
     $response = $this->getJson('/api/products/' . $products[0]->id . '/similars');
 
+    $products = $products->where('id', '!==', $products[0]->id)->sortByDesc('id')->take(5);
+
     $response->assertExactJson([
-      'data' => $this->formatProductData(
-        $products->where('id', '!==', $products[0]->id)->sortByDesc('id')->take(5)
-      )
+      'data' => $this->formatProductData($products)
     ])
       ->assertJsonCount(5, 'data');
   }
