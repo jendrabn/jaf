@@ -11,16 +11,10 @@ use Illuminate\Validation\ValidationException;
 
 class CartService
 {
-  public function addToCart(int $productId, int $quantity, User $user): Cart
+  public function create(int $productId, int $quantity): void
   {
-    $product = Product::published()->find($productId);
-
-    if (!$product)
-      throw ValidationException::withMessages([
-        'product' => 'Produk tidak tersedia.'
-      ]);
-
-    $cart = $user->carts()->firstOrNew(['product_id' => $productId]);
+    $product = Product::findOrFail($productId);
+    $cart = auth()->user()->carts()->firstOrNew(['product_id' => $productId]);
     $newQuantity = $cart->quantity + $quantity;
 
     if ($newQuantity > $product->stock)
@@ -30,8 +24,6 @@ class CartService
 
     $cart->quantity = $newQuantity;
     $cart->save();
-
-    return $cart;
   }
 
   public function getTotalQuantity(Collection $carts): int

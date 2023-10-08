@@ -22,7 +22,7 @@ class ProductFactory extends Factory
   {
     return [
       'product_category_id' => ProductCategory::inRandomOrder()->first()->id,
-      'product_brand_id' => ProductBrand::inRandomOrder()->first()->id,
+      'product_brand_id' => ProductBrand::inRandomOrder()->first()->id ?? null,
       'name' => fake()->sentence(),
       'slug' => fake()->unique()->slug(),
       'weight' => fake()->numberBetween(1000, 5000),

@@ -26,13 +26,7 @@ class CartController extends Controller
   public function create(CreateCartRequest $request, CartService $cartService): JsonResponse
   {
     $validatedData = $request->validated();
-    $user = auth()->user();
-
-    $cartService->addToCart(
-      $validatedData['product_id'],
-      $validatedData['quantity'],
-      $user
-    );
+    $cartService->create($validatedData['product_id'], $validatedData['quantity']);
 
     return response()->json(['data' => true], Response::HTTP_CREATED);
   }

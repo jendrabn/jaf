@@ -11,6 +11,7 @@ use Database\Seeders\ProductBrandSeeder;
 use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Validation\Rule;
 use Tests\TestCase;
 
 class CartPostTest extends TestCase
@@ -22,84 +23,74 @@ class CartPostTest extends TestCase
   protected function setUp(): void
   {
     parent::setUp();
-    $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
+
+    $this->seed(ProductCategorySeeder::class);
     $this->user = User::factory()->create();
   }
 
-  private function attemptAddToCart(?array $data = [], ?array $headers = [])
+  private function attemptAddProductToCart(?array $data = [], ?string $authToken = null)
   {
-    $headers = array_merge($this->authBearerToken($this->user), $headers);
+    $authToken = $authToken
+      ?? $this->user->createToken('auth_token')->plainTextToken;
 
-    return $this->postJson('/api/carts', $data, $headers);
+    return $this->postJson('/api/carts', $data, ['Authorization' => 'Bearer ' . $authToken]);
   }
 
   /** @test */
   public function can_add_product_to_cart()
   {
-    // Arrange
     $product = Product::factory()->create(['stock' => 10]);
-    $data = ['product_id' => $product->id, 'quantity' => 3];
 
-    // Action
-    $response1 = $this->attemptAddToCart($data);
+    $response = $this->attemptAddProductToCart([
+      'product_id' => $product->id, 'quantity' => 2
+    ]);
 
-    // Assert
-    $response1->assertCreated()
+    $response = $this->attemptAddProductToCart([
+      'product_id' => $product->id, 'quantity' => 3
+    ]);
+
+    $response->assertCreated()
       ->assertExactJson(['data' => true]);
-    $this->assertDatabaseHas('carts', $data + ['user_id' => $this->user->id]);
 
-    // Action
-    $response2 = $this->attemptAddToCart($data);
-
-    // Assert
-    $response2->assertCreated()
-      ->assertExactJson(['data' => true]);
     $this->assertDatabaseCount('carts', 1);
     $this->assertDatabaseHas('carts', [
+      'user_id' => $this->user->id,
       'product_id' => $product->id,
-      'quantity' => 6,
-      'user_id' => $this->user->id
+      'quantity' => 5,
     ]);
   }
 
   /** @test */
   public function unauthenticated_user_cannot_add_product_to_cart()
   {
-    $response = $this->attemptAddToCart(
-      headers: ['Authorization' => 'Bearer Invalid-Token']
-    );
+    $response = $this->attemptAddProductToCart(authToken: ' Invalid-Token');
 
     $response->assertUnauthorized()
       ->assertExactJson(['message' => 'Unauthenticated.']);
   }
 
   /** @test */
-  public function cannot_add_product_to_cart_if_product_is_not_published()
-  {
-    $product = Product::factory()->create(['is_publish' => false]);
-
-    $response = $this->attemptAddToCart(
-      ['product_id' => $product->id, 'quantity' => 1]
-    );
-
-    $response->assertUnprocessable()
-      ->assertJsonValidationErrorFor('product');
-    $this->assertDatabaseEmpty('carts');
-  }
-
-  /** @test */
   public function cannot_add_product_to_cart_if_quantity_exceeds_stock()
   {
     $product = Product::factory()->create(['stock' => 5]);
-    $cart = Cart::factory()->for($product)->for($this->user)->create(['quantity' => 3]);
+    Cart::factory()
+      ->for($product)
+      ->for($this->user)
+      ->create(['quantity' => 3]);
 
-    $response = $this->attemptAddToCart(
-      ['product_id' => $product->id, 'quantity' => 3]
-    );
+    $response = $this->attemptAddProductToCart([
+      'product_id' => $product->id, 'quantity' => 3
+    ]);
 
     $response->assertUnprocessable()
       ->assertJsonValidationErrorFor('cart');
-    $this->assertDatabaseHas('carts',  ['product_id' => $product->id, 'quantity' => 3]);
+
+    $this->assertDatabaseCount('carts', 1);
+    $this->assertDatabaseHas('carts', [
+      'user_id' => $this->user->id,
+      'product_id' => $product->id,
+      'quantity' => 3,
+    ]);
   }
 
   /** @test */
@@ -117,10 +108,15 @@ class CartPostTest extends TestCase
   {
     $this->assertValidationRules([
       'product_id' => [
-        'required', 'integer', 'exists:products,id'
+        'required',
+        'integer',
+        Rule::exists('products', 'id')
+          ->where('is_publish', true)
       ],
       'quantity' => [
-        'required', 'integer', 'min:1'
+        'required',
+        'integer',
+        'min:1'
       ]
     ], (new CreateCartRequest())->rules());
   }
