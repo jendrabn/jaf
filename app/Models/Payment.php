@@ -21,15 +21,15 @@ class Payment extends Model
     return $this->hasOne(PaymentBank::class);
   }
 
-  public function ewallet()
-  {
-    return $this->hasOne(PaymentEwallet::class);
-  }
+  // public function ewallet()
+  // {
+  //   return $this->hasOne(PaymentEwallet::class);
+  // }
 
-  public function invoice()
-  {
-    return $this->belongsTo(Invoice::class);
-  }
+  // public function invoice()
+  // {
+  //   return $this->belongsTo(Invoice::class);
+  // }
 
   public function info(): Attribute
   {

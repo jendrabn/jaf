@@ -20,10 +20,10 @@ class Shipping extends Model
 
   protected $guarded = [];
 
-  public function order(): BelongsTo
-  {
-    return $this->belongsTo(Order::class);
-  }
+  // public function order(): BelongsTo
+  // {
+  //   return $this->belongsTo(Order::class);
+  // }
 
   public function address(): Attribute
   {

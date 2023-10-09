@@ -11,8 +11,8 @@ class PaymentBank extends Model
 
   protected $guarded = [];
 
-  public function payment()
-  {
-    return $this->belongsTo(Payment::class);
-  }
+  // public function payment()
+  // {
+  //   return $this->belongsTo(Payment::class);
+  // }
 }

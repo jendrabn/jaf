@@ -30,15 +30,15 @@ class Product extends Model implements HasMedia
     'is_publish' => 'boolean'
   ];
 
-  public function wishlists()
-  {
-    return $this->hasMany(Wishlist::class);
-  }
+  // public function wishlists()
+  // {
+  //   return $this->hasMany(Wishlist::class);
+  // }
 
-  public function carts()
-  {
-    return $this->hasMany(Cart::class);
-  }
+  // public function carts()
+  // {
+  //   return $this->hasMany(Cart::class);
+  // }
 
   public function orderItems()
   {
