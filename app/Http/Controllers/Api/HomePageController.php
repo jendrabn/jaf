@@ -1,14 +1,13 @@
 <?php
+
 // app/Http/Controllers/Api/HomePageController.php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\BannerResource;
-use App\Http\Resources\ProductResource;
-use App\Models\Banner;
-use App\Models\Product;
+use App\Http\Resources\{BannerResource, ProductResource};
+use App\Models\{Banner, Product};
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class HomePageController extends Controller
@@ -24,7 +23,6 @@ class HomePageController extends Controller
           'banners' => BannerResource::collection($banners),
           'products' => ProductResource::collection($products),
         ]
-      ])
-      ->setStatusCode(Response::HTTP_OK);
+      ], Response::HTTP_OK);
   }
 }

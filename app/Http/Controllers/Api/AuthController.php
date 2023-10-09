@@ -5,46 +5,38 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\ForgotPasswordRequest;
-use App\Http\Requests\Api\LoginRequest;
-use App\Http\Requests\Api\RegisterRequest;
-use App\Http\Requests\Api\ResetPasswordRequest;
+use App\Http\Requests\Api\{
+  ForgotPasswordRequest,
+  LoginRequest,
+  RegisterRequest,
+  ResetPasswordRequest
+};
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Http\Exceptions\HttpResponseException;
+use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
+  public function __construct(private AuthService $authService)
+  {
+  }
+
   public function register(RegisterRequest $request): JsonResponse
   {
-    $user = User::create($request->validated())
-      ->assignRole('user');
+    $user = User::create($request->validated())->assignRole(User::ROLE_USER);
 
-    return (new UserResource($user))->response()->setStatusCode(Response::HTTP_CREATED);
+    return (new UserResource($user))
+      ->response()
+      ->setStatusCode(Response::HTTP_CREATED);
   }
 
   public function login(LoginRequest $request): JsonResponse
   {
-    $user = User::whereEmail($request->email)->first();
-
-    throw_if(
-      !$user || !Hash::check($request->password, $user->password),
-      new HttpResponseException(
-        response()
-          ->json(['message' => 'The provided credentials are incorrect.'])
-          ->setStatusCode(Response::HTTP_UNAUTHORIZED)
-      )
-    );
-
-    $user->auth_token = $user->createToken('auth_token')->plainTextToken;
+    $user = $this->authService->login($request);
 
     return (new UserResource($user))
       ->response()
@@ -53,49 +45,28 @@ class AuthController extends Controller
 
   public function logout(): JsonResponse
   {
-    auth()->user()->tokens()->delete();
+    $user = auth()->user();
+    $user->currentAccessToken()->delete();
 
-    return response()
-      ->json(['data' => true])
-      ->setStatusCode(Response::HTTP_OK);
+    return response()->json(['data' => true], Response::HTTP_OK);
   }
 
   public function sendPasswordResetLink(ForgotPasswordRequest $request): JsonResponse
   {
-    $status = Password::sendResetLink($request->only('email'));
+    $status = Password::sendResetLink($request->validated());
 
-    throw_unless(
-      $status === Password::RESET_LINK_SENT,
+    throw_if(
+      $status !== Password::RESET_LINK_SENT,
       ValidationException::withMessages(['email' => $status])
     );
 
-    return response()
-      ->json(['data' => true])
-      ->setStatusCode(Response::HTTP_OK);
+    return response()->json(['data' => true], Response::HTTP_OK);
   }
 
   public function resetPassword(ResetPasswordRequest $request): JsonResponse
   {
-    $status = Password::reset(
-      $request->validated(),
-      function (User $user, string $password) {
-        $user->forceFill([
-          'password' => $password
-        ])->setRememberToken(Str::random(60));
+    $this->authService->resetPassword($request);
 
-        $user->save();
-
-        event(new PasswordReset($user));
-      }
-    );
-
-    throw_unless(
-      $status === Password::PASSWORD_RESET,
-      ValidationException::withMessages(['email' => $status])
-    );
-
-    return response()
-      ->json(['data' => true])
-      ->setStatusCode(Response::HTTP_OK);
+    return response()->json(['data' => true], Response::HTTP_OK);
   }
 }

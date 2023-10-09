@@ -1,48 +1,42 @@
 <?php
-// app\Http\Controllers\Api\CartController.php
+
+// app/Http/Controllers/Api/CartController.php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\CreateCartRequest;
-use App\Http\Requests\Api\DeleteCartRequest;
-use App\Http\Requests\Api\UpdateCartRequest;
+use App\Http\Requests\Api\{CreateCartRequest, DeleteCartRequest, UpdateCartRequest};
 use App\Http\Resources\CartResource;
 use App\Services\CartService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 class CartController extends Controller
 {
+  public function __construct(private CartService $cartService)
+  {
+  }
+
   public function list(): JsonResponse
   {
-    $carts = auth()->user()->carts->sortByDesc('id');
+    $user = auth()->user();
+    $carts = $user->carts->sortByDesc('id');
 
     return CartResource::collection($carts)
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }
 
-  public function create(CreateCartRequest $request, CartService $cartService): JsonResponse
+  public function create(CreateCartRequest $request): JsonResponse
   {
-    $validatedData = $request->validated();
-    $cartService->create($validatedData['product_id'], $validatedData['quantity']);
+    $this->cartService->create($request);
 
     return response()->json(['data' => true], Response::HTTP_CREATED);
   }
 
-  public function update(UpdateCartRequest $request, int $id)
+  public function update(UpdateCartRequest $request, int $id): JsonResponse
   {
-    $user = auth()->user();
-    $cart = $user->carts()->findOrFail($id);
-    $newQuantity = $cart->quantity + $request->validated('quantity');
-
-    if ($newQuantity > $cart->product->stock) {
-      throw ValidationException::withMessages(['cart' => 'Kuantitas melebihi stok yang tersedia']);
-    }
-
-    $cart->quantity = $newQuantity;
-    $cart->save();
+    $this->cartService->update($request, $id);
 
     return response()->json(['data' => true], Response::HTTP_OK);
   }

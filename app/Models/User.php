@@ -28,6 +28,9 @@ class User extends Authenticatable implements CanResetPassword
     'sex' => 'integer'
   ];
 
+  public const ROLE_ADMIN = 'admin';
+  public const ROLE_USER = 'user';
+
   public function address()
   {
     return $this->hasOne(UserAddress::class);

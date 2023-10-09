@@ -31,7 +31,8 @@ class CreateOrderRequest extends FormRequest
       'cart_ids.*' => [
         'required',
         'integer',
-        Rule::exists('carts', 'id')->where('user_id', $this->user()->id)
+        Rule::exists('carts', 'id')
+          ->where('user_id', $this->user()->id)
       ],
       'shipping_address.name' => [
         'required',

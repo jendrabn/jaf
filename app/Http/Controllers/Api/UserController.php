@@ -1,13 +1,13 @@
 <?php
 
+// app/Http/Controllers/Api/UserController.php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\ProfileRequest;
-use App\Http\Requests\Api\UpdatePasswordRequest;
+use App\Http\Requests\Api\{ProfileRequest, UpdatePasswordRequest};
 use App\Http\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
@@ -31,10 +31,10 @@ class UserController extends Controller
 
   public function updatePassword(UpdatePasswordRequest $request): JsonResponse
   {
-    auth()->user()->update($request->only('password'));
+    $user = auth()->user();
+    $user->password = $request->validated('password');
+    $user->save();
 
-    return response()
-      ->json(['data' => true])
-      ->setStatusCode(Response::HTTP_OK);
+    return response()->json(['data' => true], Response::HTTP_OK);
   }
 }

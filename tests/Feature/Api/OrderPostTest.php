@@ -77,7 +77,7 @@ class OrderPostTest extends TestCase
     $this->assertDatabaseCount('orders', 1);
 
     $order = Order::first();
-    $paymentDueDate = $order['created_at']->addDays(1);
+    $paymentDueDate = $order['created_at']->addDays(1)->toDateTimeString();
 
     $response->assertCreated()
       ->assertExactJson([
@@ -91,8 +91,8 @@ class OrderPostTest extends TestCase
             'account_name' => $this->bank['account_name'],
             'account_number' => $this->bank['account_number']
           ],
-          'payment_due_date' => $paymentDueDate->toISOString(),
-          'created_at' => $order['created_at']->toISOString()
+          'payment_due_date' => $paymentDueDate,
+          'created_at' => $order['created_at']
         ]
       ]);
 

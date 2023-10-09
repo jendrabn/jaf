@@ -1,13 +1,13 @@
 <?php
 
+// app/Http/Controllers/Api/RegionController.php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\CityResource;
-use App\Http\Resources\ProvinceResource;
+use App\Http\Resources\{CityResource, ProvinceResource};
 use App\Models\Province;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class RegionController extends Controller

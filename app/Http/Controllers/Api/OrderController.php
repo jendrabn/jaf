@@ -1,192 +1,62 @@
 <?php
-// app\Http\Controllers\Api\OrderController.php
+
+// app/Http/Controllers/Api/OrderController.php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\ConfirmPaymentRequest;
-use App\Http\Requests\Api\CreateOrderRequest;
-use App\Http\Resources\InvoiceResource;
-use App\Http\Resources\OrderCollection;
-use App\Http\Resources\OrderItemResource;
-use App\Http\Resources\PaymentResource;
-use App\Http\Resources\ShippingResource;
-use App\Services\CartService;
+use App\Http\Requests\Api\{ConfirmPaymentRequest, CreateOrderRequest};
+use App\Http\Resources\{
+  InvoiceResource,
+  OrderCollection,
+  OrderItemResource,
+  PaymentResource,
+  ShippingResource
+};
 use App\Services\OrderService;
-use App\Services\RajaOngkirService;
-use App\Models\Bank;
-use App\Models\Cart;
-use App\Models\Invoice;
 use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Payment;
-use App\Models\Shipping;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class OrderController extends Controller
 {
-  public function list(Request $request, OrderService $orderService): JsonResponse
+  public function __construct(private OrderService $orderService)
   {
-    $orders = $orderService->getOrders($request);
+  }
+
+  public function list(Request $request): JsonResponse
+  {
+    $orders = $this->orderService->getOrders($request);
 
     return (new OrderCollection($orders))
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }
 
-  public function create(
-    CreateOrderRequest $request,
-    CartService $cartService,
-    RajaOngkirService $rajaOngkirService
-  ): JsonResponse {
-
-    $validatedData = $request->validated();
-    $user = auth()->user();
-    $carts = Cart::whereIn('id', $validatedData['cart_ids'])->get();
-    $bank = Bank::findOrFail($validatedData['bank_id']);
-    $shippingAddress = $validatedData['shipping_address'];
-
-    foreach ($carts as $cart) {
-      throw_unless(
-        $cartService->validateProduct($cart),
-        ValidationException::withMessages([
-          'product' => 'Produk yang diinginkan sedang tidak tersedia.'
-        ])
-      );
-
-      throw_unless(
-        $cartService->validateQuantity($cart),
-        ValidationException::withMessages([
-          'cart' => 'Kuantitas melebihi stok yang tersedia.'
-        ])
-      );
-    }
-
-    $totalWeight = $cartService->getTotalWeight($carts);
-
-    throw_unless(
-      $cartService->validateTotalWeight($totalWeight),
-      ValidationException::withMessages([
-        'cart' => 'Berat total tidak boleh lebih dari 25kg.'
-      ])
-    );
-
-    $shippingService = $rajaOngkirService
-      ->getService(
-        $validatedData['shipping_service'],
-        $shippingAddress['city_id'],
-        $totalWeight,
-        $validatedData['shipping_courier']
-      );
-
-    throw_if(
-      !$shippingService,
-      ValidationException::withMessages([
-        'shipping_service' => 'Layanan pengiriman yang diinginkan tidak tersedia.'
-      ])
-    );
-
-    $totalPrice = $cartService->getTotalPrice($carts);
-    $totalAmount = $shippingService['cost'] + $totalPrice;
-
-    DB::beginTransaction();
-
-    try {
-      $order = Order::create([
-        'user_id' => $user->id,
-        'total_price' => $totalPrice,
-        'shipping_cost' => $shippingService['cost'],
-        'status' => Order::STATUS_PENDING_PAYMENT,
-        'notes' => $validatedData['notes'],
-      ]);
-
-      foreach ($carts as $cart) {
-        $product = $cart->product;
-
-        OrderItem::create([
-          'order_id' => $order->id,
-          'product_id' => $product->id,
-          'name' => $product->name,
-          'weight' => $product->weight,
-          'price' => $product->price,
-          'quantity' => $cart->quantity,
-        ]);
-
-        $product->decrement('stock', $cart->quantity);
-        $cart->delete();
-      }
-
-      $invoice = Invoice::create([
-        'order_id' => $order->id,
-        'number' => implode('/', [
-          'INV', $order->created_at->format('YYYYMMDD'), $order->id
-        ]),
-        'amount' => $totalAmount,
-        'status' => Invoice::STATUS_UNPAID,
-        'due_date' => $order->created_at->addDays(1),
-      ]);
-
-      $payment = Payment::create([
-        'invoice_id' => $invoice->id,
-        'method' => $validatedData['payment_method'],
-        'info' => [
-          'name' => $bank->name,
-          'code' => $bank->code,
-          'account_name' => $bank->account_name,
-          'account_number' => $bank->account_number
-        ],
-        'amount' => $totalAmount,
-        'status' => Payment::STATUS_PENDING
-      ]);
-
-      $userAddress = $user->address()->updateOrCreate($shippingAddress);
-
-      Shipping::create([
-        'order_id' => $order->id,
-        'address' => [
-          'name' =>  $userAddress->name,
-          'phone' =>  $userAddress->phone,
-          'province' => $userAddress->city->province->name,
-          'city' => $userAddress->city->name,
-          'district' =>  $userAddress->district,
-          'postal_code' =>  $userAddress->postal_code,
-          'address' =>  $userAddress->address
-        ],
-        'courier' => $shippingService['courier'],
-        'courier_name' => $shippingService['courier_name'],
-        'service' => $shippingService['service'],
-        'service_name' => $shippingService['service_name'],
-        'etd' => $shippingService['etd'],
-        'weight' => $totalWeight,
-        'status' => Shipping::STATUS_PENDING,
-      ]);
-
-      DB::commit();
-    } catch (QueryException $e) {
-      DB::rollBack();
-      throw $e;
-    }
+  public function create(CreateOrderRequest $request): JsonResponse
+  {
+    $order = $this->orderService->createOrder($request);
+    $invoice = $order->invoice;
 
     return response()
       ->json([
         'data' => [
           'id' => $order->id,
-          'total_amount' => $totalAmount,
-          'payment_method' => $payment->method,
-          'payment_info' => $payment->info,
-          'payment_due_date' => $invoice->due_date->toISOString(),
+          'total_amount' => $invoice->amount,
+          'payment_method' => $invoice->payment->method,
+          'payment_info' => $invoice->payment->info,
+          'payment_due_date' => $invoice->due_date,
           'created_at' => $order->created_at
         ]
-      ])
-      ->setStatusCode(Response::HTTP_CREATED);
+      ], Response::HTTP_CREATED);
   }
 
-  public function get(Order $order): JsonResponse
+  public function get(int $id): JsonResponse
   {
+    $user = auth()->user();
+    $order = $user->orders()->findOrFail($id);
+
     return response()
       ->json([
         'data' => [
@@ -210,65 +80,20 @@ class OrderController extends Controller
           'cancelled_at' => $order->cancelled_at,
           'created_at' => $order->created_at,
         ]
-      ])
-      ->setStatusCode(Response::HTTP_OK);
+      ], Response::HTTP_OK);
   }
 
   public function confirmPayment(ConfirmPaymentRequest $request, int $id)
   {
-    $order = Order::where('user_id', auth()->id())->findOrFail($id);
+    $this->orderService->confirmPayment($request, $id);
 
-    if ($order->status !== Order::STATUS_PENDING_PAYMENT) {
-      throw ValidationException::withMessages(['order' => 'Invalid order.']);
-    }
-
-    if (now()->isAfter($order->invoice->due_date)) {
-      $order->status = Order::STATUS_CANCELLED;
-      $order->save();
-
-      throw ValidationException::withMessages(['order' => 'Invalid order.']);
-    }
-
-    try {
-      DB::beginTransaction();
-
-      $order->invoice->payment->bank()->create($request->validated());
-      $order->status = Order::STATUS_PENDING;
-      $order->save();
-
-      DB::commit();
-    } catch (QueryException $e) {
-      DB::rollBack();
-
-      throw $e;
-    }
-
-    return response()->json(['data' => true])->setStatusCode(Response::HTTP_CREATED);
+    return response()->json(['data' => true], Response::HTTP_CREATED);
   }
 
   public function confirmDelivered(int $id): JsonResponse
   {
-    $order = Order::where('user_id', auth()->id())->findOrFail($id);
+    $this->orderService->confirmDelivered($id);
 
-    if ($order->status !== Order::STATUS_ON_DELIVERY) {
-      throw ValidationException::withMessages(['order' => 'Invalid order.']);
-    }
-
-    try {
-      DB::beginTransaction();
-
-      $order->status = Order::STATUS_COMPLETED;
-      $order->save();
-      $order->shipping->status = Shipping::STATUS_SHIPPED;
-      $order->shipping->save();
-
-      DB::commit();
-    } catch (QueryException $e) {
-      DB::rollBack();
-
-      throw $e;
-    }
-
-    return response()->json(['data' => true])->setStatusCode(Response::HTTP_OK);
+    return response()->json(['data' => true], Response::HTTP_OK);
   }
 }

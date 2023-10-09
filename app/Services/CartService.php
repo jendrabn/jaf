@@ -1,67 +1,49 @@
 <?php
 
+// app/Services/CartService.php
+
 namespace App\Services;
 
-use App\Models\Cart;
+use App\Http\Requests\Api\CreateCartRequest;
+use App\Http\Requests\Api\UpdateCartRequest;
 use App\Models\Product;
-use App\Models\Shipping;
-use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
 
 class CartService
 {
-  public function create(int $productId, int $quantity): void
+  public function create(CreateCartRequest $request): void
   {
-    $product = Product::findOrFail($productId);
-    $cart = auth()->user()->carts()->firstOrNew(['product_id' => $productId]);
-    $newQuantity = $cart->quantity + $quantity;
+    $validatedData = $request->validated();
+    $product = Product::findOrFail($validatedData['product_id']);
+    $user = auth()->user();
+    $cart = $user->carts()->firstOrNew(['product_id' => $validatedData['product_id']]);
+    $newQuantity = $cart->quantity + $validatedData['quantity'];
 
-    if ($newQuantity > $product->stock)
-      throw ValidationException::withMessages([
+    throw_if(
+      $newQuantity > $product->stock,
+      ValidationException::withMessages([
         'cart' => 'Kuantitas melebihi stok yang tersedia.'
-      ]);
+      ])
+    );
 
     $cart->quantity = $newQuantity;
     $cart->save();
   }
 
-  public function getTotalQuantity(Collection $carts): int
+  public function update(UpdateCartRequest $request, int $cartId): void
   {
-    return $carts->reduce(
-      fn ($carry, $cart) => $carry + $cart->quantity
+    $user = auth()->user();
+    $cart = $user->carts()->findOrFail($cartId);
+    $newQuantity = $cart->quantity + $request->validated('quantity');
+
+    throw_if(
+      $newQuantity > $cart->product->stock,
+      ValidationException::withMessages([
+        'cart' => 'Kuantitas melebihi stok yang tersedia'
+      ])
     );
-  }
 
-  public function getTotalWeight(Collection $carts): int
-  {
-    return $carts->reduce(
-      fn ($carry, $cart) => $carry + ($cart->quantity * $cart->product->weight)
-    );
-  }
-  public function getTotalPrice(Collection $carts): int
-  {
-    return $carts->reduce(
-      fn ($carry, $cart) => $carry + ($cart->quantity * $cart->product->price)
-    );
-  }
-
-  public function validateProduct(Cart $cart): bool
-  {
-    if ($cart->product->is_publish) return true;
-
-    $cart->delete();
-
-    return false;
-  }
-
-  public function validateQuantity(Cart $cart): bool
-  {
-    return $cart->quantity < $cart->product->stock;
-  }
-
-  public function validateTotalWeight(int $totalWeight): bool
-  {
-    return $totalWeight < Shipping::MAX_WEIGHT;
+    $cart->quantity = $newQuantity;
+    $cart->save();
   }
 }

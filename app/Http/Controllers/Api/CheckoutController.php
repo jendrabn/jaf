@@ -1,88 +1,69 @@
 <?php
+
 // app/Http/Controllers/Api/CheckoutController.php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\CheckoutRequest;
-use App\Http\Requests\Api\ShippingCostRequest;
-use App\Http\Resources\BankResource;
-use App\Http\Resources\CartResource;
-use App\Http\Resources\UserAddressResource;
-use App\Services\CartService;
-use App\Services\RajaOngkirService;
-use App\Models\Bank;
-use App\Models\Cart;
+use App\Http\Requests\Api\{CheckoutRequest, ShippingCostRequest};
+use App\Http\Resources\{BankResource, CartResource, UserAddressResource};
+use App\Services\{OrderService, RajaOngkirService};
+use App\Models\{Bank, Cart, Shipping};
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
-
 
 class CheckoutController extends Controller
 {
-  public function checkout(
-    CartService $cartService,
-    RajaOngkirService $rajaOngkirService,
-    CheckoutRequest $request
-  ): JsonResponse {
+
+  public function __construct(
+    private RajaOngkirService $rajaOngkirService,
+    private OrderService $orderService,
+  ) {
+  }
+
+  public function checkout(CheckoutRequest $request): JsonResponse
+  {
+    $validatedData = $request->validated();
+    $carts = Cart::whereIn('id', $validatedData['cart_ids'])->get();
+
+    $this->orderService->validateBeforeCreateOrder($carts);
 
     $user = auth()->user();
-    $cartIds = $request->validated('cart_ids');
-    $carts = Cart::whereIn('id', $cartIds)->get();
-
-    foreach ($carts as $cart) {
-      throw_unless(
-        $cartService->validateProduct($cart),
-        ValidationException::withMessages([
-          'product' => 'Produk yang diinginkan sedang tidak tersedia.'
-        ])
-      );
-
-      throw_unless(
-        $cartService->validateQuantity($cart),
-        ValidationException::withMessages([
-          'cart' => 'Kuantitas melebihi stok yang tersedia.'
-        ])
-      );
-    }
-
-    $totalWeight = $cartService->getTotalWeight($carts);
-
-    throw_unless(
-      $cartService->validateTotalWeight($totalWeight),
-      ValidationException::withMessages([
-        'cart' => 'Berat total tidak boleh lebih dari 25kg.'
-      ])
-    );
-
     $userAddress = $user->address;
+    $totalWeight = $this->orderService->getTotalWeight($carts);
+    $totalQuantity = $this->orderService->getTotalQuantity($carts);
+    $totalPrice = $this->orderService->getTotalPrice($carts);
     $shippingCosts = $userAddress
-      ? $rajaOngkirService->getCosts($userAddress->city_id, $totalWeight)
-      : null;
-    $banks = Bank::all();
+      ? $this->rajaOngkirService->getCosts(
+        $userAddress->city_id,
+        $totalWeight
+      )
+      : NULL;
 
     return response()
       ->json([
         'data' => [
-          'shipping_address' => $userAddress ? (new UserAddressResource($userAddress)) : null,
+          'shipping_address' => $userAddress
+            ? (new UserAddressResource($userAddress))
+            : NULL,
           'carts' => CartResource::collection($carts),
           'shipping_methods' => $shippingCosts,
-          'payment_methods' => ['bank' => BankResource::collection($banks)],
-          'total_quantity' => $cartService->getTotalQuantity($carts),
+          'payment_methods' => ['bank' => BankResource::collection(Bank::all())],
+          'total_quantity' => $totalQuantity,
           'total_weight' => $totalWeight,
-          'total_price' => $cartService->getTotalPrice($carts),
+          'total_price' => $totalPrice,
         ]
-      ])
-      ->setStatusCode(Response::HTTP_OK);
+      ], Response::HTTP_OK);
   }
 
-  public function shippingCost(ShippingCostRequest $request, RajaOngkirService $rajaOngkirService): JsonResponse
+  public function shippingCost(ShippingCostRequest $request): JsonResponse
   {
     $validatedData = $request->validated();
-    $results = $rajaOngkirService->getCosts($validatedData['destination'], $validatedData['weight']);
+    $shippingCosts = $this->rajaOngkirService->getCosts(
+      $validatedData['destination'],
+      $validatedData['weight']
+    );
 
-    return response()
-      ->json(['data' => $results])
-      ->setStatusCode(Response::HTTP_OK);
+    return response()->json(['data' => $shippingCosts], Response::HTTP_OK);
   }
 }

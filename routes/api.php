@@ -57,7 +57,7 @@ Route::get('/home_page', HomePageController::class);
 // Order
 Route::get('/orders', [OrderController::class, 'list'])->middleware(['auth:sanctum']);
 Route::post('/orders', [OrderController::class, 'create'])->middleware(['auth:sanctum']);
-Route::get('/orders/{order}', [OrderController::class, 'get'])->middleware(['auth:sanctum']);
+Route::get('/orders/{id}', [OrderController::class, 'get'])->middleware(['auth:sanctum']);
 Route::post('/orders/{id}/confirm_payment', [OrderController::class, 'confirmPayment'])->middleware(['auth:sanctum']);
 Route::put('/orders/{id}/confirm_order_delivered', [OrderController::class, 'confirmDelivered'])->middleware(['auth:sanctum']);
 
