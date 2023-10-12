@@ -4,14 +4,11 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\HomePageController;
-use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RegionController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WishlistController;
-use App\Models\Product;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,52 +21,72 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-// User Account
-Route::get('/user', [UserController::class, 'get'])->middleware('auth:sanctum');
-Route::put('/user', [UserController::class, 'update'])->middleware('auth:sanctum');
-Route::put('/user/change_password', [UserController::class, 'updatePassword'])->middleware('auth:sanctum');
-
-// Region
-Route::get('/region/provinces', [RegionController::class, 'provinces']);
-Route::get('/region/cities/{province}', [RegionController::class, 'cities']);
-
-// Product
-Route::get('/categories', [ProductController::class, 'categories']);
-Route::get('/brands', [ProductController::class, 'brands']);
-Route::get('/products', [ProductController::class, 'list']);
-Route::get('/products/{id}', [ProductController::class, 'get']);
-Route::get('/products/{id}/similars', [ProductController::class, 'similars']);
-
-// Auth
-Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/login', [AuthController::class, 'login']);
-Route::delete('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-Route::post('/auth/forgot_password', [AuthController::class, 'sendPasswordResetLink']);
-Route::put('/auth/reset_password', [AuthController::class, 'resetPassword']);
-
-// Checkout
-Route::post('/checkout', [CheckoutController::class, 'checkout'])->middleware(['auth:sanctum']);
-Route::post('/shipping_costs', [CheckoutController::class, 'shippingCost']);
 
 // Home Page
 Route::get('/home_page', HomePageController::class);
 
-// Order
-Route::get('/orders', [OrderController::class, 'list'])->middleware(['auth:sanctum']);
-Route::post('/orders', [OrderController::class, 'create'])->middleware(['auth:sanctum']);
-Route::get('/orders/{id}', [OrderController::class, 'get'])->middleware(['auth:sanctum']);
-Route::post('/orders/{id}/confirm_payment', [OrderController::class, 'confirmPayment'])->middleware(['auth:sanctum']);
-Route::put('/orders/{id}/confirm_order_delivered', [OrderController::class, 'confirmDelivered'])->middleware(['auth:sanctum']);
+// Product
+Route::controller(ProductController::class)->group(function () {
+  Route::get('/categories', 'categories');
+  Route::get('/brands', 'brands');
+  Route::get('/products', 'list');
+  Route::get('/products/{id}', 'get');
+  Route::get('/products/{id}/similars', 'similars');
+});
 
-// Wishlist
-Route::get('/wishlist', [WishlistController::class, 'list'])->middleware(['auth:sanctum']);
-Route::post('/wishlist', [WishlistController::class, 'create'])->middleware(['auth:sanctum']);
-Route::delete('/wishlist', [WishlistController::class, 'delete'])->middleware(['auth:sanctum']);
+// Region
+Route::controller(RegionController::class)->group(function () {
+  Route::get('/region/provinces', 'provinces');
+  Route::get('/region/cities/{province}', 'cities');
+});
 
-// Cart
-Route::get('/carts', [CartController::class, 'list'])->middleware(['auth:sanctum']);
-Route::post('/carts', [CartController::class, 'create'])->middleware(['auth:sanctum']);
-Route::put('/carts/{id}', [CartController::class, 'update'])->middleware(['auth:sanctum']);
-Route::delete('/carts', [CartController::class, 'delete'])->middleware(['auth:sanctum']);
+// Auth
+Route::controller(AuthController::class)->group(function () {
+  Route::post('/auth/register', 'register');
+  Route::post('/auth/login', 'login');
+  Route::delete('/auth/logout', 'logout')->middleware('auth:sanctum');
+  Route::post('/auth/forgot_password', 'sendPasswordResetLink');
+  Route::put('/auth/reset_password', 'resetPassword');
+});
+
+// Shipping Cost
+Route::post('/shipping_costs', [CheckoutController::class, 'shippingCost']);
+
+Route::middleware(['auth:sanctum'])->group(function () {
+
+  // User Account
+  Route::controller(UserController::class)->group(function () {
+    Route::get('/user', 'get');
+    Route::put('/user', 'update');
+    Route::put('/user/change_password', 'updatePassword');
+  });
+
+  // Checkout
+  Route::post('/checkout', [CheckoutController::class, 'checkout']);
+
+  // Order
+  Route::controller(OrderController::class)->group(function () {
+    Route::get('/orders', 'list');
+    Route::post('/orders', 'create');
+    Route::get('/orders/{id}', 'get');
+    Route::post('/orders/{id}/confirm_payment', 'confirmPayment');
+    Route::put('/orders/{id}/confirm_order_delivered', 'confirmDelivered');
+  });
+
+  // Wishlist
+  Route::controller(WishlistController::class)->group(function () {
+    Route::get('/wishlist', 'list');
+    Route::post('/wishlist', 'create');
+    Route::delete('/wishlist', 'delete');
+  });
+
+  // Cart
+  Route::controller(CartController::class)->group(function () {
+    Route::get('/carts', 'list');
+    Route::post('/carts', 'create');
+    Route::put('/carts/{id}', 'update');
+    Route::delete('/carts', 'delete');
+  });
+});
 
 // Route::fallback(fn () => abort(404));
