@@ -1,12 +1,9 @@
 <?php
 
-// app/Services/OrderService.php
-
 namespace App\Services;
 
 use App\Http\Requests\Api\{ConfirmPaymentRequest, CreateOrderRequest};
 use App\Models\{Bank, Cart, Invoice, Order, OrderItem, Payment, Shipping};
-use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -16,35 +13,38 @@ use Illuminate\Validation\ValidationException;
 class OrderService
 {
 
-  public function getOrders(Request $request, int $size = 10)
+  public function getOrders(Request $request, ?int $size = 10)
   {
     $page = $request->get('page', 1);
-    $sortBy = $request->get('sort_by', 'newest');
 
-    $orders = Order::with(['items', 'items.product', 'invoice'])
-      ->where('user_id', auth()->id());
+    $orders = auth()->user()->orders()->with(['items', 'items.product', 'invoice']);
 
     $orders->when(
       $request->has('status'),
-      fn (Builder $builder) => $builder->where('status', $request->get('status'))
+      fn ($q) => $q->where('status', $request->get('status'))
     );
 
-    $sorts = [
-      'newest' => ['id', 'desc'],
-      'oldest' => ['id', 'asc']
-    ];
+    $orders->when(
+      $request->has('sort_by'),
+      function ($q) use ($request) {
+        $sorts = [
+          'newest' => ['id', 'desc'],
+          'oldest' => ['id', 'asc']
+        ];
 
-    $orders->orderBy(...$sorts[$sortBy] ?? $sorts['newest']);
+        $q->orderBy(...$sorts[$request->get('sort_by')] ?? $sorts['newest']);
+      },
+      fn ($q) => $q->orderBy('id', 'desc')
+    );
 
     $orders = $orders->paginate(perPage: $size, page: $page);
 
     return $orders;
   }
 
-  public function confirmPayment(ConfirmPaymentRequest $request, int $id): void
+  public function confirmPayment(ConfirmPaymentRequest $request, int $order_id): void
   {
-    $user = auth()->user();
-    $order = $user->orders()->findOrFail($id);
+    $order = auth()->user()->orders()->findOrFail($order_id);
 
     throw_if(
       $order->status !== Order::STATUS_PENDING_PAYMENT,
@@ -78,10 +78,9 @@ class OrderService
     }
   }
 
-  public function confirmDelivered(int $id): void
+  public function confirmDelivered(int $order_id): void
   {
-    $user = auth()->user();
-    $order = $user->orders()->findOrFail($id);
+    $order = auth()->user()->orders()->findOrFail($order_id);
 
     throw_if(
       $order->status !== Order::STATUS_ON_DELIVERY,
