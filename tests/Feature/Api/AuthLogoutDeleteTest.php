@@ -1,5 +1,5 @@
 <?php
-// tests/Feature/Api/AuthLogoutDeleteTest.php
+
 namespace Tests\Feature\Api;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,11 +22,11 @@ class AuthLogoutDeleteTest extends TestCase
     $response->assertOk()
       ->assertExactJson(['data' => true]);
 
-    $this->assertEquals(0, $user->fresh()->tokens->count());
+    $this->assertCount(0, $user->fresh()->tokens);
   }
 
   /** @test */
-  public function returns_unauthenticated_error_if_user_is_not_authenticated()
+  public function unauthenticated_user_cannot_logout()
   {
     $response = $this->deleteJson($this->uri);
 

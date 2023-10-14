@@ -1,12 +1,10 @@
 <?php
-// tests\Feature\Api\CartPostTest.php
+
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\CartController;
 use App\Http\Requests\Api\CreateCartRequest;
-use App\Models\Cart;
-use App\Models\Product;
-use App\Models\User;
+use App\Models\{Cart, Product, User};
 use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -17,62 +15,46 @@ class CartPostTest extends TestCase
 {
   use RefreshDatabase;
 
-  private User $user;
-
-  protected function setUp(): void
-  {
-    parent::setUp();
-
-    $this->seed(ProductCategorySeeder::class);
-    $this->user = User::factory()->create();
-  }
-
-  private function attemptAddProductToCart(?array $data = [], ?string $authToken = null)
-  {
-    $authToken = $authToken
-      ?? $this->user->createToken('auth_token')->plainTextToken;
-
-    return $this->postJson('/api/carts', $data, ['Authorization' => 'Bearer ' . $authToken]);
-  }
-
   /** @test */
   public function can_add_product_to_cart()
   {
+    // Arrange
+    $this->seed(ProductCategorySeeder::class);
+
     $product = Product::factory()->create(['stock' => 10]);
+    $user = User::factory()->create();
+    $authToken = $user->createToken('auth_token')->plainTextToken;
+    $headers = ['Authorization' => 'Bearer ' . $authToken];
+    $data = [
+      'product_id' => $product->id,
+      'quantity' => 3
+    ];
 
-    $response = $this->attemptAddProductToCart([
-      'product_id' => $product->id, 'quantity' => 2
-    ]);
+    // Act
+    $response1 = $this->postJson('/api/carts', $data, $headers);
 
-    $response->assertCreated()
+    // Assert
+    $response1->assertCreated()
       ->assertExactJson(['data' => true]);
 
-    $this->assertDatabaseCount('carts', 1);
-    $this->assertDatabaseHas('carts', [
-      'user_id' => $this->user->id,
-      'product_id' => $product->id,
-      'quantity' => 2,
-    ]);
+    $this->assertDatabaseCount('carts', 1)
+      ->assertDatabaseHas('carts', ['user_id' => $user->id, ...$data]);
 
-    $response = $this->attemptAddProductToCart([
-      'product_id' => $product->id, 'quantity' => 3
-    ]);
+    // Act
+    $response2 = $this->postJson('/api/carts', $data, $headers);
 
-    $response->assertCreated()
+    // Assert
+    $response2->assertCreated()
       ->assertExactJson(['data' => true]);
 
-    $this->assertDatabaseCount('carts', 1);
-    $this->assertDatabaseHas('carts', [
-      'user_id' => $this->user->id,
-      'product_id' => $product->id,
-      'quantity' => 5,
-    ]);
+    $this->assertDatabaseCount('carts', 1)
+      ->assertDatabaseHas('carts',  ['quantity' => $data['quantity'] * 2]);
   }
 
   /** @test */
   public function unauthenticated_user_cannot_add_product_to_cart()
   {
-    $response = $this->attemptAddProductToCart(authToken: ' Invalid-Token');
+    $response = $this->postJson('/api/carts');
 
     $response->assertUnauthorized()
       ->assertExactJson(['message' => 'Unauthenticated.']);
@@ -81,25 +63,22 @@ class CartPostTest extends TestCase
   /** @test */
   public function cannot_add_product_to_cart_if_quantity_exceeds_stock()
   {
-    $product = Product::factory()->create(['stock' => 5]);
-    Cart::factory()
-      ->for($product)
-      ->for($this->user)
-      ->create(['quantity' => 3]);
+    $this->seed(ProductCategorySeeder::class);
 
-    $response = $this->attemptAddProductToCart([
-      'product_id' => $product->id, 'quantity' => 3
-    ]);
+    $product = Product::factory()->create(['stock' => 5]);
+    $user = User::factory()->create();
+    $cart = Cart::factory()->for($product)->for($user)->create(['quantity' => 3]);
+
+    $response = $this->postJson('/api/carts', [
+      'product_id' => $product->id,
+      'quantity' => 3
+    ], $this->authBearerToken($user));
 
     $response->assertUnprocessable()
-      ->assertJsonValidationErrorFor('cart');
+      ->assertJsonValidationErrors(['cart']);
 
-    $this->assertDatabaseCount('carts', 1);
-    $this->assertDatabaseHas('carts', [
-      'user_id' => $this->user->id,
-      'product_id' => $product->id,
-      'quantity' => 3,
-    ]);
+    $this->assertDatabaseCount('carts', 1)
+      ->assertModelExists($cart);
   }
 
   /** @test */

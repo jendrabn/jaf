@@ -1,5 +1,5 @@
 <?php
-// tests/Feature/Api/AuthLoginPostTest.php
+
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\AuthController;
@@ -17,11 +17,11 @@ class AuthLoginPostTest extends TestCase
   /** @test */
   public function can_login()
   {
-    $user = $this->createUser(['password' => $password = 'seCret123']);
+    $user = $this->createUser(['password' => $password = 'Secret123']);
 
     $response = $this->postJson($this->uri, [
       'email' => $user->email,
-      'password' => $password,
+      'password' => $password
     ]);
 
     $response->assertOk()
@@ -36,19 +36,17 @@ class AuthLoginPostTest extends TestCase
           'auth_token',
         ]
       ])
-      ->assertJson([
-        'data' => $this->formatUserData($user)
-      ]);
+      ->assertJson(['data' => $this->formatUserData($user)]);
 
-    $this->assertCount(1, $user->tokens);
+    $this->assertCount(1, $user->fresh()->tokens);
   }
 
   /** @test */
   public function returns_unauthenticated_error_if_email_doenot_exist()
   {
     $response = $this->postJson($this->uri, [
-      'email' => 'ghost@gmail.com',
-      'password' => 'seCret123',
+      'email' => 'invalid@gmail.com',
+      'password' => 'Secret123',
     ]);
 
     $response->assertUnauthorized()
@@ -58,11 +56,11 @@ class AuthLoginPostTest extends TestCase
   /** @test */
   public function returns_unauthenticated_error_if_password_is_incorrect()
   {
-    $user = $this->createUser(['password' => 'seCret123']);
+    $user = $this->createUser(['password' => 'Secret123']);
 
     $response = $this->postJson($this->uri, [
       'email' => $user->email,
-      'password' => 'seCret',
+      'password' => 'Wrong-Password',
     ]);
 
     $response->assertUnauthorized()
@@ -82,19 +80,16 @@ class AuthLoginPostTest extends TestCase
   /** @test */
   public function login_request_has_the_correct_rules()
   {
-    $this->assertValidationRules(
-      [
-        'email' => [
-          'required',
-          'string',
-          'email',
-        ],
-        'password' => [
-          'required',
-          'string',
-        ],
+    $this->assertValidationRules([
+      'email' => [
+        'required',
+        'string',
+        'email',
       ],
-      (new LoginRequest())->rules()
-    );
+      'password' => [
+        'required',
+        'string',
+      ],
+    ], (new LoginRequest())->rules());
   }
 }

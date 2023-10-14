@@ -1,24 +1,25 @@
 <?php
-// tests/Feature/Api/CheckoutPostTest.php
+
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Requests\Api\CheckoutRequest;
-use App\Models\Bank;
-use App\Models\Cart;
-use App\Models\Product;
-use App\Models\User;
-use App\Models\UserAddress;
-use Database\Seeders\BankSeeder;
-use Database\Seeders\CitySeeder;
-use Database\Seeders\ProductBrandSeeder;
-use Database\Seeders\ProductCategorySeeder;
-use Database\Seeders\ProvinceSeeder;
+use App\Models\{
+  Bank,
+  Cart,
+  User,
+  UserAddress
+};
+use Database\Seeders\{
+  BankSeeder,
+  CitySeeder,
+  ProductBrandSeeder,
+  ProductCategorySeeder,
+  ProvinceSeeder
+};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\Rule;
 use Tests\TestCase;
@@ -34,7 +35,11 @@ class CheckoutPostTest extends TestCase
   protected function setUp(): void
   {
     parent::setUp();
-    $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class, BankSeeder::class]);
+    $this->seed([
+      ProductCategorySeeder::class,
+      ProductBrandSeeder::class,
+      BankSeeder::class
+    ]);
     $this->user = $this->createUser();
     $this->banks = Bank::all();
   }
@@ -42,12 +47,12 @@ class CheckoutPostTest extends TestCase
   public function createCart(int $quantity = 1, ?array $productData = []): Cart
   {
     return Cart::factory()
-      ->for(Product::factory()->create($productData))
+      ->for($this->createProduct($productData))
       ->for($this->user)
       ->create(compact('quantity'));
   }
 
-  private function attemptToCheckout(?array $cartIds = []): TestResponse
+  private function attemptToCheckout(array $cartIds = []): TestResponse
   {
     return $this->postJson(
       $this->uri,
@@ -56,69 +61,22 @@ class CheckoutPostTest extends TestCase
     );
   }
 
-  private function attemptToCheckoutAndExpect422(array|string $errors, ?array $cartIds = []): TestResponse
-  {
-    return $this->attemptToCheckout($cartIds)
-      ->assertUnprocessable()
-      ->assertJsonStructure(['message', 'errors' => ['*' => []]])
-      ->assertJsonValidationErrors($errors);
-  }
-
-  /** @test */
-  public function checkout_uses_the_correct_form_request()
-  {
-    $this->assertActionUsesFormRequest(
-      CheckoutController::class,
-      'checkout',
-      CheckoutRequest::class
-    );
-  }
-
-  /** @test */
-  public function checkout_request_has_the_correct_validation_rules()
-  {
-    $rules = (new CheckoutRequest())
-      ->setUserResolver(fn () => $this->user)->rules();
-
-    $this->assertValidationRules(
-      [
-        'cart_ids' => [
-          'required',
-          'array',
-        ],
-        'cart_ids.*' => [
-          'integer',
-          Rule::exists('carts', 'id')
-            ->where('user_id', $this->user->id),
-        ]
-      ],
-      $rules
-    );
-  }
-
-  /** @test */
-  public function cannot_checkout_if_user_is_not_authenticated()
-  {
-    $response = $this->postJson($this->uri, headers: ['Authorization' => 'Bearer Invalid-Token']);
-
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
-
   /** @test */
   public function can_checkout()
   {
-    // Arrange
-    $this->seed([ProvinceSeeder::class, CitySeeder::class,]);
-    $userAddress = UserAddress::factory()->for($this->user)->create(['city_id' => 154]);
+    $this->seed([ProvinceSeeder::class, CitySeeder::class]);
+
+    $userAddress = UserAddress::factory()
+      ->for($this->user)
+      ->create(['city_id' => 154]);
     $cart1 = $this->createCart(2, ['price' => 25000, 'stock' => 5, 'weight' => 500]);
     $cart2 = $this->createCart(1, ['price' => 50000, 'stock' => 5, 'weight' => 500]);
     $totalWeight = 1500;
     $totalQuantity = 3;
     $totalPrice = 100000;
-    // Action
+
     $response = $this->attemptToCheckout([$cart1->id, $cart2->id]);
-    // Assert
+
     $response->assertOk()
       ->assertJson([
         'data' => [
@@ -147,15 +105,14 @@ class CheckoutPostTest extends TestCase
   /** @test */
   public function can_checkout_without_a_shipping_address()
   {
-    // Arrange
     $cart1 = $this->createCart(2, ['price' => 25000, 'stock' => 5, 'weight' => 500]);
     $cart2 = $this->createCart(1, ['price' => 50000, 'stock' => 5, 'weight' => 500]);
     $totalWeight = 1500;
     $totalQuantity = 3;
     $totalPrice = 100000;
-    // Action
+
     $response = $this->attemptToCheckout([$cart1->id, $cart2->id]);
-    // Assert
+
     $response->assertOk()
       ->assertExactJson([
         'data' => [
@@ -174,30 +131,78 @@ class CheckoutPostTest extends TestCase
   }
 
   /** @test */
+  public function unauthenticated_user_cannot_checkout()
+  {
+    $response = $this->postJson($this->uri);
+
+    $response->assertUnauthorized()
+      ->assertJsonStructure(['message']);
+  }
+
+  /** @test */
   public function cannot_checkout_if_product_is_not_published()
   {
     $cart1 = $this->createCart(1, ['stock' => 1, 'weight' => 100, 'is_publish' => false]);
     $cart2 = $this->createCart(3, ['stock' => 3, 'weight' => 100]);
 
-    $this->attemptToCheckoutAndExpect422('product', [$cart1->id, $cart2->id]);
+    $response = $this->attemptToCheckout([$cart1->id, $cart2->id]);
+
+    $response->assertUnprocessable()
+      ->assertJsonValidationErrors(['product']);
+
     $this->assertDatabaseMissing('carts', $cart1->toArray());
   }
 
   /** @test */
-  public function cannot_checkout_if_quantity_exceed_stock()
+  public function cannot_checkout_if_quantity_exceeds_stock()
   {
     $cart1 = $this->createCart(3, ['stock' => 1, 'weight' => 100]);
     $cart2 = $this->createCart(1, ['stock' => 3, 'weight' => 100]);
 
-    $this->attemptToCheckoutAndExpect422('cart', [$cart1->id, $cart2->id]);
+    $response = $this->attemptToCheckout([$cart1->id, $cart2->id]);
+
+    $response->assertUnprocessable()
+      ->assertJsonValidationErrors(['cart']);
   }
 
   /** @test */
-  public function cannot_checkout_if_total_weight_exceed_25kg()
+  public function cannot_checkout_if_total_weight_exceeds_25kg()
   {
     $cart1 = $this->createCart(2, ['stock' => 5, 'weight' => 3000]);
     $cart2 = $this->createCart(2, ['stock' => 5, 'weight' => 10000]);
 
-    $this->attemptToCheckoutAndExpect422('cart', [$cart1->id, $cart2->id]);
+    $response = $this->attemptToCheckout([$cart1->id, $cart2->id]);
+
+    $response->assertUnprocessable()
+      ->assertJsonValidationErrors(['cart']);
+  }
+
+  /** @test */
+  public function checkout_uses_the_correct_form_request()
+  {
+    $this->assertActionUsesFormRequest(
+      CheckoutController::class,
+      'checkout',
+      CheckoutRequest::class
+    );
+  }
+
+  /** @test */
+  public function checkout_request_has_the_correct_validation_rules()
+  {
+    $rules = (new CheckoutRequest())
+      ->setUserResolver(fn () => $this->user)
+      ->rules();
+
+    $this->assertValidationRules([
+      'cart_ids' => [
+        'required',
+        'array',
+      ],
+      'cart_ids.*' => [
+        'integer',
+        Rule::exists('carts', 'id')->where('user_id', $this->user->id),
+      ]
+    ], $rules);
   }
 }

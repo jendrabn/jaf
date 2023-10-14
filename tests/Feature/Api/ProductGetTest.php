@@ -1,5 +1,5 @@
 <?php
-// tests/Feature/Api/ProductGetTest.php
+
 namespace Tests\Feature\Api;
 
 use App\Models\Order;
@@ -14,13 +14,6 @@ use Tests\TestCase;
 class ProductGetTest extends TestCase
 {
   use RefreshDatabase;
-
-  /**
-   *  Search by product name, category & brand (belum full-text search)
-   *  Sorting by newest, oldest, sales, expensive, cheapest
-   *  Filter by category_id, brand_id, sex, min_price & max_price
-   *  Default orderBy adalah order by ID desc (newest)
-   */
 
   private string $uri = '/api/products';
 
@@ -39,9 +32,10 @@ class ProductGetTest extends TestCase
     $response = $this->attemptToGetProduct();
 
     $response->assertJsonPath('data', $this->formatProductData($products))
-      ->assertJsonCount(3, 'data');
+      ->assertJsonCount(3, 'data')
+      ->json();
 
-    $this->assertNotTrue($response['data'][0]['image'] == '');
+    $this->assertStringStartsWith('http', $response['data'][0]['image']);
   }
 
   /** @test */
@@ -87,7 +81,7 @@ class ProductGetTest extends TestCase
       )
       ->create();
 
-    // Search by product name
+    // Search by name
     $response = $this->attemptToGetProduct(['search' => 'Bunga Mawar']);
 
     $response->assertJsonPath('data.0', $this->formatProductData($products[0]))

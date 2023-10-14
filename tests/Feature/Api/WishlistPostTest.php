@@ -1,10 +1,9 @@
 <?php
-// tests/Feature/Api/WishlistPostTest.php
+
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\WishlistController;
 use App\Http\Requests\Api\CreateWishlistRequest;
-use Database\Seeders\ProductBrandSeeder;
 use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -18,7 +17,7 @@ class WishlistPostTest extends TestCase
   private string $uri = '/api/wishlist';
 
   /** @test */
-  public function can_create_wishlist()
+  public function can_add_product_to_wishlist()
   {
     $this->seed(ProductCategorySeeder::class);
 
@@ -26,20 +25,35 @@ class WishlistPostTest extends TestCase
     $product = $this->createProduct();
     $data = ['product_id' => $product->id];
 
-    $response = $this->postJson($this->uri, $data, $this->authBearerToken($user));
-    $response = $this->postJson($this->uri, $data, $this->authBearerToken($user));
+    $response1 = $this->postJson(
+      $this->uri,
+      $data,
+      $this->authBearerToken($user)
+    );
 
-    $response->assertCreated()
+    $response1->assertCreated()
       ->assertExactJson(['data' => true]);
 
-    $this->assertDatabaseCount('wishlists', 1);
-    $this->assertDatabaseHas('wishlists', $data + ['user_id' => $user->id]);
+    $this->assertDatabaseCount('wishlists', 1)
+      ->assertDatabaseHas('wishlists', ['user_id' => $user->id, ...$data]);
+
+    $response2 = $this->postJson(
+      $this->uri,
+      $data,
+      $this->authBearerToken($user)
+    );
+
+    $response2->assertCreated()
+      ->assertExactJson(['data' => true]);
+
+    $this->assertDatabaseCount('wishlists', 1)
+      ->assertDatabaseHas('wishlists', ['user_id' => $user->id, ...$data]);
   }
 
   /** @test */
-  public function unauthenticated_user_cannot_create_wishlist()
+  public function unauthenticated_user_cannot_add_product_to_wishlist()
   {
-    $response = $this->postJson($this->uri, ['Authorization' => 'Bearer Invalid-Token']);
+    $response = $this->postJson($this->uri);
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);
@@ -62,8 +76,7 @@ class WishlistPostTest extends TestCase
       'product_id' => [
         'required',
         'integer',
-        Rule::exists('products', 'id')
-          ->where('is_publish', true)
+        Rule::exists('products', 'id')->where('is_publish', true)
       ]
     ], (new CreateWishlistRequest())->rules());
   }

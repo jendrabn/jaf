@@ -34,7 +34,7 @@ class CartService
   {
     $user = auth()->user();
     $cart = $user->carts()->findOrFail($cartId);
-    $newQuantity = $cart->quantity + $request->validated('quantity');
+    $newQuantity = $request->validated('quantity');
 
     throw_if(
       $newQuantity > $cart->product->stock,

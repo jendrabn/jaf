@@ -1,5 +1,5 @@
 <?php
-// tests/Feature/Api/UserChangePasswordPutTest.php
+
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\UserController;
@@ -15,6 +15,7 @@ class UserChangePasswordPutTest extends TestCase
   use RefreshDatabase;
 
   private string $uri = '/api/user/change_password';
+
   /** @test */
   public function can_update_password()
   {
@@ -58,18 +59,21 @@ class UserChangePasswordPutTest extends TestCase
   /** @test */
   public function update_password_request_has_the_correct_validation_rules()
   {
-    $this->assertValidationRules([
-      'current_password' => [
-        'required',
-        'string',
-        'current_password',
+    $this->assertValidationRules(
+      [
+        'current_password' => [
+          'required',
+          'string',
+          'current_password',
+        ],
+        'password' => [
+          'required',
+          'string', Password::min(8)->mixedCase()->numbers(),
+          'max:30',
+          'confirmed',
+        ],
       ],
-      'password' => [
-        'required',
-        'string', Password::min(8)->mixedCase()->numbers(),
-        'max:30',
-        'confirmed',
-      ],
-    ], (new UpdatePasswordRequest())->rules());
+      (new UpdatePasswordRequest())->rules()
+    );
   }
 }

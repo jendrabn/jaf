@@ -30,11 +30,13 @@ class CancelExpiredOrder extends Command
       ->whereHas('invoice', fn ($q) => $q->where('due_date', '<', now()))
       ->get();
 
-    foreach ($orders as $order) {
-      $order->update([
-        'status' => Order::STATUS_CANCELLED,
-        'cancel_reason' => 'Pesanan dibatalkan otomatis oleh sistem!'
-      ]);
+    if ($orders->isNotEmpty()) {
+      foreach ($orders as $order) {
+        $order->update([
+          'status' => Order::STATUS_CANCELLED,
+          'cancel_reason' => 'Pesanan dibatalkan otomatis oleh sistem!'
+        ]);
+      }
     }
   }
 }

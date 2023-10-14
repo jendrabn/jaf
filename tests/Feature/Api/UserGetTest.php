@@ -1,5 +1,5 @@
 <?php
-// tests\Feature\Api\UserGetTest.php
+
 namespace Tests\Feature\Api;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;

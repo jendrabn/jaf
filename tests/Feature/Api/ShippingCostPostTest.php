@@ -1,12 +1,11 @@
 <?php
-// tests/Feature/Api/ShippingCostPost.php
+
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Requests\Api\ShippingCostRequest;
 use App\Models\Shipping;
-use Database\Seeders\CitySeeder;
-use Database\Seeders\ProvinceSeeder;
+use Database\Seeders\{CitySeeder, ProvinceSeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -22,9 +21,7 @@ class ShippingCostPostTest extends TestCase
   {
     $this->seed([ProvinceSeeder::class, CitySeeder::class]);
 
-    $data = ['destination' => 154, 'weight' => 1500];
-
-    $response = $this->postJson($this->uri, $data);
+    $response = $this->postJson($this->uri, ['destination' => 154, 'weight' => 1500]);
 
     $response->assertOk()
       ->assertJsonStructure([
@@ -61,17 +58,20 @@ class ShippingCostPostTest extends TestCase
   /** @test */
   public function shipping_cost_request_has_the_correct_validation_rules()
   {
-    $this->assertValidationRules([
-      'destination' => [
-        'required',
-        'integer',
-        'exists:cities,id',
+    $this->assertValidationRules(
+      [
+        'destination' => [
+          'required',
+          'integer',
+          'exists:cities,id',
+        ],
+        'weight' => [
+          'required',
+          'integer',
+          'max:' . Shipping::MAX_WEIGHT
+        ],
       ],
-      'weight' => [
-        'required',
-        'integer',
-        'max:' . Shipping::MAX_WEIGHT
-      ],
-    ], (new ShippingCostRequest())->rules());
+      (new ShippingCostRequest())->rules()
+    );
   }
 }

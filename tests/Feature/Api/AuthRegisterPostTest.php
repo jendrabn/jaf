@@ -1,5 +1,5 @@
 <?php
-// tests/Feature/Api/AuthRegisterPostTest.php
+
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\AuthController;
@@ -26,10 +26,10 @@ class AuthRegisterPostTest extends TestCase
     $this->seed(RolesAndPermissionsSeeder::class);
 
     $data = [
-      'name' => 'John Cena',
-      'email' => 'jcena@gmail.com',
-      'password' => 'seCret123',
-      'password_confirmation' => 'seCret123'
+      'name' => 'Umar',
+      'email' => 'umar@gmail.com',
+      'password' => 'Secret123',
+      'password_confirmation' => 'Secret123'
     ];
 
     $response = $this->postJson($this->uri, $data);
@@ -52,7 +52,7 @@ class AuthRegisterPostTest extends TestCase
     $user = User::whereEmail($data['email'])->first();
 
     $this->assertTrue(Hash::check($data['password'], $user->password));
-    $this->assertTrue($user->hasRole('user'));
+    $this->assertTrue($user->hasRole(User::ROLE_USER));
   }
 
   /** @test */
@@ -68,30 +68,27 @@ class AuthRegisterPostTest extends TestCase
   /** @test */
   public function register_request_has_the_correct_rules()
   {
-    $this->assertValidationRules(
-      [
-        'name' => [
-          'required',
-          'string',
-          'min:1',
-          'max:30',
-        ],
-        'email' => [
-          'required',
-          'string',
-          'email',
-          'min:1',
-          'max:255',
-          Rule::unique('users', 'email')
-        ],
-        'password' => [
-          'required',
-          'string', Password::min(8)->mixedCase()->numbers(),
-          'max:30',
-          'confirmed'
-        ],
+    $this->assertValidationRules([
+      'name' => [
+        'required',
+        'string',
+        'min:1',
+        'max:30',
       ],
-      (new RegisterRequest())->rules()
-    );
+      'email' => [
+        'required',
+        'string',
+        'email',
+        'min:1',
+        'max:255',
+        Rule::unique('users', 'email')
+      ],
+      'password' => [
+        'required',
+        'string', Password::min(8)->mixedCase()->numbers(),
+        'max:30',
+        'confirmed'
+      ],
+    ], (new RegisterRequest())->rules());
   }
 }

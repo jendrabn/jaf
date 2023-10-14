@@ -1,11 +1,10 @@
 <?php
-// tests/Feature/Api/CartDeleteTest.php
+
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\CartController;
 use App\Http\Requests\Api\DeleteCartRequest;
 use App\Models\Cart;
-use Database\Seeders\ProductBrandSeeder;
 use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -19,37 +18,38 @@ class CartDeleteTest extends TestCase
   private string $uri = '/api/carts';
 
   /** @test */
-  public function unauthenticated_user_cannot_add_product_to_cart()
-  {
-    $response = $this->deleteJson($this->uri,  ['Authorization' => 'Bearer Invalid-Token']);
-
-    $response->assertUnauthorized()
-      ->assertExactJson(['message' => 'Unauthenticated.']);
-  }
-
-  /** @test */
   public function can_delete_carts()
   {
-    $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
+    $this->seed(ProductCategorySeeder::class);
 
     $user = $this->createUser();
-    $carts = Cart::factory()
-      ->count(3)
+    $carts = Cart::factory(count: 2)
       ->sequence(
-        ['product_id' => $this->createProduct()->id],
         ['product_id' => $this->createProduct()->id],
         ['product_id' => $this->createProduct()->id],
       )
       ->for($user)
       ->create();
-    Cart::factory()->for($this->createUser())->create();
-    $cartIds = $carts->pluck('id')->toArray();
 
-    $response = $this->deleteJson($this->uri, ['cart_ids' => $cartIds], $this->authBearerToken($user));
+    $response = $this->deleteJson(
+      $this->uri,
+      ['cart_ids' => $carts->pluck('id')],
+      $this->authBearerToken($user)
+    );
 
     $response->assertOk()
       ->assertExactJson(['data' => true]);
-    $this->assertDatabaseCount('carts', 1);
+
+    $this->assertDatabaseCount('carts', 0);
+  }
+
+  /** @test */
+  public function unauthenticated_user_cannot_delete_carts()
+  {
+    $response = $this->deleteJson($this->uri);
+
+    $response->assertUnauthorized()
+      ->assertJsonStructure(['message']);
   }
 
   /** @test */

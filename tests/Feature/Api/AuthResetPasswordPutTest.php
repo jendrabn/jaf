@@ -1,5 +1,5 @@
 <?php
-// tests/Feature/Api/AuthResetPasswordPutTest.php
+
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\AuthController;
@@ -38,7 +38,7 @@ class AuthResetPasswordPutTest extends TestCase
     $this->assertTrue(Hash::check($newPassword, $user->fresh()->password));
     $this->assertDatabaseMissing('password_reset_tokens', [
       'email' => $user->email,
-      'token' => $user->token
+      'token' => $token
     ]);
   }
 
@@ -55,27 +55,24 @@ class AuthResetPasswordPutTest extends TestCase
   /** @test */
   public function reset_password_request_has_the_correct_rules()
   {
-    $this->assertValidationRules(
-      [
-        'email' => [
-          'required',
-          'string',
-          'email',
-          Rule::exists('users', 'email')
-        ],
-        'token' => [
-          'required',
-          'string'
-        ],
-        'password' => [
-          'required',
-          'string',
-          PasswordRule::min(8)->mixedCase()->numbers(),
-          'max:30',
-          'confirmed'
-        ],
+    $this->assertValidationRules([
+      'email' => [
+        'required',
+        'string',
+        'email',
+        Rule::exists('users', 'email')
       ],
-      (new ResetPasswordRequest())->rules()
-    );
+      'token' => [
+        'required',
+        'string'
+      ],
+      'password' => [
+        'required',
+        'string',
+        PasswordRule::min(8)->mixedCase()->numbers(),
+        'max:30',
+        'confirmed'
+      ],
+    ], (new ResetPasswordRequest())->rules());
   }
 }

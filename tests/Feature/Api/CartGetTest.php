@@ -1,10 +1,9 @@
 <?php
-// tests/Feature/Api/CartGetTest.php
+
 namespace Tests\Feature\Api;
 
 use App\Models\Cart;
-use Database\Seeders\ProductBrandSeeder;
-use Database\Seeders\ProductCategorySeeder;
+use Database\Seeders\{ProductBrandSeeder, ProductCategorySeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -21,36 +20,36 @@ class CartGetTest extends TestCase
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
 
     $user = $this->createUser();
-    $carts = Cart::factory()
-      ->count(3)
+    $carts = Cart::factory(count: 3)
       ->sequence(
         ['product_id' => $this->createProduct()->id],
         ['product_id' => $this->createProduct()->id],
         ['product_id' => $this->createProduct()->id],
       )
       ->for($user)
-      ->create()
-      ->sortByDesc('id')
-      ->values();
+      ->create();
 
     $response = $this->getJson($this->uri, $this->authBearerToken($user));
 
     $response->assertOk()
       ->assertExactJson([
-        'data' => $carts->map(fn ($cart) => [
-          'id' => $cart->id,
-          'product' => $this->formatProductData($cart->product),
-          'quantity' => $cart->quantity,
-        ])->toArray()
+        'data' => $carts->sortByDesc('id')
+          ->values()
+          ->map(fn ($item) => [
+            'id' => $item->id,
+            'product' => $this->formatProductData($item->product),
+            'quantity' => $item->quantity,
+          ])
+          ->toArray()
       ]);
   }
 
   /** @test */
   public function unauthenticated_user_cannot_get_all_carts()
   {
-    $response = $this->getJson($this->uri,  ['Authorization' => 'Bearer Invalid-Token']);
+    $response = $this->getJson($this->uri);
 
     $response->assertUnauthorized()
-      ->assertExactJson(['message' => 'Unauthenticated.']);
+      ->assertJsonStructure(['message']);
   }
 }

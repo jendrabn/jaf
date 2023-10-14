@@ -1,5 +1,5 @@
 <?php
-// tests/Feature/Api/AuthForgotPasswordPostTest.php
+
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\AuthController;
@@ -58,15 +58,12 @@ class AuthForgotPasswordPostTest extends TestCase
   /** @test */
   public function  forgot_password_request_has_the_correct_rules()
   {
-    $this->assertValidationRules(
-      [
-        'email' => [
-          'required',
-          'email',
-          Rule::exists('users', 'email'),
-        ],
+    $this->assertValidationRules([
+      'email' => [
+        'required',
+        'email',
+        Rule::exists('users', 'email'),
       ],
-      (new ForgotPasswordRequest())->rules()
-    );
+    ], (new ForgotPasswordRequest())->rules());
   }
 }

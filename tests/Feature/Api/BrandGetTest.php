@@ -1,5 +1,5 @@
 <?php
-// tests/Feature/Api/BrandGetTest.php
+
 namespace Tests\Feature\Api;
 
 use App\Models\ProductBrand;

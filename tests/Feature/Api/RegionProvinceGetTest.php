@@ -1,5 +1,5 @@
 <?php
-// tests/Feature/Api/RegionProvinceGetTest.php
+
 namespace Tests\Feature\Api;
 
 use App\Models\Province;
@@ -24,9 +24,7 @@ class RegionProvinceGetTest extends TestCase
     $response = $this->getJson($this->uri);
 
     $response->assertOk()
-      ->assertExactJson([
-        'data' => $this->formatProvinceData($provinces)
-      ])
+      ->assertExactJson(['data' => $this->formatProvinceData($provinces)])
       ->assertJsonCount(34, 'data');
   }
 }

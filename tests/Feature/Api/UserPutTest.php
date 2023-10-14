@@ -1,5 +1,5 @@
 <?php
-// tests/Feature/Api/UserPutTest.php
+
 namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\UserController;
@@ -20,22 +20,21 @@ class UserPutTest extends TestCase
   {
     $user = $this->createUser();
     $data = [
-      'name' => 'Elon Musk',
-      'email' => 'musk@gmail.com',
+      'name' => 'Ali',
+      'email' => 'ali@gmail.com',
       'phone' => '087991776171',
       'sex' => 1,
-      'birth_date' => '1970-09-26'
+      'birth_date' => fake()->date
     ];
 
     $response = $this->putJson($this->uri, $data, $this->authBearerToken($user));
 
     $response->assertOk()
       ->assertExactJson([
-        'data' => [
-          'id' => $user->id,
-          ...$data
-        ]
+        'data' => ['id' => $user->id, ...$data]
       ]);
+
+    $this->assertDatabaseHas('users', $data);
   }
 
   /** @test */
@@ -61,9 +60,7 @@ class UserPutTest extends TestCase
   public function profile_request_has_the_correct_rules()
   {
     $user = $this->createUser();
-    $rules = (new ProfileRequest())
-      ->setUserResolver(fn () => $user)
-      ->rules();
+    $rules = (new ProfileRequest())->setUserResolver(fn () => $user)->rules();
 
     $this->assertValidationRules(
       [
