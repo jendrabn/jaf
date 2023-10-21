@@ -7,22 +7,24 @@ use App\Models\{Bank, Cart, Invoice, Order, OrderItem, Payment, Shipping};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class OrderService
 {
-
-  public function getOrders(Request $request, ?int $size = 10)
+  /**
+   * @param Request $request
+   * @param integer $size
+   * @return LengthAwarePaginator
+   */
+  public function getOrders(Request $request, int $size = 10): LengthAwarePaginator
   {
     $page = $request->get('page', 1);
 
-    $orders = auth()->user()->orders()->with(['items', 'items.product', 'invoice']);
+    $orders = auth()->user()->orders();
 
-    $orders->when(
-      $request->has('status'),
-      fn ($q) => $q->where('status', $request->get('status'))
-    );
+    $orders->when($request->has('status'), fn ($q) => $q->where('status', $request->get('status')));
 
     $orders->when(
       $request->has('sort_by'),
@@ -42,14 +44,19 @@ class OrderService
     return $orders;
   }
 
-  public function confirmPayment(ConfirmPaymentRequest $request, int $order_id): void
+  /**
+   * @param ConfirmPaymentRequest $request
+   * @param integer $orderId
+   * @return Order
+   */
+  public function confirmPayment(ConfirmPaymentRequest $request, int $orderId): Order
   {
-    $order = auth()->user()->orders()->findOrFail($order_id);
+    $order = auth()->user()->orders()->findOrFail($orderId);
 
     throw_if(
       $order->status !== Order::STATUS_PENDING_PAYMENT,
       ValidationException::withMessages([
-        'order' => 'Order status must be pending payment.'
+        'order_id' => 'Order status must be pending payment.'
       ])
     );
 
@@ -58,63 +65,67 @@ class OrderService
       $order->cancel_reason = 'Order canceled by system.';
       $order->save();
 
-      throw ValidationException::withMessages(
-        ['order' => 'Order canceled because payment time has expired.']
-      );
+      throw ValidationException::withMessages([
+        'order_id' => 'Order canceled, payment time has expired.'
+      ]);
     }
 
     try {
-      DB::beginTransaction();
-
-      $order->invoice->payment->bank()->create($request->validated());
-      $order->status = Order::STATUS_PENDING;
-      $order->save();
-
-      DB::commit();
+      DB::transaction(function () use ($order, $request) {
+        $order->invoice->payment->bank()->create($request->validated());
+        $order->status = Order::STATUS_PENDING;
+        $order->save();
+      });
     } catch (QueryException $e) {
-      DB::rollBack();
-
       throw $e;
     }
+
+    return $order;
   }
 
-  public function confirmDelivered(int $order_id): void
+  /**
+   * @param integer $orderId
+   * @return Order
+   */
+  public function confirmDelivered(int $orderId): Order
   {
-    $order = auth()->user()->orders()->findOrFail($order_id);
+    $order = auth()->user()->orders()->findOrFail($orderId);
 
     throw_if(
       $order->status !== Order::STATUS_ON_DELIVERY,
       ValidationException::withMessages([
-        'order' => 'Order status must be on delivery.'
+        'order_id' => 'Order status must be on delivery.'
       ])
     );
 
     try {
-      DB::beginTransaction();
-
-      $order->status = Order::STATUS_COMPLETED;
-      $order->shipping->status = Shipping::STATUS_SHIPPED;
-      $order->save();
-      $order->shipping->save();
-
-      DB::commit();
+      DB::transaction(function () use ($order) {
+        $order->status = Order::STATUS_COMPLETED;
+        $order->shipping->status = Shipping::STATUS_SHIPPED;
+        $order->save();
+        $order->shipping->save();
+      });
     } catch (QueryException $e) {
-      DB::rollBack();
-
       throw $e;
     }
+
+    return $order;
   }
 
+  /**
+   * @param CreateOrderRequest $request
+   * @return Order
+   */
   public function createOrder(CreateOrderRequest $request): Order
   {
     $validatedData = $request->validated();
     $carts = Cart::whereIn('id', $validatedData['cart_ids'])->get();
-    $user = auth()->user();
+    $bank = Bank::findOrFail($validatedData['bank_id']);
 
     $this->validateBeforeCreateOrder($carts);
 
     $shippingAddress = $validatedData['shipping_address'];
-    $totalWeight = $this->getTotalWeight($carts);
+    $totalWeight = $this->totalWeight($carts);
 
     $shipping = (new RajaOngkirService)->getService(
       $validatedData['shipping_service'],
@@ -126,17 +137,18 @@ class OrderService
     throw_if(
       !$shipping,
       ValidationException::withMessages([
-        'shipping_service' => 'Layanan pengiriman yang diinginkan tidak tersedia.'
+        'shipping_service' => 'Shipping service is not available.'
       ])
     );
 
-    $totalPrice = $this->getTotalPrice($carts);
+    $totalPrice = $this->totalPrice($carts);
     $shippingCost = $shipping['cost'];
     $totalAmount = $totalPrice + $shippingCost;
 
     DB::beginTransaction();
-
     try {
+      $user = auth()->user();
+
       $order = Order::create([
         'user_id' => $user->id,
         'total_price' => $totalPrice,
@@ -158,20 +170,17 @@ class OrderService
         ]);
 
         $product->decrement('stock', $cart->quantity);
+
         $cart->delete();
       }
 
       $invoice = Invoice::create([
         'order_id' => $order->id,
-        'number' => implode('/', [
-          'INV', $order->created_at->format('YYYYMMDD'), $order->id
-        ]),
+        'number' => implode('/', ['INV', $order->created_at->format('YYYYMMDD'), $order->id]),
         'amount' => $totalAmount,
         'status' => Invoice::STATUS_UNPAID,
         'due_date' => $order->created_at->addDays(1),
       ]);
-
-      $bank = Bank::findOrFail($validatedData['bank_id']);
 
       Payment::create([
         'invoice_id' => $invoice->id,
@@ -218,62 +227,67 @@ class OrderService
     return $order;
   }
 
+  /**
+   * @param Collection $carts
+   * @return void
+   */
   public function validateBeforeCreateOrder(Collection $carts): void
   {
     throw_if(
       $carts->isEmpty(),
       ValidationException::withMessages([
-        'cart' => 'Cart is empty.'
+        'cart_ids' => 'The carts must not be empty.'
       ])
     );
 
-    foreach ($carts as $item) {
-      $product = $item->product;
-
-      if (!$product->is_publish) {
-        $item->delete();
-
-        throw ValidationException::withMessages([
-          'product' => 'Product is not available.'
-        ]);
-      }
+    foreach ($carts as $cart) {
+      throw_if(
+        !$cart->product->is_publish,
+        ValidationException::withMessages([
+          'cart_ids' => 'The product must be published.'
+        ])
+      );
 
       throw_if(
-        $item->quantity > $product->stock,
+        $cart->quantity > $cart->product->stock,
         ValidationException::withMessages([
-          'cart' => 'Quantity exceeds available stock.'
+          'cart_ids' => 'The quantity must not be greater than stock.'
         ])
       );
     }
 
-    $totalWeight = $this->getTotalWeight($carts);
-
     throw_if(
-      $totalWeight > Shipping::MAX_WEIGHT,
+      $this->totalWeight($carts) > Shipping::MAX_WEIGHT,
       ValidationException::withMessages([
-        'cart' => 'Total weight must not be more than 25kg.'
+        'cart_ids' => 'The total weight must not be greater than 25kg.'
       ])
     );
   }
 
-  public function getTotalWeight(Collection $items)
+  /**
+   * @param Collection $items
+   * @return integer
+   */
+  public function totalWeight(Collection $items): int
   {
-    return $items->reduce(
-      fn ($carry, $item) => $carry + ($item->quantity * $item->product->weight)
-    );
+    return $items->reduce(fn ($carry, $item) => $carry + ($item->quantity * $item->product->weight));
   }
 
-  public function getTotalPrice(Collection $items): int
+  /**
+   * @param Collection $items
+   * @return integer
+   */
+  public function totalPrice(Collection $items): int
   {
-    return $items->reduce(
-      fn ($carry, $item) => $carry + ($item->quantity * $item->product->price)
-    );
+    return $items->reduce(fn ($carry, $item) => $carry + ($item->quantity * $item->product->price));
   }
 
-  public function getTotalQuantity(Collection $items): int
+  /**
+   * @param Collection $items
+   * @return integer
+   */
+  public function totalQuantity(Collection $items): int
   {
-    return $items->reduce(
-      fn ($carry, $item) => $carry + $item->quantity
-    );
+    return $items->reduce(fn ($carry, $item) => $carry + $item->quantity);
   }
 }

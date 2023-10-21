@@ -1,52 +1,48 @@
 <?php
-// app/Http/Services/ProductService.php
+
 namespace App\Services;
 
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductService
 {
-  public function getProducts(Request $request, ?int $size = 20)
+  /**
+   * @param Request $request
+   * @param integer $size
+   * @return LengthAwarePaginator
+   */
+  public function getProducts(Request $request, int $size = 20): LengthAwarePaginator
   {
     $page = $request->get('page', 1);
 
     $products = Product::published();
 
-    // Filter
-    $products->when(
-      $request->has('category_id'),
-      fn ($q) => $q->where('product_category_id', $request->get('category_id'))
-    );
+    $filters = [
+      'category_id' => 'product_category_id',
+      'brand_id' => 'product_brand_id',
+      'sex' => 'sex'
+    ];
 
-    $products->when(
-      $request->has('brand_id'),
-      fn ($q) => $q->where('product_brand_id', $request->get('brand_id'))
-    );
-
-    $products->when(
-      $request->has('sex'),
-      fn ($q) => $q->where('sex', $request->get('sex'))
-    );
+    foreach ($filters as $key => $col) {
+      $products->when($request->has($key), fn ($q) => $q->where($col, $request->get($key)));
+    }
 
     $products->when(
       $request->has('price_min') && $request->has('price_max'),
-      fn ($q) => $q->whereBetween('price', [$request->get('price_min'), $request->get('price_max')])
+      fn ($q) => $q->whereBetween('price', [...$request->only('price_min', 'price_max')])
     );
 
-    // Search
-    $products->when(
-      $request->has('search'),
-      function ($q) use ($request) {
-        $search = $request->get('search');
+    $products->when($request->has('search'), function ($q) use ($request) {
+      $searchTerm = $request->get('search');
 
-        $q->where('name', 'like', '%' . $search . '%')
-          ->orWhereHas('category', fn ($q) => $q->where('name', 'like', '%' . $search . '%'))
-          ->orWhereHas('brand', fn ($q) => $q->where('name', 'like', '%' . $search . '%'));
-      }
-    );
+      $q->where('name', 'like', "%{$searchTerm}%")
+        ->orWhereHas('category', fn ($q) => $q->where('name', 'like', "%{$searchTerm}%"))
+        ->orWhereHas('brand', fn ($q) => $q->where('name', 'like', "%{$searchTerm}%"));
+    });
 
-    // Sort
     $products->when(
       $request->has('sort_by'),
       function ($q) use ($request) {
@@ -68,11 +64,13 @@ class ProductService
     return $products;
   }
 
-  public function getProductSimilars(string $keyword, ?int $size = 5)
+  /**
+   * @param string $keyword
+   * @param integer $size
+   * @return Collection
+   */
+  public function getProductSimilars(string $keyword, int $size = 5): Collection
   {
-    $products = Product::published()
-      ->where('name', 'like', '%' . $keyword . '%')->latest('id')->take($size)->get();
-
-    return $products;
+    return Product::published()->where('name', 'like', "%{$keyword}%")->latest('id')->take($size)->get();
   }
 }

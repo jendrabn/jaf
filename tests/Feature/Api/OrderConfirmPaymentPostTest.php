@@ -116,7 +116,7 @@ class OrderConfirmPaymentPostTest extends TestCase
     );
 
     $response->assertUnprocessable()
-      ->assertJsonValidationErrors(['order']);
+      ->assertJsonValidationErrors(['order_id']);
   }
 
   /** @test */
@@ -140,7 +140,7 @@ class OrderConfirmPaymentPostTest extends TestCase
     );
 
     $response->assertUnprocessable()
-      ->assertJsonValidationErrors(['order']);
+      ->assertJsonValidationErrors(['order_id']);
 
     $this->assertTrue($order->fresh()->status === Order::STATUS_CANCELLED);
   }

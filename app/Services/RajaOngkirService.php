@@ -1,7 +1,5 @@
 <?php
 
-// app/Http/Services/RajaOngkirService.php
-
 namespace App\Services;
 
 use App\Models\Shipping;
@@ -10,36 +8,37 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RajaOngkirService
 {
-  private string $origin, $key, $baseUrl;
-
-  public function __construct()
-  {
-    $this->origin = config('shop.address.city_id');
-    $this->key =  config('shop.rajaongkir.key');
-    $this->baseUrl = config('shop.rajaongkir.base_url');
-  }
-
-  public function getCosts(int $destination, int $weight, ?array $couriers = Shipping::COURIERS): array
+  /**
+   * @param integer $destination
+   * @param integer $weight
+   * @param array $couriers
+   * @return array
+   */
+  public function getCosts(int $destination, int $weight, array $couriers = Shipping::COURIERS): array
   {
     $costs = [];
 
     foreach ($couriers as $courier) {
-      $costs = array_merge(
-        $costs,
-        $this->fetchCost($destination, $weight, $courier)
-      );
+      $costs = array_merge($costs, $this->fetchCosts($destination, $weight, $courier));
     }
 
     return $costs;
   }
 
-  public function fetchCost(int $destination, int $weight, string $courier): array
+  /**
+   * @param integer $destination
+   * @param integer $weight
+   * @param string $courier
+   * @return array
+   */
+  public function fetchCosts(int $destination, int $weight, string $courier): array
   {
-    $origin = $this->origin;
+    $baseUrl = config('shop.rajaongkir.base_url');
+    $key =  config('shop.rajaongkir.key');
+    $origin = config('shop.address.city_id');
 
-    $response = Http::acceptJson()
-      ->withHeader('key', $this->key)
-      ->post($this->baseUrl . '/cost', compact('origin', 'destination', 'weight', 'courier'))
+    $response = Http::acceptJson()->withHeader('key', $key)
+      ->post("$baseUrl/cost", compact('origin', 'destination', 'weight', 'courier'))
       ->throwUnlessStatus(Response::HTTP_OK);
 
     $results = $response->object()->rajaongkir->results[0] ?? [];
@@ -59,11 +58,17 @@ class RajaOngkirService
     return $costs;
   }
 
-  public function getService(string $service, int $destination, int $weight, string $courier)
+  /**
+   * @param string $service
+   * @param integer $destination
+   * @param integer $weight
+   * @param string $courier
+   * @return array|null
+   */
+  public function getService(string $service, int $destination, int $weight, string $courier): array|null
   {
-    $costs = $this->fetchCost($destination, $weight, $courier);
-    $service = collect($costs)->firstWhere('service', $service);
+    $costs = $this->fetchCosts($destination, $weight, $courier);
 
-    return $service;
+    return collect($costs)->firstWhere('service', $service);
   }
 }

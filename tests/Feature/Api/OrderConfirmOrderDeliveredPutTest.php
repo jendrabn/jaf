@@ -95,6 +95,6 @@ class OrderConfirmOrderDeliveredPutTest extends TestCase
     );
 
     $response->assertUnprocessable()
-      ->assertJsonValidationErrors(['order']);
+      ->assertJsonValidationErrors(['order_id']);
   }
 }

@@ -75,7 +75,7 @@ class CartPostTest extends TestCase
     ], $this->authBearerToken($user));
 
     $response->assertUnprocessable()
-      ->assertJsonValidationErrors(['cart']);
+      ->assertJsonValidationErrors(['quantity']);
 
     $this->assertDatabaseCount('carts', 1)
       ->assertModelExists($cart);

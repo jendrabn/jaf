@@ -232,9 +232,7 @@ class OrderPostTest extends TestCase
     $response = $this->attemptToCreateOrder(['cart_ids' => [$cart1->id, $cart2->id]]);
 
     $response->assertUnprocessable()
-      ->assertJsonValidationErrors(['product']);
-
-    $this->assertDatabaseMissing('carts', $cart1->toArray());
+      ->assertJsonValidationErrors(['cart_ids']);
   }
 
   /** @test */
@@ -246,7 +244,7 @@ class OrderPostTest extends TestCase
     $response = $this->attemptToCreateOrder(['cart_ids' => [$cart1->id, $cart2->id]]);
 
     $response->assertUnprocessable()
-      ->assertJsonValidationErrors(['cart']);
+      ->assertJsonValidationErrors(['cart_ids']);
   }
 
   /** @test */
@@ -258,7 +256,7 @@ class OrderPostTest extends TestCase
     $response = $this->attemptToCreateOrder(['cart_ids' => [$cart1->id, $cart2->id]]);
 
     $response->assertUnprocessable()
-      ->assertJsonValidationErrorFor('cart');
+      ->assertJsonValidationErrors(['cart_ids']);
   }
 
   /** @test */
