@@ -12,14 +12,14 @@ class AuthLoginPostTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/auth/login';
+  const URI = '/api/auth/login';
 
   /** @test */
   public function can_login()
   {
     $user = $this->createUser(['password' => $password = 'Secret123']);
 
-    $response = $this->postJson($this->uri, [
+    $response = $this->postJson(self::URI, [
       'email' => $user->email,
       'password' => $password
     ]);
@@ -44,7 +44,7 @@ class AuthLoginPostTest extends TestCase
   /** @test */
   public function returns_unauthenticated_error_if_email_doenot_exist()
   {
-    $response = $this->postJson($this->uri, [
+    $response = $this->postJson(self::URI, [
       'email' => 'invalid@gmail.com',
       'password' => 'Secret123',
     ]);
@@ -58,7 +58,7 @@ class AuthLoginPostTest extends TestCase
   {
     $user = $this->createUser(['password' => 'Secret123']);
 
-    $response = $this->postJson($this->uri, [
+    $response = $this->postJson(self::URI, [
       'email' => $user->email,
       'password' => 'Wrong-Password',
     ]);

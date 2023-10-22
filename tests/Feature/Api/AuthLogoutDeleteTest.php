@@ -10,14 +10,14 @@ class AuthLogoutDeleteTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/auth/logout';
+  const URI = '/api/auth/logout';
 
   /** @test */
   public function can_logout()
   {
     $user = $this->createUser();
 
-    $response = $this->deleteJson($this->uri, headers: $this->authBearerToken($user));
+    $response = $this->deleteJson(self::URI, headers: $this->authBearerToken($user));
 
     $response->assertOk()
       ->assertExactJson(['data' => true]);
@@ -28,7 +28,7 @@ class AuthLogoutDeleteTest extends TestCase
   /** @test */
   public function unauthenticated_user_cannot_logout()
   {
-    $response = $this->deleteJson($this->uri);
+    $response = $this->deleteJson(self::URI);
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);

@@ -15,7 +15,7 @@ class WishlistDeleteTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/wishlist';
+  const URI = '/api/wishlist';
 
   /** @test */
   public function can_delete_wishlist()
@@ -23,19 +23,16 @@ class WishlistDeleteTest extends TestCase
     $this->seed(ProductCategorySeeder::class);
 
     $user = $this->createUser();
-    $wishlist = Wishlist::factory(count: 2)
+    $wishlist = Wishlist::factory(2)
       ->sequence(
         ['product_id' => $this->createProduct()->id],
         ['product_id' => $this->createProduct()->id],
       )
       ->for($user)
       ->create();
+    $data =  ['wishlist_ids' => $wishlist->pluck('id')];
 
-    $response = $this->deleteJson(
-      $this->uri,
-      ['wishlist_ids' => $wishlist->pluck('id')],
-      $this->authBearerToken($user)
-    );
+    $response = $this->deleteJson(self::URI, $data, $this->authBearerToken($user));
 
     $response->assertOk()
       ->assertExactJson(['data' => true]);
@@ -46,7 +43,7 @@ class WishlistDeleteTest extends TestCase
   /** @test */
   public function unauthenticated_user_cannot_delete_wishlist()
   {
-    $response = $this->deleteJson($this->uri);
+    $response = $this->deleteJson(self::URI);
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);
@@ -77,8 +74,7 @@ class WishlistDeleteTest extends TestCase
         'wishlist_ids.*' => [
           'required',
           'integer',
-          Rule::exists('wishlists', 'id')
-            ->where('user_id', $user->id)
+          Rule::exists('wishlists', 'id')->where('user_id', $user->id)
         ]
       ],
       $rules

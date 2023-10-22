@@ -12,8 +12,6 @@ class CategoryGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/categories';
-
   /** @test */
   public function can_get_all_categories()
   {
@@ -21,7 +19,7 @@ class CategoryGetTest extends TestCase
 
     $categories = ProductCategory::all();
 
-    $response = $this->getJson($this->uri);
+    $response = $this->getJson('/api/categories');
 
     $response->assertOk()
       ->assertExactJson(['data' => $this->formatCategoryData($categories)])

@@ -12,7 +12,7 @@ class CartGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/carts';
+  const URI = '/api/carts';
 
   /** @test */
   public function can_get_all_carts()
@@ -20,7 +20,7 @@ class CartGetTest extends TestCase
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
 
     $user = $this->createUser();
-    $carts = Cart::factory(count: 3)
+    $carts = Cart::factory(3)
       ->sequence(
         ['product_id' => $this->createProduct()->id],
         ['product_id' => $this->createProduct()->id],
@@ -29,25 +29,24 @@ class CartGetTest extends TestCase
       ->for($user)
       ->create();
 
-    $response = $this->getJson($this->uri, $this->authBearerToken($user));
+    $response = $this->getJson(self::URI, $this->authBearerToken($user));
 
     $response->assertOk()
       ->assertExactJson([
-        'data' => $carts->sortByDesc('id')
-          ->values()
-          ->map(fn ($item) => [
-            'id' => $item->id,
-            'product' => $this->formatProductData($item->product),
-            'quantity' => $item->quantity,
-          ])
-          ->toArray()
+        'data' => $carts->sortByDesc('id')->values()->map(
+          fn ($cart) => [
+            'id' => $cart->id,
+            'product' => $this->formatProductData($cart->product),
+            'quantity' => $cart->quantity,
+          ]
+        )->toArray()
       ]);
   }
 
   /** @test */
   public function unauthenticated_user_cannot_get_all_carts()
   {
-    $response = $this->getJson($this->uri);
+    $response = $this->getJson(self::URI);
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);

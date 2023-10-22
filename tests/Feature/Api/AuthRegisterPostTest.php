@@ -18,8 +18,6 @@ class AuthRegisterPostTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/auth/register';
-
   /** @test */
   public function can_register()
   {
@@ -32,7 +30,7 @@ class AuthRegisterPostTest extends TestCase
       'password_confirmation' => 'Secret123'
     ];
 
-    $response = $this->postJson($this->uri, $data);
+    $response = $this->postJson('/api/auth/register', $data);
 
     $response->assertCreated()
       ->assertExactJson([

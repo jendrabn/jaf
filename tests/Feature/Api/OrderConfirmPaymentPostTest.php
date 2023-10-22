@@ -29,9 +29,9 @@ class OrderConfirmPaymentPostTest extends TestCase
     ];
   }
 
-  public function uri(int $orderId = 1): string
+  private static function URI(int $orderId = 1): string
   {
-    return '/api/orders/' . $orderId . '/confirm_payment';
+    return "/api/orders/{$orderId}/confirm_payment";
   }
 
   /** @test */
@@ -48,7 +48,7 @@ class OrderConfirmPaymentPostTest extends TestCase
       ->create(['status' => Order::STATUS_PENDING_PAYMENT]);
 
     $response = $this->postJson(
-      $this->uri($order->id),
+      self::URI($order->id),
       $this->data,
       $this->authBearerToken($this->user)
     );
@@ -63,7 +63,7 @@ class OrderConfirmPaymentPostTest extends TestCase
   /** @test */
   public function unauthenticated_user_cannot_confirm_payment()
   {
-    $response = $this->postJson($this->uri());
+    $response = $this->postJson(self::URI());
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);
@@ -72,13 +72,11 @@ class OrderConfirmPaymentPostTest extends TestCase
   /** @test */
   public function cannot_confirm_payment_if_order_doenot_exist()
   {
-    $order = Order::factory()
-      ->for($this->createUser())
-      ->create();
+    $order = Order::factory()->for($this->createUser())->create();
 
     // Unauthorized order id
     $response1 = $this->postJson(
-      $this->uri($order->id),
+      self::URI($order->id),
       $this->data,
       $this->authBearerToken($this->user)
     );
@@ -88,7 +86,7 @@ class OrderConfirmPaymentPostTest extends TestCase
 
     // Invalid order id
     $response2 = $this->postJson(
-      $this->uri($order->id + 1),
+      self::URI($order->id + 1),
       $this->data,
       $this->authBearerToken($this->user)
     );
@@ -110,7 +108,7 @@ class OrderConfirmPaymentPostTest extends TestCase
       ->create(['status' => Order::STATUS_PENDING]);
 
     $response = $this->postJson(
-      $this->uri($order->id),
+      self::URI($order->id),
       $this->data,
       $this->authBearerToken($this->user)
     );
@@ -134,7 +132,7 @@ class OrderConfirmPaymentPostTest extends TestCase
     $this->travel(25)->hours();
 
     $response = $this->postJson(
-      $this->uri($order->id),
+      self::URI($order->id),
       $this->data,
       $this->authBearerToken($this->user)
     );
@@ -159,28 +157,25 @@ class OrderConfirmPaymentPostTest extends TestCase
   /** @test */
   public function confirm_payment_request_has_the_correct_validation_rules()
   {
-    $this->assertValidationRules(
-      [
-        'name' => [
-          'required',
-          'string',
-          'min:1',
-          'max:50',
-        ],
-        'account_name' => [
-          'required',
-          'string',
-          'min:1',
-          'max:50',
-        ],
-        'account_number' => [
-          'required',
-          'string',
-          'min:1',
-          'max:50',
-        ]
+    $this->assertValidationRules([
+      'name' => [
+        'required',
+        'string',
+        'min:1',
+        'max:50',
       ],
-      (new ConfirmPaymentRequest())->rules()
-    );
+      'account_name' => [
+        'required',
+        'string',
+        'min:1',
+        'max:50',
+      ],
+      'account_number' => [
+        'required',
+        'string',
+        'min:1',
+        'max:50',
+      ]
+    ], (new ConfirmPaymentRequest())->rules());
   }
 }

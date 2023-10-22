@@ -12,8 +12,6 @@ class RegionProvinceGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/region/provinces';
-
   /** @test */
   public function can_get_all_provinces()
   {
@@ -21,7 +19,7 @@ class RegionProvinceGetTest extends TestCase
 
     $provinces = Province::all();
 
-    $response = $this->getJson($this->uri);
+    $response = $this->getJson('/api/region/provinces');
 
     $response->assertOk()
       ->assertExactJson(['data' => $this->formatProvinceData($provinces)])

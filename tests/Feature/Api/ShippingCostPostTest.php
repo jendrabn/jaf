@@ -14,14 +14,12 @@ class ShippingCostPostTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/shipping_costs';
-
   /** @test */
   public function can_get_shipping_cost()
   {
     $this->seed([ProvinceSeeder::class, CitySeeder::class]);
 
-    $response = $this->postJson($this->uri, ['destination' => 154, 'weight' => 1500]);
+    $response = $this->postJson('/api/shipping_costs', ['destination' => 154, 'weight' => 1500]);
 
     $response->assertOk()
       ->assertJsonStructure([
@@ -58,20 +56,17 @@ class ShippingCostPostTest extends TestCase
   /** @test */
   public function shipping_cost_request_has_the_correct_validation_rules()
   {
-    $this->assertValidationRules(
-      [
-        'destination' => [
-          'required',
-          'integer',
-          'exists:cities,id',
-        ],
-        'weight' => [
-          'required',
-          'integer',
-          'max:' . Shipping::MAX_WEIGHT
-        ],
+    $this->assertValidationRules([
+      'destination' => [
+        'required',
+        'integer',
+        'exists:cities,id',
       ],
-      (new ShippingCostRequest())->rules()
-    );
+      'weight' => [
+        'required',
+        'integer',
+        'max:' . Shipping::MAX_WEIGHT
+      ],
+    ], (new ShippingCostRequest())->rules());
   }
 }

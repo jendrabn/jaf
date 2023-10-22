@@ -20,9 +20,9 @@ class OrderConfirmOrderDeliveredPutTest extends TestCase
     $this->user = $this->createUser();
   }
 
-  private function uri(int $orderId = 1): string
+  private static function URI(int $orderId = 1): string
   {
-    return '/api/orders/' . $orderId . '/confirm_order_delivered';
+    return "/api/orders/{$orderId}/confirm_order_delivered";
   }
 
   /** @test */
@@ -35,10 +35,7 @@ class OrderConfirmOrderDeliveredPutTest extends TestCase
       ->for($this->user)
       ->create(['status' => Order::STATUS_ON_DELIVERY]);
 
-    $response = $this->putJson(
-      $this->uri($order->id),
-      headers: $this->authBearerToken($this->user)
-    );
+    $response = $this->putJson(self::URI($order->id), headers: $this->authBearerToken($this->user));
 
     $response->assertOk()
       ->assertExactJson(['data' => true]);
@@ -50,7 +47,7 @@ class OrderConfirmOrderDeliveredPutTest extends TestCase
   /** @test */
   public function unauthenticated_user_cannot_confirm_order_delivered()
   {
-    $response = $this->putJson($this->uri());
+    $response = $this->putJson(self::URI());
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);
@@ -59,24 +56,16 @@ class OrderConfirmOrderDeliveredPutTest extends TestCase
   /** @test */
   public function cannot_confirm_order_delivered_if_order_doenot_exist()
   {
-    $order = Order::factory()
-      ->for(User::factory())
-      ->create();
+    $order = Order::factory()->for(User::factory())->create();
 
     // Unauthorized order id
-    $response1 = $this->putJson(
-      $this->uri($order->id),
-      headers: $this->authBearerToken($this->user)
-    );
+    $response1 = $this->putJson(self::URI($order->id), headers: $this->authBearerToken($this->user));
 
     $response1->assertNotFound()
       ->assertJsonStructure(['message']);
 
     // Invalid order id
-    $response2 = $this->putJson(
-      $this->uri($order->id + 1),
-      headers: $this->authBearerToken($this->user)
-    );
+    $response2 = $this->putJson(self::URI($order->id + 1), headers: $this->authBearerToken($this->user));
 
     $response2->assertNotFound()
       ->assertJsonStructure(['message']);
@@ -89,10 +78,7 @@ class OrderConfirmOrderDeliveredPutTest extends TestCase
       ->for($this->user)
       ->create(['status' => Order::STATUS_PROCESSING]);
 
-    $response = $this->putJson(
-      $this->uri($order->id),
-      headers: $this->authBearerToken($this->user)
-    );
+    $response = $this->putJson(self::URI($order->id), headers: $this->authBearerToken($this->user));
 
     $response->assertUnprocessable()
       ->assertJsonValidationErrors(['order_id']);

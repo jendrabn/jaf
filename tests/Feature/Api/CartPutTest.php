@@ -23,9 +23,9 @@ class CartPutTest extends TestCase
     $this->user = $this->createUser();
   }
 
-  private function uri(int $id = 1): string
+  private static function URI(int $cartId = 1): string
   {
-    return '/api/carts/' . $id;
+    return "/api/carts/{$cartId}";
   }
 
   /** @test */
@@ -35,11 +35,10 @@ class CartPutTest extends TestCase
       ->for($this->createProduct(['stock' => 2]))
       ->for($this->user)
       ->create(['quantity' => 1]);
-    $data = ['quantity' => 2];
 
     $response = $this->putJson(
-      $this->uri($cart->id),
-      $data,
+      self::URI($cart->id),
+      $data = ['quantity' => 2],
       $this->authBearerToken($this->user)
     );
 
@@ -53,7 +52,7 @@ class CartPutTest extends TestCase
   /** @test */
   public function unauthenticated_user_cannot_update_cart()
   {
-    $response = $this->putJson($this->uri());
+    $response = $this->putJson(self::URI());
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);
@@ -68,7 +67,7 @@ class CartPutTest extends TestCase
       ->create(['quantity' => 1]);
 
     $response = $this->putJson(
-      $this->uri($cart->id),
+      self::URI($cart->id),
       ['quantity' => 2],
       $this->authBearerToken($this->user)
     );
@@ -89,7 +88,7 @@ class CartPutTest extends TestCase
       ->create();
 
     $response = $this->putJson(
-      $this->uri($cart->id + 1),
+      self::URI($cart->id + 1),
       ['quantity' => 1],
       $this->authBearerToken($this->user)
     );

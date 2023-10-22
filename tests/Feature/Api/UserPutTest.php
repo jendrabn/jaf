@@ -13,7 +13,7 @@ class UserPutTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/user';
+  const URI = '/api/user';
 
   /** @test */
   public function can_update_profile()
@@ -27,12 +27,10 @@ class UserPutTest extends TestCase
       'birth_date' => fake()->date
     ];
 
-    $response = $this->putJson($this->uri, $data, $this->authBearerToken($user));
+    $response = $this->putJson(self::URI, $data, $this->authBearerToken($user));
 
     $response->assertOk()
-      ->assertExactJson([
-        'data' => ['id' => $user->id, ...$data]
-      ]);
+      ->assertExactJson(['data' => ['id' => $user->id, ...$data]]);
 
     $this->assertDatabaseHas('users', $data);
   }
@@ -40,7 +38,7 @@ class UserPutTest extends TestCase
   /** @test */
   public function unauthenticated_user_cannot_update_profile()
   {
-    $response = $this->putJson($this->uri);
+    $response = $this->putJson(self::URI);
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);

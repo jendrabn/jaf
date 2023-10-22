@@ -13,7 +13,8 @@ class OrderGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/orders';
+  const URI = '/api/orders';
+
   private User $user;
 
   protected function setUp(): void
@@ -22,10 +23,10 @@ class OrderGetTest extends TestCase
     $this->user = $this->createUser();
   }
 
-  public function attemptToGetOrderAndExpectOk(?array $params = [])
+  public function attemptToGetOrderAndExpectOk(array $params = [])
   {
     $response = $this->getJson(
-      $this->uri . '?' . http_build_query($params),
+      self::URI . '?' . http_build_query($params),
       $this->authBearerToken($this->user)
     );
 
@@ -60,8 +61,7 @@ class OrderGetTest extends TestCase
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
 
     $order = Order::factory()
-      ->has(OrderItem::factory()
-        ->for($this->createProduct()), 'items')
+      ->has(OrderItem::factory()->for($this->createProduct()), 'items')
       ->has(Invoice::factory())
       ->for($this->user)
       ->create();
@@ -70,14 +70,16 @@ class OrderGetTest extends TestCase
 
     $response->assertJsonPath('data.0', [
       'id' => $order->id,
-      'items' => $order->items->map(fn ($item) => [
-        'id' => $item->id,
-        'product' => $this->formatProductData($item->product),
-        'name' => $item->name,
-        'price' => $item->price,
-        'weight' => $item->weight,
-        'quantity' => $item->quantity,
-      ])->toArray(),
+      'items' => $order->items->map(
+        fn ($item) => [
+          'id' => $item->id,
+          'product' => $this->formatProductData($item->product),
+          'name' => $item->name,
+          'price' => $item->price,
+          'weight' => $item->weight,
+          'quantity' => $item->quantity,
+        ]
+      )->toArray(),
       'status' => $order->status,
       'total_amount' => $order->invoice->amount,
       'payment_due_date' => $order->invoice->due_date,
@@ -88,9 +90,7 @@ class OrderGetTest extends TestCase
   /** @test */
   public function can_get_all_orders_with_pagination()
   {
-    Order::factory(count: $total = 13)
-      ->for($this->user)
-      ->create();
+    Order::factory($total = 13)->for($this->user)->create();
 
     $response = $this->attemptToGetOrderAndExpectOk(['page' => $page = 2]);
 
@@ -101,13 +101,14 @@ class OrderGetTest extends TestCase
       'last_page' => 2,
       'from' => 11,
       'to' => 13
-    ])->assertJsonCount(3, 'data');
+    ])
+      ->assertJsonCount(3, 'data');
   }
 
   /** @test */
   public function unauthenticated_user_cannot_get_all_orders()
   {
-    $response = $this->getJson($this->uri);
+    $response = $this->getJson(self::URI);
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);
@@ -124,17 +125,14 @@ class OrderGetTest extends TestCase
       Order::STATUS_COMPLETED,
       Order::STATUS_CANCELLED,
     ];
-
     $orders = [];
 
     foreach ($statuses as $status) {
-      $orders[$status] = Order::factory(count: 3)
-        ->for($this->user)
-        ->create(compact('status'));
+      $orders[$status] = Order::factory(3)->for($this->user)->create(['status' => $status]);
     }
 
     foreach ($statuses as $status) {
-      $response = $this->attemptToGetOrderAndExpectOk(compact('status'));
+      $response = $this->attemptToGetOrderAndExpectOk(['status' => $status]);
 
       $response->assertJsonCount(3, 'data');
 
@@ -148,9 +146,7 @@ class OrderGetTest extends TestCase
   /** @test */
   public function can_sort_order_by_newest()
   {
-    $orders = Order::factory(count: 3)
-      ->for($this->user)
-      ->create();
+    $orders = Order::factory(3)->for($this->user)->create();
 
     $response = $this->attemptToGetOrderAndExpectOk(['sort_by' => 'newest']);
 
@@ -165,9 +161,7 @@ class OrderGetTest extends TestCase
   /** @test */
   public function can_sort_order_by_oldest()
   {
-    $orders = Order::factory(count: 3)
-      ->for($this->user)
-      ->create();
+    $orders = Order::factory(3)->for($this->user)->create();
 
     $response = $this->attemptToGetOrderAndExpectOk(['sort_by' => 'oldest']);
 

@@ -98,8 +98,7 @@ class CartPostTest extends TestCase
       'product_id' => [
         'required',
         'integer',
-        Rule::exists('products', 'id')
-          ->where('is_publish', true)
+        Rule::exists('products', 'id')->where('is_publish', true)
       ],
       'quantity' => [
         'required',

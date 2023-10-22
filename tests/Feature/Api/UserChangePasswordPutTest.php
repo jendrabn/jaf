@@ -14,7 +14,7 @@ class UserChangePasswordPutTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/user/change_password';
+  const URI = '/api/user/change_password';
 
   /** @test */
   public function can_update_password()
@@ -29,7 +29,7 @@ class UserChangePasswordPutTest extends TestCase
       'password_confirmation' => $newPassword,
     ];
 
-    $response = $this->putJson($this->uri, $data, $this->authBearerToken($user));
+    $response = $this->putJson(self::URI, $data, $this->authBearerToken($user));
 
     $response->assertOk()
       ->assertExactJson(['data' => true]);
@@ -40,7 +40,7 @@ class UserChangePasswordPutTest extends TestCase
   /** @test */
   public function unauthenticated_user_cannot_update_password()
   {
-    $response = $this->putJson($this->uri);
+    $response = $this->putJson(self::URI);
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);
@@ -59,21 +59,18 @@ class UserChangePasswordPutTest extends TestCase
   /** @test */
   public function update_password_request_has_the_correct_validation_rules()
   {
-    $this->assertValidationRules(
-      [
-        'current_password' => [
-          'required',
-          'string',
-          'current_password',
-        ],
-        'password' => [
-          'required',
-          'string', Password::min(8)->mixedCase()->numbers(),
-          'max:30',
-          'confirmed',
-        ],
+    $this->assertValidationRules([
+      'current_password' => [
+        'required',
+        'string',
+        'current_password',
       ],
-      (new UpdatePasswordRequest())->rules()
-    );
+      'password' => [
+        'required',
+        'string', Password::min(8)->mixedCase()->numbers(),
+        'max:30',
+        'confirmed',
+      ],
+    ], (new UpdatePasswordRequest())->rules());
   }
 }

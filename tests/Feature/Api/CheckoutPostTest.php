@@ -4,22 +4,12 @@ namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Requests\Api\CheckoutRequest;
-use App\Models\{
-  Bank,
-  Cart,
-  User,
-  UserAddress
-};
-use Database\Seeders\{
-  BankSeeder,
-  CitySeeder,
-  ProductBrandSeeder,
-  ProductCategorySeeder,
-  ProvinceSeeder
-};
+use App\Models\{Bank, Cart, User, UserAddress};
+use Database\Seeders\{BankSeeder, CitySeeder, ProductBrandSeeder, ProductCategorySeeder, ProvinceSeeder};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\Rule;
 use Tests\TestCase;
@@ -28,18 +18,15 @@ class CheckoutPostTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/checkout';
+  const URI = '/api/checkout';
+
   private User $user;
   private Collection $banks;
 
   protected function setUp(): void
   {
     parent::setUp();
-    $this->seed([
-      ProductCategorySeeder::class,
-      ProductBrandSeeder::class,
-      BankSeeder::class
-    ]);
+    $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class, BankSeeder::class]);
     $this->user = $this->createUser();
     $this->banks = Bank::all();
   }
@@ -49,13 +36,13 @@ class CheckoutPostTest extends TestCase
     return Cart::factory()
       ->for($this->createProduct($productData))
       ->for($this->user)
-      ->create(compact('quantity'));
+      ->create(['quantity' => $quantity]);
   }
 
   private function attemptToCheckout(array $cartIds = []): TestResponse
   {
     return $this->postJson(
-      $this->uri,
+      self::URI,
       ['cart_ids' => $cartIds],
       $this->authBearerToken($this->user)
     );
@@ -66,14 +53,16 @@ class CheckoutPostTest extends TestCase
   {
     $this->seed([ProvinceSeeder::class, CitySeeder::class]);
 
-    $userAddress = UserAddress::factory()
-      ->for($this->user)
-      ->create(['city_id' => 154]);
+    $userAddress = UserAddress::factory()->for($this->user)->create(['city_id' => 154]);
     $cart1 = $this->createCart(2, ['price' => 25000, 'stock' => 5, 'weight' => 500]);
     $cart2 = $this->createCart(1, ['price' => 50000, 'stock' => 5, 'weight' => 500]);
     $totalWeight = 1500;
     $totalQuantity = 3;
     $totalPrice = 100000;
+    // Bank Logo
+    $this->banks[0]
+      ->addMedia(UploadedFile::fake()->image('bank.jpg'))
+      ->toMediaCollection(Bank::MEDIA_COLLECTION_NAME);
 
     $response = $this->attemptToCheckout([$cart1->id, $cart2->id]);
 
@@ -100,6 +89,8 @@ class CheckoutPostTest extends TestCase
       ])
       ->assertJsonCount(8, 'data.shipping_methods')
       ->assertJsonCount(1, 'data.payment_methods.bank');
+
+    $this->assertStringStartsWith('http', $response['data']['payment_methods']['bank'][0]['logo']);
   }
 
   /** @test */
@@ -133,7 +124,7 @@ class CheckoutPostTest extends TestCase
   /** @test */
   public function unauthenticated_user_cannot_checkout()
   {
-    $response = $this->postJson($this->uri);
+    $response = $this->postJson(self::URI);
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);
@@ -188,9 +179,7 @@ class CheckoutPostTest extends TestCase
   /** @test */
   public function checkout_request_has_the_correct_validation_rules()
   {
-    $rules = (new CheckoutRequest())
-      ->setUserResolver(fn () => $this->user)
-      ->rules();
+    $rules = (new CheckoutRequest())->setUserResolver(fn () => $this->user)->rules();
 
     $this->assertValidationRules([
       'cart_ids' => [

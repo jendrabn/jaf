@@ -17,9 +17,9 @@ class ProductDetailGetTest extends TestCase
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
   }
 
-  private function uri(?int $id = 1): string
+  private static function URI(int $productId = 1): string
   {
-    return '/api/products/' . $id;
+    return "/api/products/{$productId}";
   }
 
   /** @test */
@@ -27,8 +27,7 @@ class ProductDetailGetTest extends TestCase
   {
     $product = Product::factory()
       ->has(
-        OrderItem::factory()
-          ->count(2)
+        OrderItem::factory(2)
           ->sequence(
             [
               'order_id' => $this->createOrder(['status' => Order::STATUS_COMPLETED])->id,
@@ -43,7 +42,7 @@ class ProductDetailGetTest extends TestCase
       ->hasImages(3)
       ->create();
 
-    $response = $this->getJson($this->uri($product->id));
+    $response = $this->getJson(self::URI($product->id));
 
     $response->assertOk()
       ->assertExactJson([
@@ -71,7 +70,7 @@ class ProductDetailGetTest extends TestCase
   {
     $product = $this->createProduct();
 
-    $response = $this->getJson($this->uri($product->id + 1));
+    $response = $this->getJson(self::URI($product->id + 1));
 
     $response->assertNotFound()
       ->assertJsonStructure(['message']);
@@ -82,7 +81,7 @@ class ProductDetailGetTest extends TestCase
   {
     $product = $this->createProduct(['is_publish' => false]);
 
-    $response = $this->getJson($this->uri($product->id));
+    $response = $this->getJson(self::URI($product->id));
 
     $response->assertNotFound()
       ->assertJsonStructure(['message']);

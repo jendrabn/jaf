@@ -12,8 +12,6 @@ class HomePageGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/home_page';
-
   /** @test */
   public function can_get_banners_and_latest_products_for_home_page()
   {
@@ -21,20 +19,22 @@ class HomePageGetTest extends TestCase
 
     $this->createProduct(['is_publish' => false]);
     $products = $this->createProduct(count: 12);
-    $banners = Banner::factory(count: 12)->hasImage()->create();
+    $banners = Banner::factory(12)->hasImage()->create();
 
-    $response = $this->getJson($this->uri);
+    $response = $this->getJson('/api/home_page');
 
     $response
       ->assertOk()
       ->assertExactJson([
         'data' => [
-          'banners' => $banners->sortBy('id')->take(10)->map(fn ($banner) => [
-            'id' => $banner->id,
-            'image' => $banner->image,
-            'image_alt' => $banner->image_alt,
-            'url' => $banner->url,
-          ])->toArray(),
+          'banners' => $banners->sortBy('id')->take(10)->map(
+            fn ($banner) => [
+              'id' => $banner->id,
+              'image' => $banner->image,
+              'image_alt' => $banner->image_alt,
+              'url' => $banner->url,
+            ]
+          )->toArray(),
           'products' => $this->formatProductData($products->sortByDesc('id')->take(10))
         ]
       ]);

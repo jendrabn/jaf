@@ -12,7 +12,7 @@ class WishlistGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/wishlist';
+  const URI = '/api/wishlist';
 
   /** @test */
   public function can_get_all_wishlist()
@@ -24,7 +24,7 @@ class WishlistGetTest extends TestCase
       ->for($this->createProduct(['is_publish' => false]))
       ->for($user)
       ->create();
-    $wishlists = Wishlist::factory(count: 3)
+    $wishlist = Wishlist::factory(3)
       ->sequence(
         ['product_id' => $this->createProduct()->id],
         ['product_id' => $this->createProduct()->id],
@@ -33,14 +33,16 @@ class WishlistGetTest extends TestCase
       ->for($user)
       ->create();
 
-    $response = $this->getJson($this->uri, $this->authBearerToken($user));
+    $response = $this->getJson(self::URI, $this->authBearerToken($user));
 
     $response->assertOk()
       ->assertExactJson([
-        'data' => $wishlists->sortByDesc('id')->values()->map(fn ($item) => [
-          'id' => $item->id,
-          'product' => $this->formatProductData($item->product)
-        ])->toArray()
+        'data' => $wishlist->sortByDesc('id')->values()->map(
+          fn ($item) => [
+            'id' => $item->id,
+            'product' => $this->formatProductData($item->product)
+          ]
+        )->toArray()
       ])
       ->assertJsonCount(3, 'data');
   }
@@ -48,7 +50,7 @@ class WishlistGetTest extends TestCase
   /** @test */
   public function unauthenticated_user_cannot_get_all_wishlist()
   {
-    $response = $this->getJson($this->uri);
+    $response = $this->getJson(self::URI);
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);

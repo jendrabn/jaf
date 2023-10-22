@@ -15,7 +15,7 @@ class CartDeleteTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/carts';
+  const URI = '/api/carts';
 
   /** @test */
   public function can_delete_carts()
@@ -23,7 +23,7 @@ class CartDeleteTest extends TestCase
     $this->seed(ProductCategorySeeder::class);
 
     $user = $this->createUser();
-    $carts = Cart::factory(count: 2)
+    $carts = Cart::factory(2)
       ->sequence(
         ['product_id' => $this->createProduct()->id],
         ['product_id' => $this->createProduct()->id],
@@ -32,7 +32,7 @@ class CartDeleteTest extends TestCase
       ->create();
 
     $response = $this->deleteJson(
-      $this->uri,
+      self::URI,
       ['cart_ids' => $carts->pluck('id')],
       $this->authBearerToken($user)
     );
@@ -46,7 +46,7 @@ class CartDeleteTest extends TestCase
   /** @test */
   public function unauthenticated_user_cannot_delete_carts()
   {
-    $response = $this->deleteJson($this->uri);
+    $response = $this->deleteJson(self::URI);
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);
@@ -66,9 +66,7 @@ class CartDeleteTest extends TestCase
   public function delete_cart_request_has_the_correct_validation_rules()
   {
     $user = $this->createUser();
-    $rules = (new DeleteCartRequest())
-      ->setUserResolver(fn () => $user)
-      ->rules();
+    $rules = (new DeleteCartRequest())->setUserResolver(fn () => $user)->rules();
 
     $this->assertValidationRules([
       'cart_ids' => [

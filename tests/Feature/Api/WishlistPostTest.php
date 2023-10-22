@@ -14,7 +14,7 @@ class WishlistPostTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/wishlist';
+  const URI = '/api/wishlist';
 
   /** @test */
   public function can_add_product_to_wishlist()
@@ -25,11 +25,7 @@ class WishlistPostTest extends TestCase
     $product = $this->createProduct();
     $data = ['product_id' => $product->id];
 
-    $response1 = $this->postJson(
-      $this->uri,
-      $data,
-      $this->authBearerToken($user)
-    );
+    $response1 = $this->postJson(self::URI, $data, $this->authBearerToken($user));
 
     $response1->assertCreated()
       ->assertExactJson(['data' => true]);
@@ -37,11 +33,7 @@ class WishlistPostTest extends TestCase
     $this->assertDatabaseCount('wishlists', 1)
       ->assertDatabaseHas('wishlists', ['user_id' => $user->id, ...$data]);
 
-    $response2 = $this->postJson(
-      $this->uri,
-      $data,
-      $this->authBearerToken($user)
-    );
+    $response2 = $this->postJson(self::URI, $data, $this->authBearerToken($user));
 
     $response2->assertCreated()
       ->assertExactJson(['data' => true]);
@@ -53,7 +45,7 @@ class WishlistPostTest extends TestCase
   /** @test */
   public function unauthenticated_user_cannot_add_product_to_wishlist()
   {
-    $response = $this->postJson($this->uri);
+    $response = $this->postJson(self::URI);
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);

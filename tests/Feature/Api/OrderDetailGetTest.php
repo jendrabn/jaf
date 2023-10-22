@@ -2,22 +2,8 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\{
-  Invoice,
-  Order,
-  OrderItem,
-  Payment,
-  Product,
-  Shipping,
-  User
-};
-use Database\Seeders\{
-  BankSeeder,
-  CitySeeder,
-  ProductBrandSeeder,
-  ProductCategorySeeder,
-  ProvinceSeeder
-};
+use App\Models\{Invoice, Order, OrderItem, Payment, Product, Shipping, User};
+use Database\Seeders\{BankSeeder, CitySeeder, ProductBrandSeeder, ProductCategorySeeder, ProvinceSeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -34,9 +20,9 @@ class OrderDetailGetTest extends TestCase
     $this->user = $this->createUser();
   }
 
-  private function uri(int $orderId = 1): string
+  private static function URI(int $orderId = 1): string
   {
-    return '/api/orders/' . $orderId;
+    return "/api/orders/{$orderId}";
   }
 
   /** @test */
@@ -51,33 +37,28 @@ class OrderDetailGetTest extends TestCase
     ]);
 
     $order = Order::factory()
-      ->has(OrderItem::factory()
-        ->for(Product::factory()
-          ->hasImages()
-          ->create()), 'items')
-      ->has(Invoice::factory()
-        ->has(Payment::factory()))
+      ->has(OrderItem::factory()->for(Product::factory()->hasImages()->create()), 'items')
+      ->has(Invoice::factory()->has(Payment::factory()))
       ->has(Shipping::factory())
       ->for($this->user)
       ->create();
 
-    $response = $this->getJson(
-      $this->uri($order->id),
-      headers: $this->authBearerToken($this->user)
-    );
+    $response = $this->getJson(self::URI($order->id), headers: $this->authBearerToken($this->user));
 
     $response->assertOk()
       ->assertExactJson([
         'data' => [
           'id' => $order->id,
-          'items' => $order->items->map(fn ($item) => [
-            'id' => $item->id,
-            'product' => $this->formatProductData($item->product),
-            'name' => $item->name,
-            'price' => $item->price,
-            'weight' => $item->weight,
-            'quantity' => $item->quantity,
-          ])->toArray(),
+          'items' => $order->items->map(
+            fn ($item) => [
+              'id' => $item->id,
+              'product' => $this->formatProductData($item->product),
+              'name' => $item->name,
+              'price' => $item->price,
+              'weight' => $item->weight,
+              'quantity' => $item->quantity,
+            ]
+          )->toArray(),
           'invoice' => [
             'id' => $order->invoice->id,
             'number' => $order->invoice->number,
@@ -138,7 +119,7 @@ class OrderDetailGetTest extends TestCase
   /** @test */
   public function returns_unauthenticated_error_if_user_is_not_authenticated()
   {
-    $response = $this->getJson($this->uri());
+    $response = $this->getJson(self::URI());
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);
@@ -156,28 +137,21 @@ class OrderDetailGetTest extends TestCase
     ]);
 
     $order = Order::factory()
-      ->has(OrderItem::factory()
-        ->for($this->createProduct()), 'items')
-      ->has(Invoice::factory()
-        ->has(Payment::factory()))
+      ->has(OrderItem::factory()->for($this->createProduct()), 'items')
+      ->has(Invoice::factory()->has(Payment::factory()))
       ->has(Shipping::factory())
       ->for($this->createUser())
       ->create();
 
     // Unauthorized order id
-    $response1 = $this->getJson(
-      $this->uri($order->id),
-      headers: $this->authBearerToken($this->user)
-    );
+    $response1 = $this->getJson(self::URI($order->id), headers: $this->authBearerToken($this->user));
 
     $response1->assertNotFound()
       ->assertJsonStructure(['message']);
 
     // Invalid order id
-    $response2 = $this->getJson(
-      $this->uri($order->id + 1),
-      headers: $this->authBearerToken($this->user)
-    );
+    $response2 = $this->getJson(self::URI($order->id + 1), headers: $this->authBearerToken($this->user));
+
     $response2->assertNotFound()
       ->assertJsonStructure(['message']);
   }

@@ -16,8 +16,6 @@ class AuthResetPasswordPutTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/auth/reset_password';
-
   /** @test */
   public function can_reset_password()
   {
@@ -25,7 +23,7 @@ class AuthResetPasswordPutTest extends TestCase
     $token = Password::createToken($user);
     $newPassword = 'newPassword123';
 
-    $response = $this->putJson($this->uri, [
+    $response = $this->putJson('/api/auth/reset_password', [
       'email' => $user->email,
       'token' => $token,
       'password' => $newPassword,

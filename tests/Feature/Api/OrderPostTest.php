@@ -4,22 +4,8 @@ namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Requests\Api\CreateOrderRequest;
-use App\Models\{
-  Bank,
-  Cart,
-  Invoice,
-  Order,
-  Payment,
-  Product,
-  Shipping,
-  User
-};
-use Database\Seeders\{
-  BankSeeder,
-  CitySeeder,
-  ProductCategorySeeder,
-  ProvinceSeeder
-};
+use App\Models\{Bank, Cart, Invoice, Order, Payment, Product, Shipping, User};
+use Database\Seeders\{BankSeeder, CitySeeder, ProductCategorySeeder, ProvinceSeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Testing\TestResponse;
@@ -30,7 +16,8 @@ class OrderPostTest extends TestCase
 {
   use RefreshDatabase;
 
-  private $uri = '/api/orders';
+  const URI = '/api/orders';
+
   private User $user;
   private Bank $bank;
   private array $data;
@@ -68,13 +55,13 @@ class OrderPostTest extends TestCase
     return Cart::factory()
       ->for(Product::factory()->create($productData))
       ->for($this->user)
-      ->create(compact('quantity'));
+      ->create(['quantity' => $quantity]);
   }
 
-  public function attemptToCreateOrder(?array $data = []): TestResponse
+  public function attemptToCreateOrder(array $data = []): TestResponse
   {
     return $this->postJson(
-      $this->uri,
+      self::URI,
       array_merge($this->data, $data),
       $this->authBearerToken($this->user)
     );
@@ -202,7 +189,7 @@ class OrderPostTest extends TestCase
   /** @test */
   public function unauthenticated_user_caanot_create_order()
   {
-    $response = $this->postJson($this->uri);
+    $response = $this->postJson(self::URI);
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);
@@ -272,9 +259,7 @@ class OrderPostTest extends TestCase
   /** @test */
   public function create_order_request_uses_the_correct_validation_rules()
   {
-    $rules = (new CreateOrderRequest())
-      ->setUserResolver(fn () => $this->user)
-      ->rules();
+    $rules = (new CreateOrderRequest())->setUserResolver(fn () => $this->user)->rules();
 
     $this->assertValidationRules([
       'cart_ids' => [

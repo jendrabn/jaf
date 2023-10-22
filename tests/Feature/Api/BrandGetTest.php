@@ -12,8 +12,6 @@ class BrandGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/brands';
-
   /** @test */
   public function can_get_all_brands()
   {
@@ -21,7 +19,7 @@ class BrandGetTest extends TestCase
 
     $brands = ProductBrand::all();
 
-    $response = $this->getJson($this->uri);
+    $response = $this->getJson('/api/brands');
 
     $response->assertOk()
       ->assertExactJson(['data' => $this->formatBrandData($brands)])

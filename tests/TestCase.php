@@ -2,19 +2,7 @@
 
 namespace Tests;
 
-use App\Models\Bank;
-use App\Models\Banner;
-use App\Models\Cart;
-use App\Models\City;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Product;
-use App\Models\ProductBrand;
-use App\Models\ProductCategory;
-use App\Models\Province;
-use App\Models\Shipping;
-use App\Models\User;
-use App\Models\UserAddress;
+use App\Models\{Bank, Banner, Cart, City, Order, OrderItem, Product, ProductBrand, ProductCategory, Province, Shipping, User, UserAddress};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Http\Client\Request;
@@ -39,6 +27,9 @@ abstract class TestCase extends BaseTestCase
     );
     Product::all()->each(
       fn ($product) => $product->clearMediaCollection(Product::MEDIA_COLLECTION_NAME)
+    );
+    Bank::all()->each(
+      fn ($bank) => $bank->clearMediaCollection(Bank::MEDIA_COLLECTION_NAME)
     );
   }
 
@@ -218,22 +209,6 @@ abstract class TestCase extends BaseTestCase
     return Product::factory()
       ->has(OrderItem::factory(count($sequence))->sequence(...$sequence))
       ->create($data);
-  }
-
-  protected function addImageToProduct(Collection|Product $products, ?int $count = 1)
-  {
-    if ($products instanceof Collection) {
-      return $products->each(
-        fn ($product) => $this->addImageToProduct($product)
-      );
-    }
-
-    for ($i = 0; $i < $count; $i++) {
-      $products->addMedia(UploadedFile::fake()->image('product.jpg'))
-        ->toMediaCollection('images');
-    }
-
-    return $products;
   }
 
   public function fakeHttpRajaOngkir(): void

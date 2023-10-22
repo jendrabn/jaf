@@ -15,8 +15,6 @@ class AuthForgotPasswordPostTest extends TestCase
 {
   use RefreshDatabase;
 
-  private string $uri = '/api/auth/forgot_password';
-
   /** @test */
   public function can_send_password_reset_link()
   {
@@ -24,7 +22,7 @@ class AuthForgotPasswordPostTest extends TestCase
 
     $user = $this->createUser();
 
-    $response = $this->postJson($this->uri, $user->only('email'));
+    $response = $this->postJson('/api/auth/forgot_password', $user->only('email'));
 
     $response->assertOk()
       ->assertExactJson(['data' => true]);
@@ -34,11 +32,11 @@ class AuthForgotPasswordPostTest extends TestCase
       ResetPassword::class,
       function ($notification, $channels, $notifiable) use ($user) {
         $mail = $notification->toMail($user)->toArray();
-        $resetUrl = config('app.url')
-          . '/reset_password?token=' . $notification->token
-          . '&email=' . $user->email;
 
-        $this->assertEquals($resetUrl, $mail['actionUrl']);
+        $this->assertEquals(
+          config('app.url') . "/reset_password?token={$notification->token}&email={$user->email}",
+          $mail['actionUrl']
+        );
 
         return true;
       }
@@ -56,7 +54,7 @@ class AuthForgotPasswordPostTest extends TestCase
   }
 
   /** @test */
-  public function  forgot_password_request_has_the_correct_rules()
+  public function forgot_password_request_has_the_correct_rules()
   {
     $this->assertValidationRules([
       'email' => [
