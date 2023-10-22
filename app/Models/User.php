@@ -6,6 +6,8 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -14,6 +16,9 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable implements CanResetPassword
 {
   use HasApiTokens, HasFactory, Notifiable, HasRoles;
+
+  public const ROLE_ADMIN = 'admin';
+  public const ROLE_USER = 'user';
 
   protected $guarded = [];
 
@@ -28,25 +33,22 @@ class User extends Authenticatable implements CanResetPassword
     'sex' => 'integer'
   ];
 
-  public const ROLE_ADMIN = 'admin';
-  public const ROLE_USER = 'user';
-
-  public function address()
+  public function address(): HasOne
   {
     return $this->hasOne(UserAddress::class);
   }
 
-  public function wishlists()
+  public function wishlists(): HasMany
   {
     return $this->hasMany(Wishlist::class);
   }
 
-  public function carts()
+  public function carts(): HasMany
   {
     return $this->hasMany(Cart::class);
   }
 
-  public function orders()
+  public function orders(): HasMany
   {
     return $this->hasMany(Order::class);
   }

@@ -13,11 +13,6 @@ use Illuminate\Validation\ValidationException;
 
 class OrderService
 {
-  /**
-   * @param Request $request
-   * @param integer $size
-   * @return LengthAwarePaginator
-   */
   public function getOrders(Request $request, int $size = 10): LengthAwarePaginator
   {
     $page = $request->get('page', 1);
@@ -44,11 +39,6 @@ class OrderService
     return $orders;
   }
 
-  /**
-   * @param ConfirmPaymentRequest $request
-   * @param integer $orderId
-   * @return Order
-   */
   public function confirmPayment(ConfirmPaymentRequest $request, int $orderId): Order
   {
     $order = auth()->user()->orders()->findOrFail($orderId);
@@ -83,10 +73,6 @@ class OrderService
     return $order;
   }
 
-  /**
-   * @param integer $orderId
-   * @return Order
-   */
   public function confirmDelivered(int $orderId): Order
   {
     $order = auth()->user()->orders()->findOrFail($orderId);
@@ -112,13 +98,10 @@ class OrderService
     return $order;
   }
 
-  /**
-   * @param CreateOrderRequest $request
-   * @return Order
-   */
   public function createOrder(CreateOrderRequest $request): Order
   {
     $validatedData = $request->validated();
+
     $carts = Cart::whereIn('id', $validatedData['cart_ids'])->get();
     $bank = Bank::findOrFail($validatedData['bank_id']);
 
@@ -126,7 +109,6 @@ class OrderService
 
     $shippingAddress = $validatedData['shipping_address'];
     $totalWeight = $this->totalWeight($carts);
-
     $shipping = (new RajaOngkirService)->getService(
       $validatedData['shipping_service'],
       $shippingAddress['city_id'],
@@ -227,10 +209,6 @@ class OrderService
     return $order;
   }
 
-  /**
-   * @param Collection $carts
-   * @return void
-   */
   public function validateBeforeCreateOrder(Collection $carts): void
   {
     throw_if(
@@ -264,28 +242,16 @@ class OrderService
     );
   }
 
-  /**
-   * @param Collection $items
-   * @return integer
-   */
   public function totalWeight(Collection $items): int
   {
     return $items->reduce(fn ($carry, $item) => $carry + ($item->quantity * $item->product->weight));
   }
 
-  /**
-   * @param Collection $items
-   * @return integer
-   */
   public function totalPrice(Collection $items): int
   {
     return $items->reduce(fn ($carry, $item) => $carry + ($item->quantity * $item->product->price));
   }
 
-  /**
-   * @param Collection $items
-   * @return integer
-   */
   public function totalQuantity(Collection $items): int
   {
     return $items->reduce(fn ($carry, $item) => $carry + $item->quantity);

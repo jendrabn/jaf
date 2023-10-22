@@ -16,16 +16,7 @@
     <include>
       <directory>app</directory>
     </include>
-    <exclude>
-      <directory>app/Console</directory>
-      <directory>app/Http/Controllers/Admin</directory>
-    </exclude>
   </source>
-  <coverage pathCoverage="true">
-    <report>
-      <html outputDirectory="coverage" />
-    </report>
-  </coverage>
   <php>
     <env name="APP_ENV" value="testing" />
     <env name="BCRYPT_ROUNDS" value="4" />

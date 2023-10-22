@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Shipping extends Model
 {
@@ -16,14 +15,11 @@ class Shipping extends Model
   const STATUS_SHIPPED = 'shipped';
 
   const MAX_WEIGHT = 25000;
+
   const COURIERS = ['jne', 'tiki', 'pos'];
 
   protected $guarded = [];
 
-  // public function order(): BelongsTo
-  // {
-  //   return $this->belongsTo(Order::class);
-  // }
 
   public function address(): Attribute
   {

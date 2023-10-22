@@ -8,12 +8,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RajaOngkirService
 {
-  /**
-   * @param integer $destination
-   * @param integer $weight
-   * @param array $couriers
-   * @return array
-   */
   public function getCosts(int $destination, int $weight, array $couriers = Shipping::COURIERS): array
   {
     $costs = [];
@@ -25,12 +19,13 @@ class RajaOngkirService
     return $costs;
   }
 
-  /**
-   * @param integer $destination
-   * @param integer $weight
-   * @param string $courier
-   * @return array
-   */
+  public function getService(string $service, int $destination, int $weight, string $courier): array|null
+  {
+    $costs = $this->fetchCosts($destination, $weight, $courier);
+
+    return collect($costs)->firstWhere('service', $service);
+  }
+
   public function fetchCosts(int $destination, int $weight, string $courier): array
   {
     $baseUrl = config('shop.rajaongkir.base_url');
@@ -56,19 +51,5 @@ class RajaOngkirService
     }
 
     return $costs;
-  }
-
-  /**
-   * @param string $service
-   * @param integer $destination
-   * @param integer $weight
-   * @param string $courier
-   * @return array|null
-   */
-  public function getService(string $service, int $destination, int $weight, string $courier): array|null
-  {
-    $costs = $this->fetchCosts($destination, $weight, $courier);
-
-    return collect($costs)->firstWhere('service', $service);
   }
 }

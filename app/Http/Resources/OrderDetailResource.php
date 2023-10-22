@@ -17,10 +17,10 @@ class OrderDetailResource extends JsonResource
     return [
       'id' => $this->id,
       'items' => OrderItemResource::collection($this->items),
-      'invoice' => new InvoiceResource($this->invoice),
-      'payment' => new PaymentResource($this->invoice->payment),
+      'invoice' => InvoiceResource::make($this->invoice),
+      'payment' => PaymentResource::make($this->invoice->payment),
       'shipping_address' => $this->shipping->address,
-      'shipping' => new ShippingResource($this->shipping),
+      'shipping' => ShippingResource::make($this->shipping),
       'notes' => $this->notes,
       'cancel_reason' => $this->cancel_reason,
       'status' => $this->status,

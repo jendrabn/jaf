@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Order extends Model
 {
@@ -27,30 +30,28 @@ class Order extends Model
     'total_quantity'
   ];
 
-  public function user()
+  public function user(): BelongsTo
   {
     return $this->belongsTo(User::class);
   }
 
-  public function items()
+  public function items(): HasMany
   {
     return $this->hasMany(OrderItem::class, 'order_id');
   }
 
-  public function invoice()
+  public function invoice(): HasOne
   {
     return $this->hasOne(Invoice::class);
   }
 
-  public function shipping()
+  public function shipping(): HasOne
   {
     return $this->hasOne(Shipping::class);
   }
 
   public function totalQuantity(): Attribute
   {
-    return Attribute::get(
-      fn () => $this->items->reduce(fn ($carry, $item) => $carry + $item->quantity)
-    );
+    return Attribute::get(fn () => $this->items->reduce(fn ($carry, $item) => $carry + $item->quantity));
   }
 }

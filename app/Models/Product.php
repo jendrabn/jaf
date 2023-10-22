@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -30,34 +31,24 @@ class Product extends Model implements HasMedia
     'is_publish' => 'boolean'
   ];
 
-  // public function wishlists()
-  // {
-  //   return $this->hasMany(Wishlist::class);
-  // }
-
-  // public function carts()
-  // {
-  //   return $this->hasMany(Cart::class);
-  // }
-
-  public function orderItems()
+  public function orderItems(): HasMany
   {
     return $this->hasMany(OrderItem::class);
   }
 
-  public function category()
+  public function category(): BelongsTo
   {
     return $this->belongsTo(ProductCategory::class, 'product_category_id');
   }
 
-  public function brand()
+  public function brand(): BelongsTo
   {
     return $this->belongsTo(ProductBrand::class, 'product_brand_id');
   }
 
   public function registerMediaConversions(Media $media = null): void
   {
-    // No conversion
+    //
   }
 
   public function images(): Attribute
@@ -76,9 +67,7 @@ class Product extends Model implements HasMedia
 
   public function image(): Attribute
   {
-    return  Attribute::get(
-      fn () => $this->getFirstMediaUrl(self::MEDIA_COLLECTION_NAME) ?? null
-    );
+    return  Attribute::get(fn () => $this->getFirstMediaUrl(self::MEDIA_COLLECTION_NAME) ?? null);
   }
 
   public function isWishlist(): Attribute
@@ -95,14 +84,10 @@ class Product extends Model implements HasMedia
   {
     static::addGlobalScope(
       'sold_count',
-      fn (Builder $builder) =>
-      $builder->withCount([
-        'orderItems as sold_count' =>
-        fn (Builder $builder) => $builder->select(DB::raw('IFNULL(SUM(quantity), 0)'))
-          ->whereHas(
-            'order',
-            fn (Builder $builder) => $builder->where('status', Order::STATUS_COMPLETED)
-          )
+      fn ($q) => $q->withCount([
+        'orderItems as sold_count' =>  fn ($q) => $q
+          ->select(DB::raw('IFNULL(SUM(quantity), 0)'))
+          ->whereHas('order', fn ($q) => $q->where('status', Order::STATUS_COMPLETED))
       ])
     );
   }

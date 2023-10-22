@@ -15,8 +15,6 @@ class Banner extends Model implements HasMedia
 
   public const MEDIA_COLLECTION_NAME = 'banner_images';
 
-  protected $mediaLibraryDisk = 'banners';
-
   protected $guarded = [];
 
   protected $appends = [
@@ -25,13 +23,11 @@ class Banner extends Model implements HasMedia
 
   public function registerMediaConversions(Media $media = null): void
   {
-    // No conversion
+    //
   }
 
   public function image(): Attribute
   {
-    return Attribute::get(
-      fn () => $this->getFirstMediaUrl(self::MEDIA_COLLECTION_NAME) ?? null
-    );
+    return Attribute::get(fn () => $this->getFirstMediaUrl(self::MEDIA_COLLECTION_NAME) ?? null);
   }
 }

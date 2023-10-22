@@ -2,8 +2,7 @@
 
 namespace App\Services;
 
-use App\Http\Requests\Api\LoginRequest;
-use App\Http\Requests\Api\ResetPasswordRequest;
+use App\Http\Requests\Api\{LoginRequest, ResetPasswordRequest};
 use App\Models\User;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Events\PasswordReset;
@@ -14,10 +13,6 @@ use Illuminate\Validation\ValidationException;
 
 class AuthService
 {
-  /**
-   * @param LoginRequest $request
-   * @return User
-   */
   public function login(LoginRequest $request): User
   {
     $validatedData = $request->validated();
@@ -34,10 +29,6 @@ class AuthService
     return $user;
   }
 
-  /**
-   * @param ResetPasswordRequest $request
-   * @return string
-   */
   public function resetPassword(ResetPasswordRequest $request): string
   {
     $status = Password::reset(

@@ -16,7 +16,7 @@ class CartResource extends JsonResource
   {
     return [
       'id' => $this->id,
-      'product' => (new ProductResource($this->product)),
+      'product' => ProductResource::make($this->product),
       'quantity' => $this->quantity,
     ];
   }

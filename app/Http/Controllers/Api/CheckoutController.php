@@ -1,7 +1,5 @@
 <?php
 
-// app/Http/Controllers/Api/CheckoutController.php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -14,10 +12,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckoutController extends Controller
 {
-  public function __construct(
-    private RajaOngkirService $rajaOngkirService,
-    private OrderService $orderService,
-  ) {
+  public function __construct(private RajaOngkirService $rajaOngkirService, private OrderService $orderService)
+  {
   }
 
   public function checkout(CheckoutRequest $request): JsonResponse
@@ -36,7 +32,7 @@ class CheckoutController extends Controller
 
     return response()->json([
       'data' => [
-        'shipping_address' => $userAddress ? new UserAddressResource($userAddress) : null,
+        'shipping_address' => $userAddress ? UserAddressResource::make($userAddress) : null,
         'carts' => CartResource::collection($carts),
         'shipping_methods' => $shippingCosts,
         'payment_methods' => ['bank' => BankResource::collection(Bank::all())],
@@ -49,8 +45,8 @@ class CheckoutController extends Controller
 
   public function shippingCost(ShippingCostRequest $request): JsonResponse
   {
-    $shippingCosts = $this->rajaOngkirService->getCosts(...$request->validated());
+    $costs = $this->rajaOngkirService->getCosts(...$request->validated());
 
-    return response()->json(['data' => $shippingCosts], Response::HTTP_OK);
+    return response()->json(['data' => $costs], Response::HTTP_OK);
   }
 }

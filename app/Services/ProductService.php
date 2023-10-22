@@ -9,26 +9,24 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductService
 {
-  /**
-   * @param Request $request
-   * @param integer $size
-   * @return LengthAwarePaginator
-   */
   public function getProducts(Request $request, int $size = 20): LengthAwarePaginator
   {
     $page = $request->get('page', 1);
 
     $products = Product::published();
 
-    $filters = [
-      'category_id' => 'product_category_id',
-      'brand_id' => 'product_brand_id',
-      'sex' => 'sex'
-    ];
-
-    foreach ($filters as $key => $col) {
-      $products->when($request->has($key), fn ($q) => $q->where($col, $request->get($key)));
-    }
+    $products->when(
+      $request->has('category_id'),
+      fn ($q) => $q->where('product_category_id', $request->get('category_id'))
+    );
+    $products->when(
+      $request->has('brand_id'),
+      fn ($q) => $q->where('product_brand_id', $request->get('brand_id'))
+    );
+    $products->when(
+      $request->has('sex'),
+      fn ($q) => $q->where('sex', $request->get('sex'))
+    );
 
     $products->when(
       $request->has('price_min') && $request->has('price_max'),
@@ -64,13 +62,13 @@ class ProductService
     return $products;
   }
 
-  /**
-   * @param string $keyword
-   * @param integer $size
-   * @return Collection
-   */
-  public function getProductSimilars(string $keyword, int $size = 5): Collection
+  public function getProductSimilars(int $id, int $size = 5): Collection
   {
-    return Product::published()->where('name', 'like', "%{$keyword}%")->latest('id')->take($size)->get();
+    $product = Product::published()->findOrFail($id);
+
+    return Product::published()->where('name', 'like', "%{$product->name}%")
+      ->latest('id')
+      ->take($size)
+      ->get();
   }
 }

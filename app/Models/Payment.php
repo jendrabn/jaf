@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Payment extends Model
 {
@@ -16,20 +17,10 @@ class Payment extends Model
   const STATUS_CANCELLED = 'cancelled';
   const STATUS_RELEASED = 'realeased';
 
-  public function bank()
+  public function bank(): HasOne
   {
     return $this->hasOne(PaymentBank::class);
   }
-
-  // public function ewallet()
-  // {
-  //   return $this->hasOne(PaymentEwallet::class);
-  // }
-
-  // public function invoice()
-  // {
-  //   return $this->belongsTo(Invoice::class);
-  // }
 
   public function info(): Attribute
   {

@@ -20,7 +20,7 @@ class OrderController extends Controller
   {
     $orders = $this->orderService->getOrders($request);
 
-    return (new OrderCollection($orders))
+    return OrderCollection::make($orders)
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }
@@ -28,40 +28,38 @@ class OrderController extends Controller
   public function create(CreateOrderRequest $request): JsonResponse
   {
     $order = $this->orderService->createOrder($request);
-    $invoice = $order->invoice;
 
-    return response()
-      ->json([
-        'data' => [
-          'id' => $order->id,
-          'total_amount' => $invoice->amount,
-          'payment_method' => $invoice->payment->method,
-          'payment_info' => $invoice->payment->info,
-          'payment_due_date' => $invoice->due_date,
-          'created_at' => $order->created_at
-        ]
-      ], Response::HTTP_CREATED);
+    return response()->json([
+      'data' => [
+        'id' => $order->id,
+        'total_amount' =>  $order->invoice->amount,
+        'payment_method' =>  $order->invoice->payment->method,
+        'payment_info' =>  $order->invoice->payment->info,
+        'payment_due_date' =>  $order->invoice->due_date,
+        'created_at' => $order->created_at
+      ]
+    ], Response::HTTP_CREATED);
   }
 
-  public function get(int $order_id): JsonResponse
+  public function get(int $id): JsonResponse
   {
-    $order = auth()->user()->orders()->findOrFail($order_id);
+    $order = auth()->user()->orders()->findOrFail($id);
 
-    return (new OrderDetailResource($order))
+    return OrderDetailResource::make($order)
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }
 
-  public function confirmPayment(ConfirmPaymentRequest $request, int $order_id)
+  public function confirmPayment(ConfirmPaymentRequest $request, int $id)
   {
-    $this->orderService->confirmPayment($request, $order_id);
+    $this->orderService->confirmPayment($request, $id);
 
     return response()->json(['data' => true], Response::HTTP_CREATED);
   }
 
-  public function confirmDelivered(int $order_id): JsonResponse
+  public function confirmDelivered(int $id): JsonResponse
   {
-    $this->orderService->confirmDelivered($order_id);
+    $this->orderService->confirmDelivered($id);
 
     return response()->json(['data' => true], Response::HTTP_OK);
   }

@@ -1,7 +1,5 @@
 <?php
 
-// app/Http/Controllers/Api/CartController.php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -19,8 +17,7 @@ class CartController extends Controller
 
   public function list(): JsonResponse
   {
-    $user = auth()->user();
-    $carts = $user->carts->sortByDesc('id');
+    $carts = auth()->user()->carts()->latest('id')->get();
 
     return CartResource::collection($carts)
       ->response()
@@ -43,8 +40,7 @@ class CartController extends Controller
 
   public function delete(DeleteCartRequest $request): JsonResponse
   {
-    $user = auth()->user();
-    $user->carts()->whereIn('id', $request->validated('cart_ids'))->delete();
+    auth()->user()->carts()->whereIn('id', $request->validated('cart_ids'))->delete();
 
     return response()->json(['data' => true], Response::HTTP_OK);
   }

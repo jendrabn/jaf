@@ -1,16 +1,9 @@
 <?php
 
-// app/Http/Controllers/Api/AuthController.php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\{
-  ForgotPasswordRequest,
-  LoginRequest,
-  RegisterRequest,
-  ResetPasswordRequest
-};
+use App\Http\Requests\Api\{ForgotPasswordRequest, LoginRequest, RegisterRequest, ResetPasswordRequest};
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\AuthService;
@@ -29,7 +22,7 @@ class AuthController extends Controller
   {
     $user = User::create($request->validated())->assignRole(User::ROLE_USER);
 
-    return (new UserResource($user))
+    return UserResource::make($user)
       ->response()
       ->setStatusCode(Response::HTTP_CREATED);
   }
@@ -38,15 +31,14 @@ class AuthController extends Controller
   {
     $user = $this->authService->login($request);
 
-    return (new UserResource($user))
+    return UserResource::make($user)
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }
 
   public function logout(): JsonResponse
   {
-    $user = auth()->user();
-    $user->currentAccessToken()->delete();
+    auth()->user()->currentAccessToken()->delete();
 
     return response()->json(['data' => true], Response::HTTP_OK);
   }
