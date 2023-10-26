@@ -15,7 +15,10 @@ class Banner extends Model implements HasMedia
 
   public const MEDIA_COLLECTION_NAME = 'banner_images';
 
-  protected $guarded = [];
+  protected $fillable = [
+    'image_alt',
+    'url',
+  ];
 
   protected $appends = [
     'image',

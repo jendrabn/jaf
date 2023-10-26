@@ -18,7 +18,18 @@ class Product extends Model implements HasMedia
 
   public const MEDIA_COLLECTION_NAME = 'product_images';
 
-  protected $guarded = [];
+  protected $fillable = [
+    'product_category_id',
+    'product_brand_id',
+    'name',
+    'slug',
+    'weight',
+    'price',
+    'stock',
+    'description',
+    'is_publish',
+    'sex',
+  ];
 
   protected $appends = [
     'image',

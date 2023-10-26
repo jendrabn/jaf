@@ -20,7 +20,15 @@ class User extends Authenticatable implements CanResetPassword
   public const ROLE_ADMIN = 'admin';
   public const ROLE_USER = 'user';
 
-  protected $guarded = [];
+  protected $fillable = [
+    'name',
+    'email',
+    'email_verified_at',
+    'password',
+    'phone',
+    'sex',
+    'birth_date',
+  ];
 
   protected $hidden = [
     'password',

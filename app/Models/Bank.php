@@ -15,7 +15,12 @@ class Bank extends Model implements HasMedia
 
   public const MEDIA_COLLECTION_NAME = 'bank_images';
 
-  protected $guarded = [];
+  protected $fillable = [
+    'name',
+    'code',
+    'account_name',
+    'account_number',
+  ];
 
   protected $appends = [
     'logo',

@@ -15,7 +15,13 @@ class Invoice extends Model
   const STATUS_PAID = 'paid';
   const STATUS_UNPAID = 'unpaid';
 
-  protected $guarded = [];
+  protected $fillable = [
+    'order_id',
+    'number',
+    'amount',
+    'status',
+    'due_date',
+  ];
 
   public function payment(): HasOne
   {

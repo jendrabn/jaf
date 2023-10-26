@@ -20,7 +20,17 @@ class Order extends Model
   const STATUS_COMPLETED = 'completed';
   const STATUS_CANCELLED = 'cancelled';
 
-  protected $guarded = [];
+  protected $fillable = [
+    'user_id',
+    'total_price',
+    'shipping_cost',
+    'notes',
+    'cancel_reason',
+    'status',
+    'confirmed_at',
+    'cancelled_at',
+    'completed_at',
+  ];
 
   protected $casts = [
     'due_date' => 'datetime'

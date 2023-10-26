@@ -11,11 +11,17 @@ class Payment extends Model
 {
   use HasFactory;
 
-  protected $guarded = [];
-
   const STATUS_PENDING = 'pending';
   const STATUS_CANCELLED = 'cancelled';
   const STATUS_RELEASED = 'realeased';
+
+  protected $fillable = [
+    'invoice_id',
+    'method',
+    'info',
+    'amount',
+    'status',
+  ];
 
   public function bank(): HasOne
   {

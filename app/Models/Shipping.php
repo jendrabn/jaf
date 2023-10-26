@@ -18,8 +18,18 @@ class Shipping extends Model
 
   const COURIERS = ['jne', 'tiki', 'pos'];
 
-  protected $guarded = [];
-
+  protected $fillable = [
+    'order_id',
+    'address',
+    'courier',
+    'courier_name',
+    'service',
+    'service_name',
+    'etd',
+    'weight',
+    'tracking_number',
+    'status',
+  ];
 
   public function address(): Attribute
   {

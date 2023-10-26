@@ -9,5 +9,10 @@ class PaymentBank extends Model
 {
   use HasFactory;
 
-  protected $guarded = [];
+  protected $fillable = [
+    'payment_id',
+    'name',
+    'account_name',
+    'account_number',
+  ];
 }

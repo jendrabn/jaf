@@ -10,7 +10,11 @@ class City extends Model
 {
   use HasFactory;
 
-  protected $guarded = [];
+  protected $fillable = [
+    'province_id',
+    'name',
+    'type',
+  ];
 
   public $timestamps = false;
 
