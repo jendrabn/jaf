@@ -28,11 +28,22 @@ class Bank extends Model implements HasMedia
 
   public function registerMediaConversions(Media $media = null): void
   {
-    //
+    $this->addMediaConversion('thumb')->fit('crop', 50, 50);
+    $this->addMediaConversion('preview')->fit('crop', 120, 120);
   }
 
   public function logo(): Attribute
   {
-    return  Attribute::get(fn () => $this->getFirstMediaUrl(self::MEDIA_COLLECTION_NAME) ?? null);
+    return  Attribute::get(function () {
+      $file = $this->getFirstMedia(self::MEDIA_COLLECTION_NAME);
+
+      if ($file) {
+        $file->url = $file->getUrl();
+        $file->thumbnail = $file->getUrl('thumb');
+        $file->preview = $file->getUrl('preview');
+      }
+
+      return $file;
+    });
   }
 }

@@ -59,7 +59,8 @@ class Product extends Model implements HasMedia
 
   public function registerMediaConversions(Media $media = null): void
   {
-    //
+    $this->addMediaConversion('thumb')->fit('crop', 50, 50);
+    $this->addMediaConversion('preview')->fit('crop', 120, 120);
   }
 
   public function images(): Attribute
@@ -67,18 +68,29 @@ class Product extends Model implements HasMedia
     return Attribute::get(function () {
       $files = $this->getMedia(self::MEDIA_COLLECTION_NAME);
 
-      $images = [];
-      foreach ($files as $file) {
-        $images[] = $file->getUrl() ?? null;
-      }
+      $files->each(function ($item) {
+        $item->url       = $item->getUrl();
+        $item->thumbnail = $item->getUrl('thumb');
+        $item->preview   = $item->getUrl('preview');
+      });
 
-      return $images;
+      return $files;
     });
   }
 
   public function image(): Attribute
   {
-    return  Attribute::get(fn () => $this->getFirstMediaUrl(self::MEDIA_COLLECTION_NAME) ?? null);
+    return  Attribute::get(function () {
+      $file = $this->getFirstMedia(self::MEDIA_COLLECTION_NAME);
+
+      if ($file) {
+        $file->url = $file->getUrl();
+        $file->thumbnail = $file->getUrl('thumb');
+        $file->preview = $file->getUrl('preview');
+      }
+
+      return $file;
+    });
   }
 
   public function isWishlist(): Attribute

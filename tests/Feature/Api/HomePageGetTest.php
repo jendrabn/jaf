@@ -30,7 +30,7 @@ class HomePageGetTest extends TestCase
           'banners' => $banners->sortBy('id')->take(10)->map(
             fn ($banner) => [
               'id' => $banner->id,
-              'image' => $banner->image,
+              'image' => $banner->image ? $banner->image->getUrl() : null,
               'image_alt' => $banner->image_alt,
               'url' => $banner->url,
             ]

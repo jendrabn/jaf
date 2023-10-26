@@ -5,6 +5,7 @@ namespace Tests\Feature\Api;
 use App\Models\{Order, OrderItem, Product};
 use Database\Seeders\{ProductBrandSeeder, ProductCategorySeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Arr;
 use Tests\TestCase;
 
 class ProductDetailGetTest extends TestCase
@@ -50,7 +51,9 @@ class ProductDetailGetTest extends TestCase
           'id' => $product->id,
           'name' => $product->name,
           'slug' => $product->slug,
-          'images' => $product->images,
+          'images' => $product->images
+            ? $product->images->map(fn ($media) => $media->getUrl())->toArray()
+            : [],
           'category' => $this->formatCategoryData($product->category),
           'description' => $product->description,
           'brand' => $this->formatBrandData($product->brand),

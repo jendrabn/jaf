@@ -6,7 +6,6 @@ use App\Models\{Bank, Banner, Cart, City, Order, OrderItem, Product, ProductBran
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Http\Client\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use JMac\Testing\Traits\AdditionalAssertions;
 
@@ -22,15 +21,9 @@ abstract class TestCase extends BaseTestCase
 
   protected function tearDown(): void
   {
-    Banner::all()->each(
-      fn ($banner) => $banner->clearMediaCollection(Banner::MEDIA_COLLECTION_NAME)
-    );
-    Product::all()->each(
-      fn ($product) => $product->clearMediaCollection(Product::MEDIA_COLLECTION_NAME)
-    );
-    Bank::all()->each(
-      fn ($bank) => $bank->clearMediaCollection(Bank::MEDIA_COLLECTION_NAME)
-    );
+    Banner::all()->each(fn ($banner) => $banner->clearMediaCollection(Banner::MEDIA_COLLECTION_NAME));
+    Product::all()->each(fn ($product) => $product->clearMediaCollection(Product::MEDIA_COLLECTION_NAME));
+    Bank::all()->each(fn ($bank) => $bank->clearMediaCollection(Bank::MEDIA_COLLECTION_NAME));
   }
 
   protected function createUser(?array $data = [], int $count = 1): User|Collection
@@ -154,7 +147,7 @@ abstract class TestCase extends BaseTestCase
         'code' => $data['code'],
         'account_name' => $data['account_name'],
         'account_number' => $data['account_number'],
-        'logo' => $data['logo']
+        'logo' => $data['logo']  ? $data['logo']->getUrl() : null
       ];
   }
 
@@ -180,7 +173,7 @@ abstract class TestCase extends BaseTestCase
         'id' => $data['id'],
         'name' => $data['name'],
         'slug' => $data['slug'],
-        'image' => $data['image'],
+        'image' => $data['image'] ? $data['image']->getUrl() : null,
         'category' => $this->formatCategoryData($data['category']),
         'brand' => $this->formatBrandData($data['brand']),
         'sex' => $data['sex'],
