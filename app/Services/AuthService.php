@@ -6,7 +6,6 @@ use App\Http\Requests\Api\{LoginRequest, ResetPasswordRequest};
 use App\Models\User;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -17,12 +16,12 @@ class AuthService
   {
     $validatedData = $request->validated();
 
-    $user = User::whereEmail($validatedData['email'])->first();
-
     throw_if(
-      !$user || !Hash::check($validatedData['password'], $user->password),
-      new AuthenticationException('The provided credentials are incorrect.'),
+      !auth()->attempt($validatedData),
+      new AuthenticationException('The provided credentials are incorrect.')
     );
+
+    $user = User::whereEmail($validatedData['email'])->firstOrFail();
 
     $user->auth_token = $user->createToken('auth_token')->plainTextToken;
 

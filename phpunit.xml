@@ -17,7 +17,11 @@
       <directory>app</directory>
     </include>
   </source>
-  <coverage pathCoverage="true"></coverage>
+  <coverage pathCoverage="true">
+    <report>
+      <html outputDirectory="coverage" />
+    </report>
+  </coverage>
   <php>
     <env name="APP_ENV" value="testing" />
     <env name="BCRYPT_ROUNDS" value="4" />

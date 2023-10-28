@@ -86,7 +86,7 @@
     },
     "/api/auth/login": {
       "post": {
-        "description": "API untuk login",
+        "description": "API untuk login (membuat token untuk autentikasi)",
         "requestBody": {
           "required": true,
           "content": {
@@ -2195,7 +2195,7 @@
     },
     "/api/orders/{order_id}/confirm_order_delivered": {
       "put": {
-        "description": "API untuk konfirmasi order diterima",
+        "description": "API untuk konfirmasi order telah diterima",
         "parameters": [
           {
             "$ref": "#/components/parameters/auth"
