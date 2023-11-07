@@ -22,7 +22,7 @@ class OrderFactory extends Factory
       'total_price' => fake()->numberBetween(100000, 1000000),
       'shipping_cost' => fake()->numberBetween(5000, 50000),
       'notes' => fake()->text(),
-      'cancel_reason' => null,
+      'cancel_reason' => '',
       'status' => fake()->randomElement([
         'pending_payment',
         'pending',
@@ -31,9 +31,9 @@ class OrderFactory extends Factory
         'completed',
         'cancelled'
       ]),
-      'confirmed_at' => fake()->time(),
-      'cancelled_at' => fake()->time(),
-      'completed_at' => fake()->time(),
+      'confirmed_at' => fake()->dateTime(),
+      'cancelled_at' => fake()->dateTime(),
+      'completed_at' => fake()->dateTime(),
     ];
   }
 }

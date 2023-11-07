@@ -11,9 +11,9 @@ class Payment extends Model
 {
   use HasFactory;
 
-  const STATUS_PENDING = 'pending';
-  const STATUS_CANCELLED = 'cancelled';
-  const STATUS_RELEASED = 'realeased';
+  public const STATUS_PENDING = 'pending';
+  public const STATUS_CANCELLED = 'cancelled';
+  public const STATUS_RELEASED = 'realeased';
 
   protected $fillable = [
     'invoice_id',

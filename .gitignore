@@ -18,3 +18,5 @@ yarn-error.log
 /.idea
 /.vscode
 /coverage
+/storage/debugbar
+/storage/media-library
