@@ -18,8 +18,8 @@ class OrderResource extends JsonResource
       'id' => $this->id,
       'items' => OrderItemResource::collection($this->items),
       'status' => $this->status,
-      'total_amount' => $this->invoice->amount ?? null,
-      'payment_due_date' => $this->invoice->due_date ?? null,
+      'total_amount' => $this->invoice->amount,
+      'payment_due_date' => $this->invoice->due_date,
       'created_at' => $this->created_at
     ];
   }

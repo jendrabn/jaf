@@ -3,8 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\{CreateCartRequest, DeleteCartRequest, UpdateCartRequest};
+use App\Http\Requests\Api\{
+  CreateCartRequest,
+  DeleteCartRequest,
+  UpdateCartRequest
+};
 use App\Http\Resources\CartResource;
+use App\Models\Cart;
 use App\Services\CartService;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +22,10 @@ class CartController extends Controller
 
   public function list(): JsonResponse
   {
-    $carts = auth()->user()->carts()->latest('id')->get();
+    $carts = Cart::with(['product', 'product.media', 'product.category', 'product.brand'])
+      ->where('user_id', auth()->id())
+      ->latest('id')
+      ->get();
 
     return CartResource::collection($carts)
       ->response()
@@ -31,16 +39,18 @@ class CartController extends Controller
     return response()->json(['data' => true], Response::HTTP_CREATED);
   }
 
-  public function update(UpdateCartRequest $request, int $id): JsonResponse
+  public function update(UpdateCartRequest $request, Cart $cart): JsonResponse
   {
-    $this->cartService->update($request, $id);
+    $this->cartService->update($request, $cart);
 
     return response()->json(['data' => true], Response::HTTP_OK);
   }
 
   public function delete(DeleteCartRequest $request): JsonResponse
   {
-    auth()->user()->carts()->whereIn('id', $request->validated('cart_ids'))->delete();
+    Cart::where('user_id', auth()->id())
+      ->whereIn('id', $request->validated('cart_ids'))
+      ->delete();
 
     return response()->json(['data' => true], Response::HTTP_OK);
   }

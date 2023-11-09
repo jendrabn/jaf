@@ -21,7 +21,7 @@ class AuthService
       new AuthenticationException('The provided credentials are incorrect.')
     );
 
-    $user = User::whereEmail($validatedData['email'])->firstOrFail();
+    $user = User::where('email', $validatedData['email'])->firstOrFail();
 
     $user->auth_token = $user->createToken('auth_token')->plainTextToken;
 
@@ -34,7 +34,6 @@ class AuthService
       $request->validated(),
       function (User $user, string $password) {
         $user->forceFill(['password' => $password])->setRememberToken(Str::random(60));
-
         $user->save();
 
         event(new PasswordReset($user));

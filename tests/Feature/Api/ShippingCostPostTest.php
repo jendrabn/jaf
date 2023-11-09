@@ -48,7 +48,7 @@ class ShippingCostPostTest extends TestCase
   {
     $this->assertActionUsesFormRequest(
       CheckoutController::class,
-      'shippingCost',
+      'shippingCosts',
       ShippingCostRequest::class
     );
   }

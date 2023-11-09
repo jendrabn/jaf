@@ -6,14 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\{ProfileRequest, UpdatePasswordRequest};
 use App\Http\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Arr;
 use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
   public function get(): JsonResponse
   {
-    return UserResource::make(auth()->user())
+    $user = auth()->user();
+
+    return UserResource::make($user)
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }
@@ -31,7 +32,9 @@ class UserController extends Controller
 
   public function updatePassword(UpdatePasswordRequest $request): JsonResponse
   {
-    auth()->user()->update(Arr::only($request->validated(), 'password'));
+    $user = auth()->user();
+
+    $user->update(['password' => $request->validated('password')]);
 
     return response()->json(['data' => true], Response::HTTP_OK);
   }

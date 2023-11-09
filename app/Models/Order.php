@@ -33,7 +33,9 @@ class Order extends Model
   ];
 
   protected $casts = [
-    'due_date' => 'datetime'
+    'confirmed_at' => 'datetime',
+    'cancelled_at' => 'datetime',
+    'completed_at' => 'datetime',
   ];
 
   protected $appends = [

@@ -82,7 +82,7 @@ class OrderGetTest extends TestCase
       )->toArray(),
       'status' => $order->status,
       'total_amount' => $order->invoice->amount,
-      'payment_due_date' => $order->invoice->due_date,
+      'payment_due_date' => $order->invoice->due_date->toISOString(),
       'created_at' => $order->created_at->toISOString()
     ]);
   }
@@ -90,7 +90,7 @@ class OrderGetTest extends TestCase
   /** @test */
   public function can_get_all_orders_with_pagination()
   {
-    Order::factory($total = 13)->for($this->user)->create();
+    Order::factory($total = 13)->for($this->user)->has(Invoice::factory())->create();
 
     $response = $this->attemptToGetOrderAndExpectOk(['page' => $page = 2]);
 
@@ -128,7 +128,7 @@ class OrderGetTest extends TestCase
     $orders = [];
 
     foreach ($statuses as $status) {
-      $orders[$status] = Order::factory(3)->for($this->user)->create(['status' => $status]);
+      $orders[$status] = Order::factory(3)->for($this->user)->has(Invoice::factory())->create(['status' => $status]);
     }
 
     foreach ($statuses as $status) {
@@ -146,7 +146,7 @@ class OrderGetTest extends TestCase
   /** @test */
   public function can_sort_order_by_newest()
   {
-    $orders = Order::factory(3)->for($this->user)->create();
+    $orders = Order::factory(3)->for($this->user)->has(Invoice::factory())->create();
 
     $response = $this->attemptToGetOrderAndExpectOk(['sort_by' => 'newest']);
 
@@ -161,7 +161,7 @@ class OrderGetTest extends TestCase
   /** @test */
   public function can_sort_order_by_oldest()
   {
-    $orders = Order::factory(3)->for($this->user)->create();
+    $orders = Order::factory(3)->for($this->user)->has(Invoice::factory())->create();
 
     $response = $this->attemptToGetOrderAndExpectOk(['sort_by' => 'oldest']);
 

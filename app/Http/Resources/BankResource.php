@@ -20,7 +20,7 @@ class BankResource extends JsonResource
       'code' => $this->code,
       'account_name' => $this->account_name,
       'account_number' => $this->account_number,
-      'logo' => $this->logo ? $this->logo->getUrl() : null
+      'logo' => $this->logo?->getUrl()
     ];
   }
 }

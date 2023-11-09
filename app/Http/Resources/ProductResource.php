@@ -18,7 +18,7 @@ class ProductResource extends JsonResource
       'id' => $this->id,
       'name' => $this->name,
       'slug' => $this->slug,
-      'image' => $this->image ? $this->image->getUrl() : null,
+      'image' => $this->image?->getUrl(),
       'category' => ProductCategoryResource::make($this->category),
       'brand' => $this->whenNotNull(ProductBrandResource::make($this->brand)),
       'sex' => $this->sex,

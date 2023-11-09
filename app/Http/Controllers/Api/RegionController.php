@@ -12,7 +12,9 @@ class RegionController extends Controller
 {
   public function provinces(): JsonResponse
   {
-    return ProvinceResource::collection(Province::all())
+    $provinces = Province::all();
+
+    return ProvinceResource::collection($provinces)
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }

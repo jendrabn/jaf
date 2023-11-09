@@ -23,6 +23,10 @@ class Invoice extends Model
     'due_date',
   ];
 
+  protected $casts = [
+    'due_date' => 'datetime'
+  ];
+
   public function payment(): HasOne
   {
     return $this->hasOne(Payment::class);

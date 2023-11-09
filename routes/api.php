@@ -30,8 +30,8 @@ Route::controller(ProductController::class)->group(function () {
   Route::get('/categories', 'categories');
   Route::get('/brands', 'brands');
   Route::get('/products', 'list');
-  Route::get('/products/{id}', 'get');
-  Route::get('/products/{id}/similars', 'similars');
+  Route::get('/products/{product}', 'get');
+  Route::get('/products/{product}/similars', 'similars');
 });
 
 // Region
@@ -50,7 +50,7 @@ Route::controller(AuthController::class)->group(function () {
 });
 
 // Shipping Cost
-Route::post('/shipping_costs', [CheckoutController::class, 'shippingCost']);
+Route::post('/shipping_costs', [CheckoutController::class, 'shippingCosts']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
@@ -68,9 +68,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
   Route::controller(OrderController::class)->group(function () {
     Route::get('/orders', 'list');
     Route::post('/orders', 'create');
-    Route::get('/orders/{id}', 'get');
-    Route::post('/orders/{id}/confirm_payment', 'confirmPayment');
-    Route::put('/orders/{id}/confirm_order_delivered', 'confirmDelivered');
+    Route::get('/orders/{order}', 'get');
+    Route::post('/orders/{order}/confirm_payment', 'confirmPayment');
+    Route::put('/orders/{order}/confirm_order_delivered', 'confirmDelivered');
   });
 
   // Wishlist
@@ -84,7 +84,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
   Route::controller(CartController::class)->group(function () {
     Route::get('/carts', 'list');
     Route::post('/carts', 'create');
-    Route::put('/carts/{id}', 'update');
+    Route::put('/carts/{cart}', 'update');
     Route::delete('/carts', 'delete');
   });
 });

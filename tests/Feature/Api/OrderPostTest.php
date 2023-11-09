@@ -82,7 +82,7 @@ class OrderPostTest extends TestCase
     $this->assertDatabaseCount('orders', 1);
 
     $order = Order::first();
-    $paymentDueDate = $order['created_at']->addDays(1)->toDateTimeString();
+    $paymentDueDate = $order['created_at']->addDays(1);
 
     $response->assertCreated()
       ->assertExactJson([

@@ -13,7 +13,7 @@ class ProductService
   {
     $page = $request->get('page', 1);
 
-    $products = Product::published();
+    $products = Product::with(['media', 'category', 'brand'])->published();
 
     $products->when(
       $request->has('category_id'),
@@ -62,11 +62,14 @@ class ProductService
     return $products;
   }
 
-  public function getProductSimilars(int $id, int $size = 5): Collection
+  public function getSimilarProducts(Product $product, int $size = 5): Collection
   {
-    $product = Product::published()->findOrFail($id);
+    throw_if(!$product->is_publish, ModelNotFoundException::class);
 
-    return Product::published()->where('name', 'like', "%{$product->name}%")
+    return Product::with(['media', 'category', 'brand'])
+      ->published()
+      ->where('id', '!=', $product->id)
+      ->where('name', 'like', "%{$product->name}%")
       ->latest('id')
       ->take($size)
       ->get();
