@@ -7,50 +7,12 @@ use App\Http\Requests\Api\DeleteCartRequest;
 use App\Models\Cart;
 use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Validation\Rule;
 use Tests\TestCase;
 
 class CartDeleteTest extends TestCase
 {
   use RefreshDatabase;
-
-  const URI = '/api/carts';
-
-  /** @test */
-  public function can_delete_carts()
-  {
-    $this->seed(ProductCategorySeeder::class);
-
-    $user = $this->createUser();
-    $carts = Cart::factory(2)
-      ->sequence(
-        ['product_id' => $this->createProduct()->id],
-        ['product_id' => $this->createProduct()->id],
-      )
-      ->for($user)
-      ->create();
-
-    $response = $this->deleteJson(
-      self::URI,
-      ['cart_ids' => $carts->pluck('id')],
-      $this->authBearerToken($user)
-    );
-
-    $response->assertOk()
-      ->assertExactJson(['data' => true]);
-
-    $this->assertDatabaseCount('carts', 0);
-  }
-
-  /** @test */
-  public function unauthenticated_user_cannot_delete_carts()
-  {
-    $response = $this->deleteJson(self::URI);
-
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
 
   /** @test */
   public function delete_cart_uses_the_correct_form_request()
@@ -79,5 +41,38 @@ class CartDeleteTest extends TestCase
         Rule::exists('carts', 'id')->where('user_id', $user->id)
       ]
     ], $rules);
+  }
+
+  /** @test */
+  public function unauthenticated_user_cannot_delete_carts()
+  {
+    $response = $this->deleteJson('/api/carts');
+
+    $response->assertUnauthorized()
+      ->assertJsonStructure(['message']);
+  }
+
+  /** @test */
+  public function can_delete_carts()
+  {
+    $this->seed(ProductCategorySeeder::class);
+
+    $user = $this->createUser();
+    $carts = Cart::factory(2)
+      ->sequence(
+        ['product_id' => $this->createProduct()->id],
+        ['product_id' => $this->createProduct()->id],
+      )
+      ->for($user)
+      ->create();
+
+    $response = $this->deleteJson('/api/carts', [
+      'cart_ids' => $carts->pluck('id')
+    ], $this->authBearerToken($user));
+
+    $response->assertOk()
+      ->assertExactJson(['data' => true]);
+
+    $this->assertDatabaseCount('carts', 0);
   }
 }

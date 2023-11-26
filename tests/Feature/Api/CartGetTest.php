@@ -5,14 +5,20 @@ namespace Tests\Feature\Api;
 use App\Models\Cart;
 use Database\Seeders\{ProductBrandSeeder, ProductCategorySeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class CartGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  const URI = '/api/carts';
+  /** @test */
+  public function unauthenticated_user_cannot_get_all_carts()
+  {
+    $response = $this->getJson('/api/carts');
+
+    $response->assertUnauthorized()
+      ->assertJsonStructure(['message']);
+  }
 
   /** @test */
   public function can_get_all_carts()
@@ -29,26 +35,17 @@ class CartGetTest extends TestCase
       ->for($user)
       ->create();
 
-    $response = $this->getJson(self::URI, $this->authBearerToken($user));
+    $expectedCarts =  $carts->sortByDesc('id')->values();
+
+    $response = $this->getJson('/api/carts', $this->authBearerToken($user));
 
     $response->assertOk()
       ->assertExactJson([
-        'data' => $carts->sortByDesc('id')->values()->map(
-          fn ($cart) => [
-            'id' => $cart->id,
-            'product' => $this->formatProductData($cart->product),
-            'quantity' => $cart->quantity,
-          ]
-        )->toArray()
+        'data' => $expectedCarts->map(fn ($item) => [
+          'id' => $item->id,
+          'product' => $this->formatProductData($item->product),
+          'quantity' => $item->quantity,
+        ])->toArray()
       ]);
-  }
-
-  /** @test */
-  public function unauthenticated_user_cannot_get_all_carts()
-  {
-    $response = $this->getJson(self::URI);
-
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
   }
 }

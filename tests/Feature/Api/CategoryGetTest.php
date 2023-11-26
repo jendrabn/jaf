@@ -5,7 +5,6 @@ namespace Tests\Feature\Api;
 use App\Models\ProductCategory;
 use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class CategoryGetTest extends TestCase

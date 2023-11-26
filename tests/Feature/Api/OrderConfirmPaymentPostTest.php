@@ -7,7 +7,6 @@ use App\Http\Requests\Api\ConfirmPaymentRequest;
 use App\Models\{Invoice, Order, Payment, User};
 use Database\Seeders\BankSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class OrderConfirmPaymentPostTest extends TestCase
@@ -28,121 +27,6 @@ class OrderConfirmPaymentPostTest extends TestCase
       'account_number' => '1988162520'
     ];
   }
-
-  private static function URI(int $orderId = 1): string
-  {
-    return "/api/orders/{$orderId}/confirm_payment";
-  }
-
-  /** @test */
-  public function can_confirm_payment()
-  {
-    $order = Order::factory()
-      ->for($this->user)
-      ->afterCreating(
-        fn ($order) => Invoice::factory(['due_date' => $order->created_at->addDays(1)])
-          ->has(Payment::factory())
-          ->for($order)
-          ->create()
-      )
-      ->create(['status' => Order::STATUS_PENDING_PAYMENT]);
-
-    $response = $this->postJson(
-      self::URI($order->id),
-      $this->data,
-      $this->authBearerToken($this->user)
-    );
-
-    $response->assertCreated()
-      ->assertExactJson(['data' => true]);
-
-    $this->assertDatabaseHas('payment_banks', $this->data);
-    $this->assertTrue($order->fresh()->status === Order::STATUS_PENDING);
-  }
-
-  /** @test */
-  public function unauthenticated_user_cannot_confirm_payment()
-  {
-    $response = $this->postJson(self::URI());
-
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
-
-  /** @test */
-  public function cannot_confirm_payment_if_order_doenot_exist()
-  {
-    $order = Order::factory()->for($this->createUser())->create();
-
-    // Unauthorized order id
-    $response1 = $this->postJson(
-      self::URI($order->id),
-      $this->data,
-      $this->authBearerToken($this->user)
-    );
-
-    $response1->assertNotFound()
-      ->assertJsonStructure(['message']);
-
-    // Invalid order id
-    $response2 = $this->postJson(
-      self::URI($order->id + 1),
-      $this->data,
-      $this->authBearerToken($this->user)
-    );
-
-    $response2->assertNotFound()
-      ->assertJsonStructure(['message']);
-  }
-
-  /** @test */
-  public function cannot_confirm_payment_if_order_status_is_not_pending_payment()
-  {
-    $order = Order::factory()
-      ->for($this->user)
-      ->afterCreating(
-        fn ($order) => Invoice::factory(['due_date' => $order->created_at->addDays(1)])
-          ->for($order)
-          ->create()
-      )
-      ->create(['status' => Order::STATUS_PENDING]);
-
-    $response = $this->postJson(
-      self::URI($order->id),
-      $this->data,
-      $this->authBearerToken($this->user)
-    );
-
-    $response->assertUnprocessable()
-      ->assertJsonValidationErrors(['order_id']);
-  }
-
-  /** @test */
-  public function cannot_confirm_payment_if_past_the_payment_due_date()
-  {
-    $order = Order::factory()
-      ->for($this->user)
-      ->afterCreating(
-        fn ($order) => Invoice::factory(['due_date' => $order->created_at->addDays(1)])
-          ->for($order)
-          ->create()
-      )
-      ->create(['status' => Order::STATUS_PENDING_PAYMENT]);
-
-    $this->travel(25)->hours();
-
-    $response = $this->postJson(
-      self::URI($order->id),
-      $this->data,
-      $this->authBearerToken($this->user)
-    );
-
-    $response->assertUnprocessable()
-      ->assertJsonValidationErrors(['order_id']);
-
-    $this->assertTrue($order->fresh()->status === Order::STATUS_CANCELLED);
-  }
-
 
   /** @test */
   public function confirm_payment_uses_the_correct_form_request()
@@ -177,5 +61,114 @@ class OrderConfirmPaymentPostTest extends TestCase
         'max:50',
       ]
     ], (new ConfirmPaymentRequest())->rules());
+  }
+
+  /** @test */
+  public function unauthenticated_user_cannot_confirm_payment()
+  {
+    $response = $this->postJson('/api/orders/1/confirm_payment');
+
+    $response->assertUnauthorized()
+      ->assertJsonStructure(['message']);
+  }
+
+  /** @test */
+  public function can_confirm_payment()
+  {
+    $order = Order::factory()
+      ->for($this->user)
+      ->afterCreating(
+        fn ($order) => Invoice::factory(['due_date' => $order->created_at->addDays(1)])
+          ->has(Payment::factory())
+          ->for($order)
+          ->create()
+      )
+      ->create(['status' => Order::STATUS_PENDING_PAYMENT]);
+
+    $response = $this->postJson(
+      '/api/orders/' . $order->id . '/confirm_payment',
+      $this->data,
+      $this->authBearerToken($this->user)
+    );
+
+    $response->assertCreated()
+      ->assertExactJson(['data' => true]);
+
+    $this->assertDatabaseHas('payment_banks', $this->data);
+    $this->assertTrue($order->fresh()->status === Order::STATUS_PENDING);
+  }
+
+  /** @test */
+  public function cannot_confirm_payment_if_order_doenot_exist()
+  {
+    $order = Order::factory()->for($this->createUser())->create();
+
+    // Unauthorized order id
+    $response1 = $this->postJson(
+      '/api/orders/' . $order->id . '/confirm_payment',
+      $this->data,
+      $this->authBearerToken($this->user)
+    );
+
+    $response1->assertNotFound()
+      ->assertJsonStructure(['message']);
+
+    // Invalid order id
+    $response2 = $this->postJson(
+      '/api/orders/' . $order->id + 1 . '/confirm_payment',
+      $this->data,
+      $this->authBearerToken($this->user)
+    );
+
+    $response2->assertNotFound()
+      ->assertJsonStructure(['message']);
+  }
+
+  /** @test */
+  public function cannot_confirm_payment_if_order_status_is_not_pending_payment()
+  {
+    $order = Order::factory()
+      ->for($this->user)
+      ->afterCreating(
+        fn ($order) => Invoice::factory(['due_date' => $order->created_at->addDays(1)])
+          ->for($order)
+          ->create()
+      )
+      ->create(['status' => Order::STATUS_PENDING]);
+
+    $response = $this->postJson(
+      '/api/orders/' . $order->id . '/confirm_payment',
+      $this->data,
+      $this->authBearerToken($this->user)
+    );
+
+    $response->assertUnprocessable()
+      ->assertJsonValidationErrors(['order_id']);
+  }
+
+  /** @test */
+  public function cannot_confirm_payment_if_past_the_payment_due_date()
+  {
+    $order = Order::factory()
+      ->for($this->user)
+      ->afterCreating(
+        fn ($order) => Invoice::factory(['due_date' => $order->created_at->addDays(1)])
+          ->for($order)
+          ->create()
+      )
+      ->create(['status' => Order::STATUS_PENDING_PAYMENT]);
+
+    $this->travel(25)->hours();
+
+    $response = $this->postJson(
+      '/api/orders/' . $order->id . '/confirm_payment',
+      $this->data,
+      $this->authBearerToken($this->user)
+    );
+
+    $response->assertUnprocessable()
+      ->assertJsonValidationErrors(['order_id']);
+
+    $this->assertTrue($order->fresh()->status === Order::STATUS_CANCELLED);
   }
 }

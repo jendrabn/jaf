@@ -5,21 +5,44 @@ namespace Tests\Feature\Api;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Requests\Api\LoginRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class AuthLoginPostTest extends TestCase
 {
   use RefreshDatabase;
 
-  const URI = '/api/auth/login';
+  /** @test */
+  public function login_uses_the_correct_form_request()
+  {
+    $this->assertActionUsesFormRequest(
+      AuthController::class,
+      'login',
+      LoginRequest::class
+    );
+  }
+
+  /** @test */
+  public function login_request_has_the_correct_validation_rules()
+  {
+    $this->assertValidationRules([
+      'email' => [
+        'required',
+        'string',
+        'email',
+      ],
+      'password' => [
+        'required',
+        'string',
+      ],
+    ], (new LoginRequest())->rules());
+  }
 
   /** @test */
   public function can_login()
   {
     $user = $this->createUser(['password' => $password = 'Secret123']);
 
-    $response = $this->postJson(self::URI, [
+    $response = $this->postJson('/api/auth/login', [
       'email' => $user->email,
       'password' => $password
     ]);
@@ -44,7 +67,7 @@ class AuthLoginPostTest extends TestCase
   /** @test */
   public function returns_unauthenticated_error_if_email_doenot_exist()
   {
-    $response = $this->postJson(self::URI, [
+    $response = $this->postJson('/api/auth/login', [
       'email' => 'invalid@gmail.com',
       'password' => 'Secret123',
     ]);
@@ -58,38 +81,12 @@ class AuthLoginPostTest extends TestCase
   {
     $user = $this->createUser(['password' => 'Secret123']);
 
-    $response = $this->postJson(self::URI, [
+    $response = $this->postJson('/api/auth/login', [
       'email' => $user->email,
       'password' => 'Wrong-Password',
     ]);
 
     $response->assertUnauthorized()
       ->assertJsonStructure(['message']);
-  }
-
-  /** @test */
-  public function login_uses_the_correct_form_request()
-  {
-    $this->assertActionUsesFormRequest(
-      AuthController::class,
-      'login',
-      LoginRequest::class
-    );
-  }
-
-  /** @test */
-  public function login_request_has_the_correct_rules()
-  {
-    $this->assertValidationRules([
-      'email' => [
-        'required',
-        'string',
-        'email',
-      ],
-      'password' => [
-        'required',
-        'string',
-      ],
-    ], (new LoginRequest())->rules());
   }
 }

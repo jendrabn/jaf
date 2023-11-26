@@ -7,7 +7,6 @@ use App\Http\Requests\Api\RegisterRequest;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -17,6 +16,43 @@ use Tests\TestCase;
 class AuthRegisterPostTest extends TestCase
 {
   use RefreshDatabase;
+
+  /** @test */
+  public function register_uses_the_correct_form_request()
+  {
+    $this->assertActionUsesFormRequest(
+      AuthController::class,
+      'register',
+      RegisterRequest::class
+    );
+  }
+
+  /** @test */
+  public function register_request_has_the_correct_validation_rules()
+  {
+    $this->assertValidationRules([
+      'name' => [
+        'required',
+        'string',
+        'min:1',
+        'max:30',
+      ],
+      'email' => [
+        'required',
+        'string',
+        'email',
+        'min:1',
+        'max:255',
+        Rule::unique('users', 'email')
+      ],
+      'password' => [
+        'required',
+        'string', Password::min(8)->mixedCase()->numbers(),
+        'max:30',
+        'confirmed'
+      ],
+    ], (new RegisterRequest())->rules());
+  }
 
   /** @test */
   public function can_register()
@@ -51,42 +87,5 @@ class AuthRegisterPostTest extends TestCase
 
     $this->assertTrue(Hash::check($data['password'], $user->password));
     $this->assertTrue($user->hasRole(User::ROLE_USER));
-  }
-
-  /** @test */
-  public function register_uses_the_correct_form_request()
-  {
-    $this->assertActionUsesFormRequest(
-      AuthController::class,
-      'register',
-      RegisterRequest::class
-    );
-  }
-
-  /** @test */
-  public function register_request_has_the_correct_rules()
-  {
-    $this->assertValidationRules([
-      'name' => [
-        'required',
-        'string',
-        'min:1',
-        'max:30',
-      ],
-      'email' => [
-        'required',
-        'string',
-        'email',
-        'min:1',
-        'max:255',
-        Rule::unique('users', 'email')
-      ],
-      'password' => [
-        'required',
-        'string', Password::min(8)->mixedCase()->numbers(),
-        'max:30',
-        'confirmed'
-      ],
-    ], (new RegisterRequest())->rules());
   }
 }

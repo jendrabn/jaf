@@ -7,7 +7,6 @@ use App\Models\Product;
 use Database\Seeders\ProductBrandSeeder;
 use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Arr;
 use Tests\TestCase;
 
@@ -21,7 +20,7 @@ class ProductGetTest extends TestCase
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
   }
 
-  public function attemptToGetProductAndExpectOk(array $params = [])
+  private function attemptToGetProductAndExpectOk(array $params = [])
   {
     $response = $this->getJson('/api/products?' . http_build_query($params));
 
@@ -64,9 +63,11 @@ class ProductGetTest extends TestCase
       ->create();
     $this->createProduct(['is_publish' => false]);
 
+    $expectedProducts = $products->sortByDesc('id');
+
     $response = $this->attemptToGetProductAndExpectOk();
 
-    $response->assertJsonPath('data', $this->formatProductData($products->sortByDesc('id')))
+    $response->assertJsonPath('data', $this->formatProductData($expectedProducts))
       ->assertJsonCount(3, 'data');
 
     $this->assertStringStartsWith('http', $response['data'][0]['image']);
@@ -86,8 +87,7 @@ class ProductGetTest extends TestCase
       'last_page' => 2,
       'from' => 21,
       'to' => 23,
-    ])
-      ->assertJsonCount(3, 'data');
+    ])->assertJsonCount(3, 'data');
   }
 
   /** @test */
@@ -110,22 +110,21 @@ class ProductGetTest extends TestCase
           'product_category_id' => 2,
           'product_brand_id' => $this->createBrand(['name' => 'Roses Musk'])->id,
         ],
-      )
-      ->create();
+      )->create();
 
-    // Search by name
+    // Search by name name
     $response = $this->attemptToGetProductAndExpectOk(['search' => 'Bunga Mawar']);
 
     $response->assertJsonPath('data.0', $this->formatProductData($products[0]))
       ->assertJsonCount(1, 'data');
 
-    // Search by category
+    // Search by category name
     $response = $this->attemptToGetProductAndExpectOk(['search' => '100ml']);
 
     $response->assertJsonPath('data.0', $this->formatProductData($products[1]))
       ->assertJsonCount(1, 'data');
 
-    // Search by brand
+    // Search by brand name
     $response = $this->attemptToGetProductAndExpectOk(['search' => 'Musk']);
 
     $response->assertJsonPath('data.0', $this->formatProductData($products[2]))
@@ -135,22 +134,26 @@ class ProductGetTest extends TestCase
   /** @test */
   public function can_sort_products_by_newest()
   {
-    $products = $this->createProduct(count: 3)->sortByDesc('id');
+    $products = $this->createProduct(count: 3);
+
+    $expectedProducts = $products->sortByDesc('id');
 
     $response =  $this->attemptToGetProductAndExpectOk(['sort_by' => 'newest']);
 
-    $response->assertJsonPath('data', $this->formatProductData($products))
+    $response->assertJsonPath('data', $this->formatProductData($expectedProducts))
       ->assertJsonCount(3, 'data');
   }
 
   /** @test */
   public function can_sort_products_by_oldest()
   {
-    $products = $this->createProduct(count: 3)->sortBy('id');
+    $products = $this->createProduct(count: 3);
+
+    $expectedProducts = $products->sortBy('id');
 
     $response =  $this->attemptToGetProductAndExpectOk(['sort_by' => 'oldest']);
 
-    $response->assertJsonPath('data', $this->formatProductData($products))
+    $response->assertJsonPath('data', $this->formatProductData($expectedProducts))
       ->assertJsonCount(3, 'data');
   }
 
@@ -189,9 +192,11 @@ class ProductGetTest extends TestCase
       )
       ->create();
 
+    $expectedProducts = $products->sortByDesc('price');
+
     $response = $this->attemptToGetProductAndExpectOk(['sort_by' => 'expensive']);
 
-    $response->assertJsonPath('data', $this->formatProductData($products->sortByDesc('price')))
+    $response->assertJsonPath('data', $this->formatProductData($expectedProducts))
       ->assertJsonCount(3, 'data');
   }
 
@@ -206,9 +211,11 @@ class ProductGetTest extends TestCase
       )
       ->create();
 
+    $expectedProducts = $products->sortBy('price');
+
     $response = $this->attemptToGetProductAndExpectOk(['sort_by' => 'cheapest']);
 
-    $response->assertJsonPath('data', $this->formatProductData($products->sortBy('price')))
+    $response->assertJsonPath('data', $this->formatProductData($expectedProducts))
       ->assertJsonCount(3, 'data');
   }
 
@@ -223,11 +230,11 @@ class ProductGetTest extends TestCase
       )
       ->create();
 
+    $expectedProducts = $products->where('product_category_id', 1)->sortByDesc('id');
+
     $response = $this->attemptToGetProductAndExpectOk(['category_id' => 1]);
 
-    $response->assertJsonPath('data', $this->formatProductData(
-      $products->where('product_category_id', 1)->sortByDesc('id')
-    ))
+    $response->assertJsonPath('data', $this->formatProductData($expectedProducts))
       ->assertJsonCount(2, 'data');
   }
 
@@ -242,11 +249,11 @@ class ProductGetTest extends TestCase
       )
       ->create();
 
+    $expectedProducts = $products->where('product_brand_id', 1)->sortByDesc('id');
+
     $response = $this->attemptToGetProductAndExpectOk(['brand_id' => 1]);
 
-    $response->assertJsonPath('data', $this->formatProductData(
-      $products->where('product_brand_id', 1)->sortByDesc('id')
-    ))
+    $response->assertJsonPath('data', $this->formatProductData($expectedProducts))
       ->assertJsonCount(2, 'data');
   }
 
@@ -261,11 +268,11 @@ class ProductGetTest extends TestCase
       )
       ->create();
 
+    $expectedProducts = $products->where('sex', 1)->sortByDesc('id');
+
     $response = $this->attemptToGetProductAndExpectOk(['sex' => 1]);
 
-    $response->assertJsonPath('data', $this->formatProductData(
-      $products->where('sex', 1)->sortByDesc('id')
-    ))
+    $response->assertJsonPath('data', $this->formatProductData($expectedProducts))
       ->assertJsonCount(2, 'data');
   }
 
@@ -282,13 +289,14 @@ class ProductGetTest extends TestCase
       )
       ->create();
 
+    $expectedProducts = $products->whereBetween('price', [$min = 1000, $max = 5000])->sortByDesc('id');
+
     $response = $this->attemptToGetProductAndExpectOk([
-      'price_min' => $min = 1000, 'price_max' => $max = 5000
+      'price_min' => $min,
+      'price_max' => $max
     ]);
 
-    $response->assertJsonPath('data', $this->formatProductData(
-      $products->whereBetween('price', [$min, $max])->sortByDesc('id')
-    ))
+    $response->assertJsonPath('data', $this->formatProductData($expectedProducts))
       ->assertJsonCount(3, 'data');
   }
 }
