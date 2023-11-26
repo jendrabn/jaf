@@ -77,7 +77,7 @@
           class="nav-item has-treeview {{ request()->is('admin/product-categories*') ? 'menu-open' : '' }} {{ request()->is('admin/product-brands*') ? 'menu-open' : '' }} {{ request()->is('admin/products*') ? 'menu-open' : '' }}">
           <a class="nav-link nav-dropdown-toggle {{ request()->is('admin/product-categories*') ? 'active' : '' }} {{ request()->is('admin/product-brands*') ? 'active' : '' }} {{ request()->is('admin/product*') ? 'active' : '' }}"
             href="#">
-            <i class="fa-fw nav-icon fas fa-shopping-basket">
+            <i class="fa-fw nav-icon fas fa-folder">
             </i>
             <p>
               {{ __('Product management') }}

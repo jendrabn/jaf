@@ -59,7 +59,7 @@ class OrderController extends Controller
         return $row->invoice ? 'Rp ' . number_format((float) $row->invoice->amount, 0, ',', '.') : '';
       });
       $table->editColumn('shipping', function ($row) {
-        return $row->shipping ? strtoupper($row->shipping->courier) . '<br>' . $row->shipping->tracking_number  : '';
+        return $row->shipping ? strtoupper($row->shipping->courier) . ' ' . $row->shipping->tracking_number  : '';
       });
       $table->editColumn('status', function ($row) {
         $status =  Order::STATUSES[$row->status];
