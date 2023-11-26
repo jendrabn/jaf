@@ -2,10 +2,13 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\{Order, OrderItem, Product};
+use App\Models\{
+  Order,
+  OrderItem,
+  Product
+};
 use Database\Seeders\{ProductBrandSeeder, ProductCategorySeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Arr;
 use Tests\TestCase;
 
 class ProductDetailGetTest extends TestCase
@@ -16,11 +19,6 @@ class ProductDetailGetTest extends TestCase
   {
     parent::setUp();
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
-  }
-
-  private static function URI(int $productId = 1): string
-  {
-    return "/api/products/{$productId}";
   }
 
   /** @test */
@@ -43,7 +41,11 @@ class ProductDetailGetTest extends TestCase
       ->hasImages(3)
       ->create();
 
-    $response = $this->getJson(self::URI($product->id));
+    $expectedImages = $product->images
+      ? $product->images->map(fn ($media) => $media->getUrl())->toArray()
+      : [];
+
+    $response = $this->getJson('/api/products/' . $product->id);
 
     $response->assertOk()
       ->assertExactJson([
@@ -51,9 +53,7 @@ class ProductDetailGetTest extends TestCase
           'id' => $product->id,
           'name' => $product->name,
           'slug' => $product->slug,
-          'images' => $product->images
-            ? $product->images->map(fn ($media) => $media->getUrl())->toArray()
-            : [],
+          'images' => $expectedImages,
           'category' => $this->formatCategoryData($product->category),
           'description' => $product->description,
           'brand' => $this->formatBrandData($product->brand),
@@ -73,7 +73,7 @@ class ProductDetailGetTest extends TestCase
   {
     $product = $this->createProduct();
 
-    $response = $this->getJson(self::URI($product->id + 1));
+    $response = $this->getJson('/api/products/' . $product->id + 1);
 
     $response->assertNotFound()
       ->assertJsonStructure(['message']);
@@ -84,7 +84,7 @@ class ProductDetailGetTest extends TestCase
   {
     $product = $this->createProduct(['is_publish' => false]);
 
-    $response = $this->getJson(self::URI($product->id));
+    $response = $this->getJson('/api/products/' . $product->id);
 
     $response->assertNotFound()
       ->assertJsonStructure(['message']);

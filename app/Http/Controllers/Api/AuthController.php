@@ -3,7 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\{ForgotPasswordRequest, LoginRequest, RegisterRequest, ResetPasswordRequest};
+use App\Http\Requests\Api\{
+  ForgotPasswordRequest,
+  LoginRequest,
+  RegisterRequest,
+  ResetPasswordRequest
+};
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\AuthService;
@@ -38,7 +43,9 @@ class AuthController extends Controller
 
   public function logout(): JsonResponse
   {
-    auth()->user()->currentAccessToken()->delete();
+    $user = auth()->user();
+
+    $user->currentAccessToken()->delete();
 
     return response()->json(['data' => true], Response::HTTP_OK);
   }

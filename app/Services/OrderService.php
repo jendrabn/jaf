@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Http\Requests\Api\{ConfirmPaymentRequest, CreateOrderRequest};
 use App\Models\{Bank, Cart, Invoice, Order, OrderItem, Payment, Shipping};
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -17,9 +18,19 @@ class OrderService
   {
     $page = $request->get('page', 1);
 
-    $orders = auth()->user()->orders();
+    $orders = Order::with([
+      'items',
+      'invoice',
+      'items.product',
+      'items.product.media',
+      'items.product.category',
+      'items.product.brand'
+    ])->where('user_id', auth()->id());
 
-    $orders->when($request->has('status'), fn ($q) => $q->where('status', $request->get('status')));
+    $orders->when(
+      $request->has('status'),
+      fn ($q) => $q->where('status', $request->get('status'))
+    );
 
     $orders->when(
       $request->has('sort_by'),
@@ -39,9 +50,9 @@ class OrderService
     return $orders;
   }
 
-  public function confirmPayment(ConfirmPaymentRequest $request, int $orderId): Order
+  public function confirmPayment(ConfirmPaymentRequest $request, Order $order): Order
   {
-    $order = auth()->user()->orders()->findOrFail($orderId);
+    throw_if($order->user_id !== auth()->id(), ModelNotFoundException::class);
 
     throw_if(
       $order->status !== Order::STATUS_PENDING_PAYMENT,
@@ -51,9 +62,10 @@ class OrderService
     );
 
     if (now()->isAfter($order->invoice->due_date)) {
-      $order->status = Order::STATUS_CANCELLED;
-      $order->cancel_reason = 'Order canceled by system.';
-      $order->save();
+      $order->update([
+        'status' => Order::STATUS_CANCELLED,
+        'cancel_reason' => 'Order cancelled by system.'
+      ]);
 
       throw ValidationException::withMessages([
         'order_id' => 'Order canceled, payment time has expired.'
@@ -63,8 +75,7 @@ class OrderService
     try {
       DB::transaction(function () use ($order, $request) {
         $order->invoice->payment->bank()->create($request->validated());
-        $order->status = Order::STATUS_PENDING;
-        $order->save();
+        $order->update(['status' => Order::STATUS_PENDING]);
       });
     } catch (QueryException $e) {
       throw $e;
@@ -73,9 +84,9 @@ class OrderService
     return $order;
   }
 
-  public function confirmDelivered(int $orderId): Order
+  public function confirmDelivered(Order $order): Order
   {
-    $order = auth()->user()->orders()->findOrFail($orderId);
+    throw_if($order->user_id !== auth()->id(), ModelNotFoundException::class);
 
     throw_if(
       $order->status !== Order::STATUS_ON_DELIVERY,
@@ -86,10 +97,8 @@ class OrderService
 
     try {
       DB::transaction(function () use ($order) {
-        $order->status = Order::STATUS_COMPLETED;
-        $order->shipping->status = Shipping::STATUS_SHIPPED;
-        $order->save();
-        $order->shipping->save();
+        $order->update(['status' => Order::STATUS_COMPLETED]);
+        $order->shipping->update(['status' => Shipping::STATUS_SHIPPED]);
       });
     } catch (QueryException $e) {
       throw $e;
@@ -102,14 +111,17 @@ class OrderService
   {
     $validatedData = $request->validated();
 
-    $carts = Cart::whereIn('id', $validatedData['cart_ids'])->get();
+    $user = auth()->user();
+    $carts = Cart::where('user_id', $user->id)
+      ->whereIn('id', $validatedData['cart_ids'])
+      ->get();
     $bank = Bank::findOrFail($validatedData['bank_id']);
 
     $this->validateBeforeCreateOrder($carts);
 
     $shippingAddress = $validatedData['shipping_address'];
     $totalWeight = $this->totalWeight($carts);
-    $shipping = (new RajaOngkirService)->getService(
+    $shippingService = (new RajaOngkirService)->getService(
       $validatedData['shipping_service'],
       $shippingAddress['city_id'],
       $totalWeight,
@@ -117,20 +129,18 @@ class OrderService
     );
 
     throw_if(
-      !$shipping,
+      !$shippingService,
       ValidationException::withMessages([
         'shipping_service' => 'Shipping service is not available.'
       ])
     );
 
     $totalPrice = $this->totalPrice($carts);
-    $shippingCost = $shipping['cost'];
+    $shippingCost = $shippingService['cost'];
     $totalAmount = $totalPrice + $shippingCost;
 
     DB::beginTransaction();
     try {
-      $user = auth()->user();
-
       $order = Order::create([
         'user_id' => $user->id,
         'total_price' => $totalPrice,
@@ -139,21 +149,18 @@ class OrderService
         'notes' => $validatedData['notes'],
       ]);
 
-      foreach ($carts as $cart) {
-        $product = $cart->product;
-
+      foreach ($carts as $item) {
         OrderItem::create([
           'order_id' => $order->id,
-          'product_id' => $product->id,
-          'name' => $product->name,
-          'weight' => $product->weight,
-          'price' => $product->price,
-          'quantity' => $cart->quantity,
+          'product_id' =>  $item->product->id,
+          'name' =>  $item->product->name,
+          'weight' =>  $item->product->weight,
+          'price' =>  $item->product->price,
+          'quantity' => $item->quantity,
         ]);
 
-        $product->decrement('stock', $cart->quantity);
-
-        $cart->delete();
+        $item->product->decrement('stock', $item->quantity);
+        $item->delete();
       }
 
       $invoice = Invoice::create([
@@ -190,11 +197,11 @@ class OrderService
           'postal_code' =>  $userAddress->postal_code,
           'address' =>  $userAddress->address
         ],
-        'courier' => $shipping['courier'],
-        'courier_name' => $shipping['courier_name'],
-        'service' => $shipping['service'],
-        'service_name' => $shipping['service_name'],
-        'etd' => $shipping['etd'],
+        'courier' => $shippingService['courier'],
+        'courier_name' => $shippingService['courier_name'],
+        'service' => $shippingService['service'],
+        'service_name' => $shippingService['service_name'],
+        'etd' => $shippingService['etd'],
         'weight' => $totalWeight,
         'status' => Shipping::STATUS_PENDING,
       ]);
@@ -202,7 +209,6 @@ class OrderService
       DB::commit();
     } catch (QueryException $e) {
       DB::rollBack();
-
       throw $e;
     }
 
@@ -218,21 +224,19 @@ class OrderService
       ])
     );
 
-    foreach ($carts as $cart) {
-      throw_if(
-        !$cart->product->is_publish,
-        ValidationException::withMessages([
-          'cart_ids' => 'The product must be published.'
-        ])
-      );
+    throw_if(
+      $carts->filter(fn ($item) => !$item->product->is_publish)->isNotEmpty(),
+      ValidationException::withMessages([
+        'cart_ids' => 'The product must be published.'
+      ])
+    );
 
-      throw_if(
-        $cart->quantity > $cart->product->stock,
-        ValidationException::withMessages([
-          'cart_ids' => 'The quantity must not be greater than stock.'
-        ])
-      );
-    }
+    throw_if(
+      $carts->filter(fn ($item) => $item->quantity > $item->product->stock)->isNotEmpty(),
+      ValidationException::withMessages([
+        'cart_ids' => 'The quantity must not be greater than stock.'
+      ])
+    );
 
     throw_if(
       $this->totalWeight($carts) > Shipping::MAX_WEIGHT,

@@ -2,7 +2,21 @@
 
 namespace Tests;
 
-use App\Models\{Bank, Banner, Cart, City, Order, OrderItem, Product, ProductBrand, ProductCategory, Province, Shipping, User, UserAddress};
+use App\Models\{
+  Bank,
+  Banner,
+  Cart,
+  City,
+  Order,
+  OrderItem,
+  Product,
+  ProductBrand,
+  ProductCategory,
+  Province,
+  Shipping,
+  User,
+  UserAddress
+};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Http\Client\Request;

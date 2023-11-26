@@ -11,7 +11,6 @@ class RajaOngkirService
   public function getCosts(int $destination, int $weight, array $couriers = Shipping::COURIERS): array
   {
     $costs = [];
-
     foreach ($couriers as $courier) {
       $costs = array_merge($costs, $this->fetchCosts($destination, $weight, $courier));
     }

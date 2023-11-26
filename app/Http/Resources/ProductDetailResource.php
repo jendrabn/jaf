@@ -19,7 +19,7 @@ class ProductDetailResource extends JsonResource
       'id' => $this->id,
       'name' => $this->name,
       'slug' => $this->slug,
-      'images' => $this->images ? $this->images->map(fn ($media) => $media->getUrl())->toArray() : [],
+      'images' => $this->images->map(fn ($media) => $media?->getUrl())->toArray(),
       'category' => ProductCategoryResource::make($this->category),
       'description' => $this->description,
       'brand' => $this->whenNotNull(ProductBrandResource::make($this->brand)),

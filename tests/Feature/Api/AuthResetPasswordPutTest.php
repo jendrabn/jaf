@@ -5,7 +5,7 @@ namespace Tests\Feature\Api;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Requests\Api\ResetPasswordRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\Rule;
@@ -15,30 +15,6 @@ use Tests\TestCase;
 class AuthResetPasswordPutTest extends TestCase
 {
   use RefreshDatabase;
-
-  /** @test */
-  public function can_reset_password()
-  {
-    $user = $this->createUser();
-    $token = Password::createToken($user);
-    $newPassword = 'newPassword123';
-
-    $response = $this->putJson('/api/auth/reset_password', [
-      'email' => $user->email,
-      'token' => $token,
-      'password' => $newPassword,
-      'password_confirmation' => $newPassword,
-    ]);
-
-    $response->assertOk()
-      ->assertExactJson(['data' => true]);
-
-    $this->assertTrue(Hash::check($newPassword, $user->fresh()->password));
-    $this->assertDatabaseMissing('password_reset_tokens', [
-      'email' => $user->email,
-      'token' => $token
-    ]);
-  }
 
   /** @test */
   public function reset_password_uses_the_correct_form_request()
@@ -51,7 +27,7 @@ class AuthResetPasswordPutTest extends TestCase
   }
 
   /** @test */
-  public function reset_password_request_has_the_correct_rules()
+  public function reset_password_request_has_the_correct_validation_rules()
   {
     $this->assertValidationRules([
       'email' => [
@@ -72,5 +48,28 @@ class AuthResetPasswordPutTest extends TestCase
         'confirmed'
       ],
     ], (new ResetPasswordRequest())->rules());
+  }
+
+  /** @test */
+  public function can_reset_password()
+  {
+    $user = $this->createUser();
+    $token = Password::createToken($user);
+    $newPassword = 'newPassword123';
+
+    $data = [
+      'email' => $user->email,
+      'token' => $token,
+      'password' => $newPassword,
+      'password_confirmation' => $newPassword,
+    ];
+
+    $response = $this->putJson('/api/auth/reset_password', $data);
+
+    $response->assertOk()
+      ->assertExactJson(['data' => true]);
+
+    $this->assertTrue(Hash::check($newPassword, $user->fresh()->password));
+    $this->assertDatabaseMissing('password_reset_tokens', Arr::only($data, ['email', 'token']));
   }
 }

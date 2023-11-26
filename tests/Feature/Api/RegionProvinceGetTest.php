@@ -5,7 +5,6 @@ namespace Tests\Feature\Api;
 use App\Models\Province;
 use Database\Seeders\ProvinceSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class RegionProvinceGetTest extends TestCase

@@ -2,10 +2,23 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\{Invoice, Order, OrderItem, Payment, Product, Shipping, User};
-use Database\Seeders\{BankSeeder, CitySeeder, ProductBrandSeeder, ProductCategorySeeder, ProvinceSeeder};
+use App\Models\{
+  Invoice,
+  Order,
+  OrderItem,
+  Payment,
+  Product,
+  Shipping,
+  User
+};
+use Database\Seeders\{
+  BankSeeder,
+  CitySeeder,
+  ProductBrandSeeder,
+  ProductCategorySeeder,
+  ProvinceSeeder
+};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class OrderDetailGetTest extends TestCase
@@ -19,10 +32,13 @@ class OrderDetailGetTest extends TestCase
     parent::setUp();
     $this->user = $this->createUser();
   }
-
-  private static function URI(int $orderId = 1): string
+  /** @test */
+  public function unauthenticated_user_cannot_get_order_detail()
   {
-    return "/api/orders/{$orderId}";
+    $response = $this->getJson('/api/orders/1');
+
+    $response->assertUnauthorized()
+      ->assertJsonStructure(['message']);
   }
 
   /** @test */
@@ -43,22 +59,23 @@ class OrderDetailGetTest extends TestCase
       ->for($this->user)
       ->create();
 
-    $response = $this->getJson(self::URI($order->id), headers: $this->authBearerToken($this->user));
+    $response = $this->getJson(
+      '/api/orders/' . $order->id,
+      headers: $this->authBearerToken($this->user)
+    );
 
     $response->assertOk()
       ->assertExactJson([
         'data' => [
           'id' => $order->id,
-          'items' => $order->items->map(
-            fn ($item) => [
-              'id' => $item->id,
-              'product' => $this->formatProductData($item->product),
-              'name' => $item->name,
-              'price' => $item->price,
-              'weight' => $item->weight,
-              'quantity' => $item->quantity,
-            ]
-          )->toArray(),
+          'items' => $order->items->map(fn ($item) => [
+            'id' => $item->id,
+            'product' => $this->formatProductData($item->product),
+            'name' => $item->name,
+            'price' => $item->price,
+            'weight' => $item->weight,
+            'quantity' => $item->quantity,
+          ])->toArray(),
           'invoice' => [
             'id' => $order->invoice->id,
             'number' => $order->invoice->number,
@@ -117,15 +134,6 @@ class OrderDetailGetTest extends TestCase
   }
 
   /** @test */
-  public function returns_unauthenticated_error_if_user_is_not_authenticated()
-  {
-    $response = $this->getJson(self::URI());
-
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
-
-  /** @test */
   public function returns_not_found_error_if_order_doenot_exist()
   {
     $this->seed([
@@ -144,13 +152,19 @@ class OrderDetailGetTest extends TestCase
       ->create();
 
     // Unauthorized order id
-    $response1 = $this->getJson(self::URI($order->id), headers: $this->authBearerToken($this->user));
+    $response1 = $this->getJson(
+      '/api/orders/' . $order->id,
+      headers: $this->authBearerToken($this->user)
+    );
 
     $response1->assertNotFound()
       ->assertJsonStructure(['message']);
 
     // Invalid order id
-    $response2 = $this->getJson(self::URI($order->id + 1), headers: $this->authBearerToken($this->user));
+    $response2 = $this->getJson(
+      '/api/orders/' . $order->id + 1,
+      headers: $this->authBearerToken($this->user)
+    );
 
     $response2->assertNotFound()
       ->assertJsonStructure(['message']);

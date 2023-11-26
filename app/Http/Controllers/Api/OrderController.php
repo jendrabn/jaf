@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\{ConfirmPaymentRequest, CreateOrderRequest};
 use App\Http\Resources\{OrderCollection, OrderDetailResource};
+use App\Models\Order;
 use App\Services\OrderService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -41,25 +43,35 @@ class OrderController extends Controller
     ], Response::HTTP_CREATED);
   }
 
-  public function get(int $id): JsonResponse
+  public function get(Order $order): JsonResponse
   {
-    $order = auth()->user()->orders()->findOrFail($id);
+    throw_if($order->user_id !== auth()->id(), ModelNotFoundException::class);
+
+    $order->load([
+      'items',
+      'items.product',
+      'items.product.category',
+      'items.product.brand',
+      'invoice',
+      'invoice.payment',
+      'shipping'
+    ]);
 
     return OrderDetailResource::make($order)
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }
 
-  public function confirmPayment(ConfirmPaymentRequest $request, int $id)
+  public function confirmPayment(ConfirmPaymentRequest $request, Order $order)
   {
-    $this->orderService->confirmPayment($request, $id);
+    $this->orderService->confirmPayment($request, $order);
 
     return response()->json(['data' => true], Response::HTTP_CREATED);
   }
 
-  public function confirmDelivered(int $id): JsonResponse
+  public function confirmDelivered(Order $order): JsonResponse
   {
-    $this->orderService->confirmDelivered($id);
+    $this->orderService->confirmDelivered($order);
 
     return response()->json(['data' => true], Response::HTTP_OK);
   }

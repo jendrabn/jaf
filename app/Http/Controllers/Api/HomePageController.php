@@ -12,8 +12,13 @@ class HomePageController extends Controller
 {
   public function __invoke(): JsonResponse
   {
-    $banners = Banner::take(10)->get();
-    $products = Product::published()->latest('id')->take(10)->get();
+    $banners = Banner::with(['media'])->take(10)->get();
+
+    $products = Product::with(['media', 'category', 'brand'])
+      ->published()
+      ->latest('id')
+      ->take(10)
+      ->get();
 
     return response()->json([
       'data' => [

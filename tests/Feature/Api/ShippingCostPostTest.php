@@ -7,7 +7,6 @@ use App\Http\Requests\Api\ShippingCostRequest;
 use App\Models\Shipping;
 use Database\Seeders\{CitySeeder, ProvinceSeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class ShippingCostPostTest extends TestCase
@@ -15,7 +14,34 @@ class ShippingCostPostTest extends TestCase
   use RefreshDatabase;
 
   /** @test */
-  public function can_get_shipping_cost()
+  public function shipping_costs_uses_the_correct_form_request()
+  {
+    $this->assertActionUsesFormRequest(
+      CheckoutController::class,
+      'shippingCosts',
+      ShippingCostRequest::class
+    );
+  }
+
+  /** @test */
+  public function shipping_cost_request_has_the_correct_validation_rules()
+  {
+    $this->assertValidationRules([
+      'destination' => [
+        'required',
+        'integer',
+        'exists:cities,id',
+      ],
+      'weight' => [
+        'required',
+        'integer',
+        'max:' . Shipping::MAX_WEIGHT
+      ],
+    ], (new ShippingCostRequest())->rules());
+  }
+
+  /** @test */
+  public function can_get_shipping_costs()
   {
     $this->seed([ProvinceSeeder::class, CitySeeder::class]);
 
@@ -41,32 +67,5 @@ class ShippingCostPostTest extends TestCase
         'etd' => '1-2 hari'
       ])
       ->assertJsonCount(8, 'data');
-  }
-
-  /** @test */
-  public function shipping_cost_uses_the_correct_form_request()
-  {
-    $this->assertActionUsesFormRequest(
-      CheckoutController::class,
-      'shippingCost',
-      ShippingCostRequest::class
-    );
-  }
-
-  /** @test */
-  public function shipping_cost_request_has_the_correct_validation_rules()
-  {
-    $this->assertValidationRules([
-      'destination' => [
-        'required',
-        'integer',
-        'exists:cities,id',
-      ],
-      'weight' => [
-        'required',
-        'integer',
-        'max:' . Shipping::MAX_WEIGHT
-      ],
-    ], (new ShippingCostRequest())->rules());
   }
 }

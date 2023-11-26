@@ -27,8 +27,6 @@ class Wishlist extends Model
 
   protected static function booted(): void
   {
-    static::addGlobalScope(
-      fn ($q) => $q->whereHas('product', fn ($q) => $q->where('is_publish', true))
-    );
+    static::addGlobalScope(fn ($q) => $q->whereHas('product', fn ($q) => $q->where('is_publish', true)));
   }
 }

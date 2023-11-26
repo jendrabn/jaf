@@ -7,7 +7,6 @@ use App\Http\Requests\Api\UpdateCartRequest;
 use App\Models\{Cart, User};
 use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class CartPutTest extends TestCase
@@ -21,80 +20,6 @@ class CartPutTest extends TestCase
     parent::setUp();
     $this->seed(ProductCategorySeeder::class);
     $this->user = $this->createUser();
-  }
-
-  private static function URI(int $cartId = 1): string
-  {
-    return "/api/carts/{$cartId}";
-  }
-
-  /** @test */
-  public function can_update_cart()
-  {
-    $cart = Cart::factory()
-      ->for($this->createProduct(['stock' => 2]))
-      ->for($this->user)
-      ->create(['quantity' => 1]);
-
-    $response = $this->putJson(
-      self::URI($cart->id),
-      $data = ['quantity' => 2],
-      $this->authBearerToken($this->user)
-    );
-
-    $response->assertOk()
-      ->assertExactJson(['data' => true]);
-
-    $this->assertDatabaseCount('carts', 1)
-      ->assertDatabaseHas('carts', $data);
-  }
-
-  /** @test */
-  public function unauthenticated_user_cannot_update_cart()
-  {
-    $response = $this->putJson(self::URI());
-
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
-
-  /** @test */
-  public function cannot_update_cart_if_quantity_exceeds_stock()
-  {
-    $cart = Cart::factory()
-      ->for($this->createProduct(['stock' => 1]))
-      ->for($this->user)
-      ->create(['quantity' => 1]);
-
-    $response = $this->putJson(
-      self::URI($cart->id),
-      ['quantity' => 2],
-      $this->authBearerToken($this->user)
-    );
-
-    $response->assertUnprocessable()
-      ->assertJsonValidationErrors(['quantity']);
-
-    $this->assertDatabaseCount('carts', 1)
-      ->assertModelExists($cart);
-  }
-
-  /** @test */
-  public function return_not_found_error_if_cart_id_doenot_exists()
-  {
-    $cart = Cart::factory()
-      ->for($this->createProduct())
-      ->for($this->user)
-      ->create();
-
-    $response = $this->putJson(
-      self::URI($cart->id + 1),
-      ['quantity' => 1],
-      $this->authBearerToken($this->user)
-    );
-
-    $response->assertNotFound()
-      ->assertJsonStructure(['message']);
   }
 
   /** @test */
@@ -115,5 +40,68 @@ class CartPutTest extends TestCase
         'required', 'integer', 'min:1'
       ]
     ], (new UpdateCartRequest())->rules());
+  }
+
+  /** @test */
+  public function unauthenticated_user_cannot_update_cart()
+  {
+    $response = $this->putJson('/api/carts/1');
+
+    $response->assertUnauthorized()
+      ->assertJsonStructure(['message']);
+  }
+
+  /** @test */
+  public function can_update_cart()
+  {
+    $cart = Cart::factory()
+      ->for($this->createProduct(['stock' => 2]))
+      ->for($this->user)
+      ->create(['quantity' => 1]);
+
+    $data = ['quantity' => 2];
+
+    $response = $this->putJson('/api/carts/' . $cart->id, $data, $this->authBearerToken($this->user));
+
+    $response->assertOk()
+      ->assertExactJson(['data' => true]);
+
+    $this->assertDatabaseCount('carts', 1)
+      ->assertDatabaseHas('carts', $data);
+  }
+
+  /** @test */
+  public function return_not_found_error_if_cart_id_doenot_exists()
+  {
+    $cart = Cart::factory()
+      ->for($this->createProduct())
+      ->for($this->user)
+      ->create();
+
+    $response = $this->putJson('/api/carts/' . $cart->id + 1, [
+      'quantity' => 1
+    ], $this->authBearerToken($this->user));
+
+    $response->assertNotFound()
+      ->assertJsonStructure(['message']);
+  }
+
+  /** @test */
+  public function cannot_update_cart_if_quantity_exceeds_stock()
+  {
+    $cart = Cart::factory()
+      ->for($this->createProduct(['stock' => 1]))
+      ->for($this->user)
+      ->create(['quantity' => 1]);
+
+    $response = $this->putJson('/api/carts/' . $cart->id, [
+      'quantity' => 2
+    ], $this->authBearerToken($this->user));
+
+    $response->assertUnprocessable()
+      ->assertJsonValidationErrors(['quantity']);
+
+    $this->assertDatabaseCount('carts', 1)
+      ->assertModelExists($cart);
   }
 }

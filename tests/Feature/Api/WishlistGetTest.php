@@ -5,14 +5,20 @@ namespace Tests\Feature\Api;
 use App\Models\Wishlist;
 use Database\Seeders\{ProductBrandSeeder, ProductCategorySeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class WishlistGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  const URI = '/api/wishlist';
+  /** @test */
+  public function unauthenticated_user_cannot_get_all_wishlist()
+  {
+    $response = $this->getJson('/api/wishlist');
+
+    $response->assertUnauthorized()
+      ->assertJsonStructure(['message']);
+  }
 
   /** @test */
   public function can_get_all_wishlist()
@@ -20,11 +26,13 @@ class WishlistGetTest extends TestCase
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
 
     $user = $this->createUser();
+
     Wishlist::factory()
       ->for($this->createProduct(['is_publish' => false]))
       ->for($user)
       ->create();
-    $wishlist = Wishlist::factory(3)
+
+    $wishlists = Wishlist::factory(3)
       ->sequence(
         ['product_id' => $this->createProduct()->id],
         ['product_id' => $this->createProduct()->id],
@@ -33,26 +41,16 @@ class WishlistGetTest extends TestCase
       ->for($user)
       ->create();
 
-    $response = $this->getJson(self::URI, $this->authBearerToken($user));
+    $expectedWishlists = $wishlists->sortByDesc('id')->values();
+
+    $response = $this->getJson('/api/wishlist', $this->authBearerToken($user));
 
     $response->assertOk()
       ->assertExactJson([
-        'data' => $wishlist->sortByDesc('id')->values()->map(
-          fn ($item) => [
-            'id' => $item->id,
-            'product' => $this->formatProductData($item->product)
-          ]
-        )->toArray()
-      ])
-      ->assertJsonCount(3, 'data');
-  }
-
-  /** @test */
-  public function unauthenticated_user_cannot_get_all_wishlist()
-  {
-    $response = $this->getJson(self::URI);
-
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
+        'data' => $expectedWishlists->map(fn ($item) => [
+          'id' => $item->id,
+          'product' => $this->formatProductData($item->product)
+        ])->toArray()
+      ])->assertJsonCount(3, 'data');
   }
 }

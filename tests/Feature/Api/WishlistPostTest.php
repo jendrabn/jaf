@@ -6,50 +6,12 @@ use App\Http\Controllers\Api\WishlistController;
 use App\Http\Requests\Api\CreateWishlistRequest;
 use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Validation\Rule;
 use Tests\TestCase;
 
 class WishlistPostTest extends TestCase
 {
   use RefreshDatabase;
-
-  const URI = '/api/wishlist';
-
-  /** @test */
-  public function can_add_product_to_wishlist()
-  {
-    $this->seed(ProductCategorySeeder::class);
-
-    $user = $this->createUser();
-    $product = $this->createProduct();
-    $data = ['product_id' => $product->id];
-
-    $response1 = $this->postJson(self::URI, $data, $this->authBearerToken($user));
-
-    $response1->assertCreated()
-      ->assertExactJson(['data' => true]);
-
-    $this->assertDatabaseCount('wishlists', 1)
-      ->assertDatabaseHas('wishlists', ['user_id' => $user->id, ...$data]);
-
-    $response2 = $this->postJson(self::URI, $data, $this->authBearerToken($user));
-
-    $response2->assertCreated()
-      ->assertExactJson(['data' => true]);
-
-    $this->assertDatabaseCount('wishlists', 1)
-      ->assertDatabaseHas('wishlists', ['user_id' => $user->id, ...$data]);
-  }
-
-  /** @test */
-  public function unauthenticated_user_cannot_add_product_to_wishlist()
-  {
-    $response = $this->postJson(self::URI);
-
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
 
   /** @test */
   public function create_wishlist_uses_the_correct_form_request()
@@ -71,5 +33,41 @@ class WishlistPostTest extends TestCase
         Rule::exists('products', 'id')->where('is_publish', true)
       ]
     ], (new CreateWishlistRequest())->rules());
+  }
+
+  /** @test */
+  public function unauthenticated_user_cannot_add_product_to_wishlist()
+  {
+    $response = $this->postJson('/api/wishlist');
+
+    $response->assertUnauthorized()
+      ->assertJsonStructure(['message']);
+  }
+
+  /** @test */
+  public function can_add_product_to_wishlist()
+  {
+    $this->seed(ProductCategorySeeder::class);
+
+    $user = $this->createUser();
+    $product = $this->createProduct();
+
+    $data = ['product_id' => $product->id];
+
+    $response1 = $this->postJson('/api/wishlist', $data, $this->authBearerToken($user));
+
+    $response1->assertCreated()
+      ->assertExactJson(['data' => true]);
+
+    $this->assertDatabaseCount('wishlists', 1)
+      ->assertDatabaseHas('wishlists', ['user_id' => $user->id, ...$data]);
+
+    $response2 = $this->postJson('/api/wishlist', $data, $this->authBearerToken($user));
+
+    $response2->assertCreated()
+      ->assertExactJson(['data' => true]);
+
+    $this->assertDatabaseCount('wishlists', 1)
+      ->assertDatabaseHas('wishlists', ['user_id' => $user->id, ...$data]);
   }
 }

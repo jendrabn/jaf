@@ -3,9 +3,19 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\{ProductBrandResource, ProductCategoryResource, ProductCollection, ProductDetailResource};
+use App\Http\Resources\{
+  ProductBrandResource,
+  ProductCategoryResource,
+  ProductCollection,
+  ProductDetailResource
+};
 use App\Services\ProductService;
-use App\Models\{Product, ProductBrand, ProductCategory};
+use App\Models\{
+  Product,
+  ProductBrand,
+  ProductCategory
+};
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,18 +35,20 @@ class ProductController extends Controller
       ->setStatusCode(Response::HTTP_OK);
   }
 
-  public function get(int $id): JsonResponse
+  public function get(Product $product): JsonResponse
   {
-    $product = Product::published()->findOrFail($id);
+    throw_if(!$product->is_publish, ModelNotFoundException::class);
+
+    $product->load(['media', 'category', 'brand']);
 
     return ProductDetailResource::make($product)
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }
 
-  public function similars(int $id): JsonResponse
+  public function similars(Product $product): JsonResponse
   {
-    $products = $this->productService->getProductSimilars($id);
+    $products = $this->productService->getSimilarProducts($product);
 
     return ProductCollection::make($products)
       ->response()
@@ -45,14 +57,18 @@ class ProductController extends Controller
 
   public function categories(): JsonResponse
   {
-    return ProductCategoryResource::collection(ProductCategory::all())
+    $categories = ProductCategory::all();
+
+    return ProductCategoryResource::collection($categories)
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }
 
   public function brands(): JsonResponse
   {
-    return ProductBrandResource::collection(ProductBrand::all())
+    $brands = ProductBrand::all();
+
+    return ProductBrandResource::collection($brands)
       ->response()
       ->setStatusCode(Response::HTTP_OK);
   }

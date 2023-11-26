@@ -4,11 +4,21 @@ namespace Tests\Feature\Api;
 
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Requests\Api\CheckoutRequest;
-use App\Models\{Bank, Cart, User, UserAddress};
-use Database\Seeders\{BankSeeder, CitySeeder, ProductBrandSeeder, ProductCategorySeeder, ProvinceSeeder};
+use App\Models\{
+  Bank,
+  Cart,
+  User,
+  UserAddress
+};
+use Database\Seeders\{
+  BankSeeder,
+  CitySeeder,
+  ProductBrandSeeder,
+  ProductCategorySeeder,
+  ProvinceSeeder
+};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\Rule;
@@ -18,9 +28,8 @@ class CheckoutPostTest extends TestCase
 {
   use RefreshDatabase;
 
-  const URI = '/api/checkout';
-
   private User $user;
+
   private Collection $banks;
 
   protected function setUp(): void
@@ -31,7 +40,7 @@ class CheckoutPostTest extends TestCase
     $this->banks = Bank::all();
   }
 
-  public function createCart(int $quantity = 1, ?array $productData = []): Cart
+  private function createCart(int $quantity = 1, ?array $productData = []): Cart
   {
     return Cart::factory()
       ->for($this->createProduct($productData))
@@ -41,19 +50,56 @@ class CheckoutPostTest extends TestCase
 
   private function attemptToCheckout(array $cartIds = []): TestResponse
   {
-    return $this->postJson(
-      self::URI,
-      ['cart_ids' => $cartIds],
-      $this->authBearerToken($this->user)
+    return $this->postJson('/api/checkout', [
+      'cart_ids' => $cartIds
+    ], $this->authBearerToken($this->user));
+  }
+
+  /** @test */
+  public function checkout_uses_the_correct_form_request()
+  {
+    $this->assertActionUsesFormRequest(
+      CheckoutController::class,
+      'checkout',
+      CheckoutRequest::class
     );
   }
+
+  /** @test */
+  public function checkout_request_has_the_correct_validation_rules()
+  {
+    $rules = (new CheckoutRequest())->setUserResolver(fn () => $this->user)->rules();
+
+    $this->assertValidationRules([
+      'cart_ids' => [
+        'required',
+        'array',
+      ],
+      'cart_ids.*' => [
+        'integer',
+        Rule::exists('carts', 'id')->where('user_id', $this->user->id),
+      ]
+    ], $rules);
+  }
+
+  /** @test */
+  public function unauthenticated_user_cannot_checkout()
+  {
+    $response = $this->postJson('/api/checkout');
+
+    $response->assertUnauthorized()
+      ->assertJsonStructure(['message']);
+  }
+
 
   /** @test */
   public function can_checkout()
   {
     $this->seed([ProvinceSeeder::class, CitySeeder::class]);
 
-    $userAddress = UserAddress::factory()->for($this->user)->create(['city_id' => 154]);
+    $userAddress = UserAddress::factory()
+      ->for($this->user)
+      ->create(['city_id' => 154]);
     $cart1 = $this->createCart(2, ['price' => 25000, 'stock' => 5, 'weight' => 500]);
     $cart2 = $this->createCart(1, ['price' => 50000, 'stock' => 5, 'weight' => 500]);
     $totalWeight = 1500;
@@ -70,7 +116,10 @@ class CheckoutPostTest extends TestCase
       ->assertJson([
         'data' => [
           'shipping_address' => $this->formatUserAddressData($userAddress),
-          'carts' => [$this->formatCartData($cart1), $this->formatCartData($cart2)],
+          'carts' => [
+            $this->formatCartData($cart1),
+            $this->formatCartData($cart2)
+          ],
           'payment_methods' => [
             'bank' => $this->formatBankData($this->banks)
           ],
@@ -108,7 +157,10 @@ class CheckoutPostTest extends TestCase
       ->assertExactJson([
         'data' => [
           'shipping_address' => null,
-          'carts' => [$this->formatCartData($cart1), $this->formatCartData($cart2)],
+          'carts' => [
+            $this->formatCartData($cart1),
+            $this->formatCartData($cart2)
+          ],
           'shipping_methods' => null,
           'payment_methods' => [
             'bank' => $this->formatBankData($this->banks)
@@ -121,14 +173,6 @@ class CheckoutPostTest extends TestCase
       ->assertJsonCount(1, 'data.payment_methods.bank');
   }
 
-  /** @test */
-  public function unauthenticated_user_cannot_checkout()
-  {
-    $response = $this->postJson(self::URI);
-
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
 
   /** @test */
   public function cannot_checkout_if_product_is_not_published()
@@ -164,32 +208,5 @@ class CheckoutPostTest extends TestCase
 
     $response->assertUnprocessable()
       ->assertJsonValidationErrors(['cart_ids']);
-  }
-
-  /** @test */
-  public function checkout_uses_the_correct_form_request()
-  {
-    $this->assertActionUsesFormRequest(
-      CheckoutController::class,
-      'checkout',
-      CheckoutRequest::class
-    );
-  }
-
-  /** @test */
-  public function checkout_request_has_the_correct_validation_rules()
-  {
-    $rules = (new CheckoutRequest())->setUserResolver(fn () => $this->user)->rules();
-
-    $this->assertValidationRules([
-      'cart_ids' => [
-        'required',
-        'array',
-      ],
-      'cart_ids.*' => [
-        'integer',
-        Rule::exists('carts', 'id')->where('user_id', $this->user->id),
-      ]
-    ], $rules);
   }
 }

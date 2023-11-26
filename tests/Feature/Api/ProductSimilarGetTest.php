@@ -5,7 +5,6 @@ namespace Tests\Feature\Api;
 use App\Models\Product;
 use Database\Seeders\{ProductBrandSeeder, ProductCategorySeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class ProductSimilarGetTest extends TestCase
@@ -18,11 +17,6 @@ class ProductSimilarGetTest extends TestCase
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
   }
 
-  private static function URI(int $productId = 1): string
-  {
-    return "/api/products/{$productId}/similars";
-  }
-
   /** @test */
   public function can_get_similar_products_by_product_id()
   {
@@ -31,13 +25,12 @@ class ProductSimilarGetTest extends TestCase
       ->sequence(['name' => 'Bvlgari ' . fake()->sentence(2)])
       ->create();
 
-    $response = $this->getJson(self::URI($id = $products->first()->id));
+    $response = $this->getJson('/api/products/' . $id = $products->first()->id . '/similars');
 
-    $response->assertExactJson([
-      'data' => $this->formatProductData(
-        $products->where('id', '!==', $id)->sortByDesc('id')->take(5)
-      )
-    ])->assertJsonCount(5, 'data');
+    $expectedProducts = $products->where('id', '!==', $id)->sortByDesc('id')->take(5);
+
+    $response->assertExactJson(['data' => $this->formatProductData($expectedProducts)])
+      ->assertJsonCount(5, 'data');
   }
 
   /** @test */
@@ -45,7 +38,7 @@ class ProductSimilarGetTest extends TestCase
   {
     $product = $this->createProduct();
 
-    $response = $this->getJson(self::URI($product->id + 1));
+    $response = $this->getJson('/api/products/' . $product->id + 1 . '/similars');
 
     $response->assertNotFound()
       ->assertJsonStructure(['message']);
