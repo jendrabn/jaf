@@ -18,6 +18,12 @@ class Product extends Model implements HasMedia
 
   public const MEDIA_COLLECTION_NAME = 'product_images';
 
+  public const SEX_SELECT = [
+    1 => 'Male',
+    2 => 'Female',
+    3 => 'Unisex',
+  ];
+
   protected $fillable = [
     'product_category_id',
     'product_brand_id',

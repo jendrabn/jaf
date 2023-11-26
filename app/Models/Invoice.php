@@ -12,8 +12,13 @@ class Invoice extends Model
 {
   use HasFactory;
 
-  const STATUS_PAID = 'paid';
-  const STATUS_UNPAID = 'unpaid';
+  public const STATUS_PAID = 'paid';
+  public const STATUS_UNPAID = 'unpaid';
+
+  public const STATUSES = [
+    self::STATUS_PAID => ['label' => 'Paid'],
+    self::STATUS_UNPAID => ['label' => 'Unpaid']
+  ];
 
   protected $fillable = [
     'order_id',

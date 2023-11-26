@@ -4,6 +4,13 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
+use App\Models\Invoice;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Payment;
+use App\Models\PaymentBank;
+use App\Models\Product;
+use App\Models\Shipping;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -41,5 +48,16 @@ class DatabaseSeeder extends Seeder
       'email' => 'user@mail.com',
       'password' => 'Secret123',
     ])->assignRole(User::ROLE_USER);
+
+    Product::factory(50)->hasImages()->create();
+
+    for ($i = 0; $i < 100; $i++) {
+      Order::factory()
+        ->has(OrderItem::factory(random_int(1, 5)), 'items')
+        ->has(Invoice::factory()->has(Payment::factory()->has(PaymentBank::factory(), 'bank')))
+        ->has(Shipping::factory())
+        ->for(User::factory()->afterCreating(fn ($user) => $user->assignRole(User::ROLE_USER))->create())
+        ->create();
+    }
   }
 }

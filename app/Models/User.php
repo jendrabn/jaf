@@ -20,6 +20,11 @@ class User extends Authenticatable implements CanResetPassword
   public const ROLE_ADMIN = 'admin';
   public const ROLE_USER = 'user';
 
+  public const SEX_SELECT = [
+    1 => 'Male',
+    2 => 'Female',
+  ];
+
   protected $fillable = [
     'name',
     'email',

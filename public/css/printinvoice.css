@@ -1,0 +1,10 @@
+.no-print{display:none!important}
+
+*{
+  color: #000;
+  text-decoration: none;
+}
+
+.invoice-col{
+  margin-bottom: 10px;
+}

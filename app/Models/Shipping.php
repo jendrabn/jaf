@@ -10,13 +10,19 @@ class Shipping extends Model
 {
   use HasFactory;
 
-  const STATUS_PENDING = 'pending';
-  const STATUS_PROCESSING = 'processing';
-  const STATUS_SHIPPED = 'shipped';
+  public const STATUS_PENDING = 'pending';
+  public const STATUS_PROCESSING = 'processing';
+  public const STATUS_SHIPPED = 'shipped';
 
-  const MAX_WEIGHT = 25000;
+  public const STATUSES = [
+    self::STATUS_PENDING => ['label' => 'Pending'],
+    self::STATUS_PROCESSING => ['label' => 'Processing'],
+    self::STATUS_SHIPPED => ['label' => 'Shipped'],
+  ];
 
-  const COURIERS = ['jne', 'tiki', 'pos'];
+  public const MAX_WEIGHT = 25000;
+
+  public const COURIERS = ['jne', 'tiki', 'pos'];
 
   protected $fillable = [
     'order_id',

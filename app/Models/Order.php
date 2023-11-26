@@ -13,12 +13,39 @@ class Order extends Model
 {
   use HasFactory;
 
-  const STATUS_PENDING_PAYMENT = 'pending_payment';
-  const STATUS_PENDING = 'pending';
-  const STATUS_PROCESSING = 'processing';
-  const STATUS_ON_DELIVERY = 'on_delivery';
-  const STATUS_COMPLETED = 'completed';
-  const STATUS_CANCELLED = 'cancelled';
+  public const STATUS_PENDING_PAYMENT = 'pending_payment';
+  public const STATUS_PENDING = 'pending';
+  public const STATUS_PROCESSING = 'processing';
+  public const STATUS_ON_DELIVERY = 'on_delivery';
+  public const STATUS_COMPLETED = 'completed';
+  public const STATUS_CANCELLED = 'cancelled';
+
+  public const STATUSES = [
+    self::STATUS_PENDING_PAYMENT => [
+      'label' => 'Pending Payment',
+      'color' => 'secondary'
+    ],
+    self::STATUS_PENDING => [
+      'label' => 'Pending',
+      'color' => 'warning'
+    ],
+    self::STATUS_PROCESSING => [
+      'label' => 'Processing',
+      'color' => 'success'
+    ],
+    self::STATUS_ON_DELIVERY => [
+      'label' => 'On Delivery',
+      'color' => 'success'
+    ],
+    self::STATUS_COMPLETED => [
+      'label' => 'Completed',
+      'color' => 'info'
+    ],
+    self::STATUS_CANCELLED => [
+      'label' => 'Cancelled',
+      'color' => 'danger'
+    ],
+  ];
 
   protected $fillable = [
     'user_id',

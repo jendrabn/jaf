@@ -31,9 +31,9 @@ class OrderFactory extends Factory
         'completed',
         'cancelled'
       ]),
-      'confirmed_at' => fake()->time(),
-      'cancelled_at' => fake()->time(),
-      'completed_at' => fake()->time(),
+      'confirmed_at' => fake()->dateTime(),
+      'cancelled_at' => fake()->dateTime(),
+      'completed_at' => fake()->dateTime(),
     ];
   }
 }
