@@ -23,15 +23,4 @@ class BannerFactory extends Factory
       'url' => fake()->url(),
     ];
   }
-
-  public function hasImage()
-  {
-    return $this->afterCreating(
-      function (Banner $banner) {
-        $file = UploadedFile::fake()->image('banner.jpg');
-
-        $banner->addMedia($file)->toMediaCollection(Banner::MEDIA_COLLECTION_NAME);
-      }
-    );
-  }
 }

@@ -24,21 +24,20 @@ class ProductDetailGetTest extends TestCase
   /** @test */
   public function can_get_product_by_id()
   {
-    $product = Product::factory()
-      ->has(
-        OrderItem::factory(2)
-          ->sequence(
-            [
-              'order_id' => $this->createOrder(['status' => Order::STATUS_COMPLETED])->id,
-              'quantity' => 2,
-            ],
-            [
-              'order_id' => $this->createOrder(['status' => Order::STATUS_COMPLETED])->id,
-              'quantity' => 3
-            ]
-          )
-      )
-      ->hasImages(3)
+    $product = Product::factory()->has(
+      OrderItem::factory(2)
+        ->sequence(
+          [
+            'order_id' => $this->createOrder(['status' => Order::STATUS_COMPLETED])->id,
+            'quantity' => 2,
+          ],
+          [
+            'order_id' => $this->createOrder(['status' => Order::STATUS_COMPLETED])->id,
+            'quantity' => 3
+          ]
+        )
+    )
+      ->hasImages(2)
       ->create();
 
     $expectedImages = $product->images
@@ -65,7 +64,7 @@ class ProductDetailGetTest extends TestCase
           'is_wishlist' => false,
         ]
       ])
-      ->assertJsonCount(3, 'data.images');
+      ->assertJsonCount(2, 'data.images');
   }
 
   /** @test */

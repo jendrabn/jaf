@@ -5,6 +5,7 @@ namespace Tests\Feature\Api;
 use App\Models\Banner;
 use Database\Seeders\{ProductBrandSeeder, ProductCategorySeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class HomePageGetTest extends TestCase
@@ -16,13 +17,16 @@ class HomePageGetTest extends TestCase
   {
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
 
+    $banners = Banner::factory(12)->create();
+    // Add image for first banner
+    $banners[0]->addMedia(UploadedFile::fake()->image('banner.jpg'))
+      ->toMediaCollection(Banner::MEDIA_COLLECTION_NAME);
+
     $this->createProduct(['is_publish' => false]);
-    $banners = Banner::factory(12)->hasImage()->create();
     $products = $this->createProduct(count: 12);
 
     $expectedBanners = $banners->sortBy('id')->take(10);
     $expectedProducts = $products->sortByDesc('id')->take(10);
-
 
     $response = $this->getJson('/api/home_page');
 
