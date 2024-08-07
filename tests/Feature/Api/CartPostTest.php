@@ -9,12 +9,13 @@ use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\Rule;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class CartPostTest extends TestCase
 {
   use RefreshDatabase;
 
-  /** @test */
+  #[Test]
   public function create_cart_uses_the_correct_form_request()
   {
     $this->assertActionUsesFormRequest(
@@ -24,7 +25,7 @@ class CartPostTest extends TestCase
     );
   }
 
-  /** @test */
+  #[Test]
   public function create_cart_request_has_the_correct_validation_rules()
   {
     $this->assertValidationRules([
@@ -41,7 +42,7 @@ class CartPostTest extends TestCase
     ], (new CreateCartRequest())->rules());
   }
 
-  /** @test */
+  #[Test]
   public function unauthenticated_user_cannot_add_product_to_cart()
   {
     $response = $this->postJson('/api/carts');
@@ -50,7 +51,7 @@ class CartPostTest extends TestCase
       ->assertExactJson(['message' => 'Unauthenticated.']);
   }
 
-  /** @test */
+  #[Test]
   public function can_add_product_to_cart()
   {
     // Arrange
@@ -92,7 +93,7 @@ class CartPostTest extends TestCase
       ]);
   }
 
-  /** @test */
+  #[Test]
   public function cannot_add_product_to_cart_if_quantity_exceeds_stock()
   {
     $this->seed(ProductCategorySeeder::class);

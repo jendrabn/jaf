@@ -52,6 +52,6 @@
         </div>
     </form>
     <p class="mt-3 mb-0">
-        <a href="{{ route('auth.forgot-password') }}">Forgot Password?</a>
+        <a href="{{ route('auth.forgot_password') }}">Forgot Password?</a>
     </p>
 @endsection

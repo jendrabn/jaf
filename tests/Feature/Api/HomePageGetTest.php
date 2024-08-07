@@ -7,12 +7,13 @@ use Database\Seeders\{ProductBrandSeeder, ProductCategorySeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class HomePageGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  /** @test */
+  #[Test]
   public function can_get_banners_and_latest_products()
   {
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);

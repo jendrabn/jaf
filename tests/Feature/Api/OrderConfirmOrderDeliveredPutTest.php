@@ -6,6 +6,7 @@ use App\Models\{Order, Shipping, User};
 use Database\Seeders\{CitySeeder, ProvinceSeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class OrderConfirmOrderDeliveredPutTest extends TestCase
 {
@@ -19,7 +20,7 @@ class OrderConfirmOrderDeliveredPutTest extends TestCase
     $this->user = $this->createUser();
   }
 
-  /** @test */
+  #[Test]
   public function unauthenticated_user_cannot_confirm_order_delivered()
   {
     $response = $this->putJson('/api/orders/1/confirm_order_delivered');
@@ -28,7 +29,7 @@ class OrderConfirmOrderDeliveredPutTest extends TestCase
       ->assertJsonStructure(['message']);
   }
 
-  /** @test */
+  #[Test]
   public function can_confirm_order_delivered()
   {
     $this->seed([ProvinceSeeder::class, CitySeeder::class]);
@@ -48,7 +49,7 @@ class OrderConfirmOrderDeliveredPutTest extends TestCase
   }
 
 
-  /** @test */
+  #[Test]
   public function cannot_confirm_order_delivered_if_order_doenot_exist()
   {
     $order = Order::factory()->for(User::factory())->create();
@@ -72,7 +73,7 @@ class OrderConfirmOrderDeliveredPutTest extends TestCase
       ->assertJsonStructure(['message']);
   }
 
-  /** @test */
+  #[Test]
   public function cannot_confirm_order_delivered_if_order_status_is_not_on_delivery()
   {
     $order = Order::factory()

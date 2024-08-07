@@ -1,7 +1,7 @@
 @extends('layouts.auth', ['title' => 'Forgot Password'])
 
 @section('content')
-    <form action="{{ route('auth.forgot-password.post') }}"
+    <form action="{{ route('auth.forgot_password.post') }}"
           method="post">
         @csrf
         <div class="input-group mb-3">

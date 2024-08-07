@@ -20,6 +20,7 @@ use Database\Seeders\{
 };
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class OrderDetailGetTest extends TestCase
 {
@@ -32,7 +33,7 @@ class OrderDetailGetTest extends TestCase
     parent::setUp();
     $this->user = $this->createUser();
   }
-  /** @test */
+  #[Test]
   public function unauthenticated_user_cannot_get_order_detail()
   {
     $response = $this->getJson('/api/orders/1');
@@ -41,7 +42,7 @@ class OrderDetailGetTest extends TestCase
       ->assertJsonStructure(['message']);
   }
 
-  /** @test */
+  #[Test]
   public function can_get_order_detail_by_order_id()
   {
     $this->seed([
@@ -133,7 +134,7 @@ class OrderDetailGetTest extends TestCase
     $this->assertStringStartsWith('http', $response['data']['items'][0]['product']['image']);
   }
 
-  /** @test */
+  #[Test]
   public function returns_not_found_error_if_order_doenot_exist()
   {
     $this->seed([

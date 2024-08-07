@@ -7,12 +7,13 @@ use App\Models\Order;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class CancelExpiredOrderTest extends TestCase
 {
   use RefreshDatabase;
 
-  /** @test */
+  #[Test]
   public function can_cancel_expired_order()
   {
     $user = $this->createUser();

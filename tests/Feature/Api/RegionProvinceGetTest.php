@@ -6,12 +6,13 @@ use App\Models\Province;
 use Database\Seeders\ProvinceSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class RegionProvinceGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  /** @test */
+  #[Test]
   public function can_get_all_provinces()
   {
     $this->seed(ProvinceSeeder::class);

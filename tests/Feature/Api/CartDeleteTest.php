@@ -9,12 +9,13 @@ use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\Rule;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class CartDeleteTest extends TestCase
 {
   use RefreshDatabase;
 
-  /** @test */
+  #[Test]
   public function delete_cart_uses_the_correct_form_request()
   {
     $this->assertActionUsesFormRequest(
@@ -24,7 +25,7 @@ class CartDeleteTest extends TestCase
     );
   }
 
-  /** @test */
+  #[Test]
   public function delete_cart_request_has_the_correct_validation_rules()
   {
     $user = $this->createUser();
@@ -43,7 +44,7 @@ class CartDeleteTest extends TestCase
     ], $rules);
   }
 
-  /** @test */
+  #[Test]
   public function unauthenticated_user_cannot_delete_carts()
   {
     $response = $this->deleteJson('/api/carts');
@@ -52,7 +53,7 @@ class CartDeleteTest extends TestCase
       ->assertJsonStructure(['message']);
   }
 
-  /** @test */
+  #[Test]
   public function can_delete_carts()
   {
     $this->seed(ProductCategorySeeder::class);

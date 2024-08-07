@@ -1,7 +1,7 @@
 @extends('layouts.auth', ['title' => 'Reset Password'])
 
 @section('content')
-    <form action="{{ route('auth.reset-password.put', $params) }}"
+    <form action="{{ route('auth.reset_password.put', $params) }}"
           method="post">
         @csrf
         @method('PUT')

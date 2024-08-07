@@ -6,12 +6,13 @@ use App\Models\Cart;
 use Database\Seeders\{ProductBrandSeeder, ProductCategorySeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class CartGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  /** @test */
+  #[Test]
   public function unauthenticated_user_cannot_get_all_carts()
   {
     $response = $this->getJson('/api/carts');
@@ -20,7 +21,7 @@ class CartGetTest extends TestCase
       ->assertJsonStructure(['message']);
   }
 
-  /** @test */
+  #[Test]
   public function can_get_all_carts()
   {
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);

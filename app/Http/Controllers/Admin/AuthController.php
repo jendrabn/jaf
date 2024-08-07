@@ -80,7 +80,7 @@ class AuthController extends Controller
      */
     public function forgotPassword(): View
     {
-        return view('admin.auth.forgot-password');
+        return view('admin.auth.forgot_password');
     }
 
     /**
@@ -115,7 +115,7 @@ class AuthController extends Controller
     public function resetPassword(ResetPasswordRequest $request): View|RedirectResponse
     {
         if ($request->isMethod('GET')) {
-            return view('admin.auth.reset-password', ['params' => $request->query()]);
+            return view('admin.auth.reset_password', ['params' => $request->query()]);
         }
 
         $status = Password::reset(

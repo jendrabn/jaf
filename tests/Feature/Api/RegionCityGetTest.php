@@ -6,6 +6,7 @@ use App\Models\City;
 use Database\Seeders\{CitySeeder, ProvinceSeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class RegionCityGetTest extends TestCase
 {
@@ -17,7 +18,7 @@ class RegionCityGetTest extends TestCase
     $this->seed(ProvinceSeeder::class);
   }
 
-  /** @test */
+  #[Test]
   public function can_get_cities_by_province_id()
   {
     $this->seed(CitySeeder::class);
@@ -32,7 +33,7 @@ class RegionCityGetTest extends TestCase
       ->assertJsonCount(6, 'data');
   }
 
-  /** @test */
+  #[Test]
   public function returns_not_found_error_if_province_id_doenot_exist()
   {
     $response = $this->getJson('/api/region/cities/35');

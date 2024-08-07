@@ -8,6 +8,7 @@ use App\Models\{Cart, User};
 use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class CartPutTest extends TestCase
 {
@@ -22,7 +23,7 @@ class CartPutTest extends TestCase
     $this->user = $this->createUser();
   }
 
-  /** @test */
+  #[Test]
   public function update_cart_uses_the_correct_form_request()
   {
     $this->assertActionUsesFormRequest(
@@ -32,7 +33,7 @@ class CartPutTest extends TestCase
     );
   }
 
-  /** @test */
+  #[Test]
   public function update_cart_request_has_the_correct_validation_rules()
   {
     $this->assertValidationRules([
@@ -42,7 +43,7 @@ class CartPutTest extends TestCase
     ], (new UpdateCartRequest())->rules());
   }
 
-  /** @test */
+  #[Test]
   public function unauthenticated_user_cannot_update_cart()
   {
     $response = $this->putJson('/api/carts/1');
@@ -51,7 +52,7 @@ class CartPutTest extends TestCase
       ->assertJsonStructure(['message']);
   }
 
-  /** @test */
+  #[Test]
   public function can_update_cart()
   {
     $cart = Cart::factory()
@@ -70,7 +71,7 @@ class CartPutTest extends TestCase
       ->assertDatabaseHas('carts', $data);
   }
 
-  /** @test */
+  #[Test]
   public function return_not_found_error_if_cart_id_doenot_exists()
   {
     $cart = Cart::factory()
@@ -86,7 +87,7 @@ class CartPutTest extends TestCase
       ->assertJsonStructure(['message']);
   }
 
-  /** @test */
+  #[Test]
   public function cannot_update_cart_if_quantity_exceeds_stock()
   {
     $cart = Cart::factory()

@@ -8,6 +8,7 @@ use App\Models\{Invoice, Order, Payment, User};
 use Database\Seeders\BankSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class OrderConfirmPaymentPostTest extends TestCase
 {
@@ -28,7 +29,7 @@ class OrderConfirmPaymentPostTest extends TestCase
     ];
   }
 
-  /** @test */
+  #[Test]
   public function confirm_payment_uses_the_correct_form_request()
   {
     $this->assertActionUsesFormRequest(
@@ -38,7 +39,7 @@ class OrderConfirmPaymentPostTest extends TestCase
     );
   }
 
-  /** @test */
+  #[Test]
   public function confirm_payment_request_has_the_correct_validation_rules()
   {
     $this->assertValidationRules([
@@ -63,7 +64,7 @@ class OrderConfirmPaymentPostTest extends TestCase
     ], (new ConfirmPaymentRequest())->rules());
   }
 
-  /** @test */
+  #[Test]
   public function unauthenticated_user_cannot_confirm_payment()
   {
     $response = $this->postJson('/api/orders/1/confirm_payment');
@@ -72,7 +73,7 @@ class OrderConfirmPaymentPostTest extends TestCase
       ->assertJsonStructure(['message']);
   }
 
-  /** @test */
+  #[Test]
   public function can_confirm_payment()
   {
     $order = Order::factory()
@@ -98,7 +99,7 @@ class OrderConfirmPaymentPostTest extends TestCase
     $this->assertTrue($order->fresh()->status === Order::STATUS_PENDING);
   }
 
-  /** @test */
+  #[Test]
   public function cannot_confirm_payment_if_order_doenot_exist()
   {
     $order = Order::factory()->for($this->createUser())->create();
@@ -124,7 +125,7 @@ class OrderConfirmPaymentPostTest extends TestCase
       ->assertJsonStructure(['message']);
   }
 
-  /** @test */
+  #[Test]
   public function cannot_confirm_payment_if_order_status_is_not_pending_payment()
   {
     $order = Order::factory()
@@ -146,7 +147,7 @@ class OrderConfirmPaymentPostTest extends TestCase
       ->assertJsonValidationErrors(['order_id']);
   }
 
-  /** @test */
+  #[Test]
   public function cannot_confirm_payment_if_past_the_payment_due_date()
   {
     $order = Order::factory()

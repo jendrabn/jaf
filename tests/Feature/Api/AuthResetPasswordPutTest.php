@@ -11,12 +11,13 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class AuthResetPasswordPutTest extends TestCase
 {
   use RefreshDatabase;
 
-  /** @test */
+  #[Test]
   public function reset_password_uses_the_correct_form_request()
   {
     $this->assertActionUsesFormRequest(
@@ -26,7 +27,7 @@ class AuthResetPasswordPutTest extends TestCase
     );
   }
 
-  /** @test */
+  #[Test]
   public function reset_password_request_has_the_correct_validation_rules()
   {
     $this->assertValidationRules([
@@ -50,7 +51,7 @@ class AuthResetPasswordPutTest extends TestCase
     ], (new ResetPasswordRequest())->rules());
   }
 
-  /** @test */
+  #[Test]
   public function can_reset_password()
   {
     $user = $this->createUser();

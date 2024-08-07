@@ -7,6 +7,7 @@ use Database\Seeders\{ProductBrandSeeder, ProductCategorySeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class OrderGetTest extends TestCase
 {
@@ -49,7 +50,7 @@ class OrderGetTest extends TestCase
     return $response;
   }
 
-  /** @test */
+  #[Test]
   public function unauthenticated_user_cannot_get_all_orders()
   {
     $response = $this->getJson('/api/orders');
@@ -58,7 +59,7 @@ class OrderGetTest extends TestCase
       ->assertJsonStructure(['message']);
   }
 
-  /** @test */
+  #[Test]
   public function can_get_all_orders()
   {
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
@@ -88,7 +89,7 @@ class OrderGetTest extends TestCase
     ]);
   }
 
-  /** @test */
+  #[Test]
   public function can_get_all_orders_with_pagination()
   {
     Order::factory($total = 13)
@@ -108,7 +109,7 @@ class OrderGetTest extends TestCase
     ])->assertJsonCount(3, 'data');
   }
 
-  /** @test */
+  #[Test]
   public function can_get_orders_by_status()
   {
     $statuses = [
@@ -140,7 +141,7 @@ class OrderGetTest extends TestCase
     }
   }
 
-  /** @test */
+  #[Test]
   public function can_sort_order_by_newest()
   {
     $orders = Order::factory(3)
@@ -158,7 +159,7 @@ class OrderGetTest extends TestCase
     );
   }
 
-  /** @test */
+  #[Test]
   public function can_sort_order_by_oldest()
   {
     $orders = Order::factory(3)

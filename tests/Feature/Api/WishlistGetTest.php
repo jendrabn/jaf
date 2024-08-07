@@ -6,12 +6,13 @@ use App\Models\Wishlist;
 use Database\Seeders\{ProductBrandSeeder, ProductCategorySeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class WishlistGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  /** @test */
+  #[Test]
   public function unauthenticated_user_cannot_get_all_wishlist()
   {
     $response = $this->getJson('/api/wishlist');
@@ -20,7 +21,7 @@ class WishlistGetTest extends TestCase
       ->assertJsonStructure(['message']);
   }
 
-  /** @test */
+  #[Test]
   public function can_get_all_wishlist()
   {
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);

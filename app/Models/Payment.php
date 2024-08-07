@@ -9,36 +9,36 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Payment extends Model
 {
-  use HasFactory;
+    use HasFactory;
 
-  public const STATUS_PENDING = 'pending';
-  public const STATUS_CANCELLED = 'cancelled';
-  public const STATUS_RELEASED = 'realeased';
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_CANCELLED = 'cancelled';
+    public const STATUS_RELEASED = 'realeased';
 
-  public const STATUSES = [
-    self::STATUS_PENDING => ['label' => 'Pending'],
-    self::STATUS_CANCELLED => ['label' => 'Cancelled'],
-    self::STATUS_RELEASED => ['label' => 'Realeased'],
-  ];
+    public const STATUSES = [
+        self::STATUS_PENDING => ['label' => 'Pending'],
+        self::STATUS_CANCELLED => ['label' => 'Cancelled'],
+        self::STATUS_RELEASED => ['label' => 'Realeased'],
+    ];
 
-  protected $fillable = [
-    'invoice_id',
-    'method',
-    'info',
-    'amount',
-    'status',
-  ];
+    protected $fillable = [
+        'invoice_id',
+        'method',
+        'info',
+        'amount',
+        'status',
+    ];
 
-  public function bank(): HasOne
-  {
-    return $this->hasOne(PaymentBank::class);
-  }
+    public function bank(): HasOne
+    {
+        return $this->hasOne(PaymentBank::class);
+    }
 
-  public function info(): Attribute
-  {
-    return Attribute::make(
-      set: fn ($value) => json_encode($value),
-      get: fn ($value) => json_decode($value, true)
-    );
-  }
+    public function info(): Attribute
+    {
+        return Attribute::make(
+            set: fn($value) => json_encode($value),
+            get: fn($value) => json_decode($value, true)
+        );
+    }
 }

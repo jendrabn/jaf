@@ -8,12 +8,13 @@ use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\Rule;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class WishlistPostTest extends TestCase
 {
   use RefreshDatabase;
 
-  /** @test */
+  #[Test]
   public function create_wishlist_uses_the_correct_form_request()
   {
     $this->assertActionUsesFormRequest(
@@ -23,7 +24,7 @@ class WishlistPostTest extends TestCase
     );
   }
 
-  /** @test */
+  #[Test]
   public function create_wishlist_request_has_the_correct_validation_rules()
   {
     $this->assertValidationRules([
@@ -35,7 +36,7 @@ class WishlistPostTest extends TestCase
     ], (new CreateWishlistRequest())->rules());
   }
 
-  /** @test */
+  #[Test]
   public function unauthenticated_user_cannot_add_product_to_wishlist()
   {
     $response = $this->postJson('/api/wishlist');
@@ -44,7 +45,7 @@ class WishlistPostTest extends TestCase
       ->assertJsonStructure(['message']);
   }
 
-  /** @test */
+  #[Test]
   public function can_add_product_to_wishlist()
   {
     $this->seed(ProductCategorySeeder::class);

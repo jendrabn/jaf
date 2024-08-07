@@ -6,6 +6,7 @@ use App\Models\Product;
 use Database\Seeders\{ProductBrandSeeder, ProductCategorySeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class ProductSimilarGetTest extends TestCase
 {
@@ -17,7 +18,7 @@ class ProductSimilarGetTest extends TestCase
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
   }
 
-  /** @test */
+  #[Test]
   public function can_get_similar_products_by_product_id()
   {
     $this->createProduct(count: 3);
@@ -33,7 +34,7 @@ class ProductSimilarGetTest extends TestCase
       ->assertJsonCount(5, 'data');
   }
 
-  /** @test */
+  #[Test]
   public function returns_not_found_error_if_product_id_doenot_exist()
   {
     $product = $this->createProduct();

@@ -10,6 +10,7 @@ use App\Models\{
 use Database\Seeders\{ProductBrandSeeder, ProductCategorySeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class ProductDetailGetTest extends TestCase
 {
@@ -21,7 +22,7 @@ class ProductDetailGetTest extends TestCase
     $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
   }
 
-  /** @test */
+  #[Test]
   public function can_get_product_by_id()
   {
     $product = Product::factory()->has(
@@ -67,7 +68,7 @@ class ProductDetailGetTest extends TestCase
       ->assertJsonCount(2, 'data.images');
   }
 
-  /** @test */
+  #[Test]
   public function returns_not_found_error_if_product_id_doenot_exist()
   {
     $product = $this->createProduct();
@@ -78,7 +79,7 @@ class ProductDetailGetTest extends TestCase
       ->assertJsonStructure(['message']);
   }
 
-  /** @test */
+  #[Test]
   public function returns_not_found_error_if_product_is_not_published()
   {
     $product = $this->createProduct(['is_publish' => false]);

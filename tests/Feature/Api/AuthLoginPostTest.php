@@ -6,87 +6,88 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Requests\Api\LoginRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class AuthLoginPostTest extends TestCase
 {
-  use RefreshDatabase;
+    use RefreshDatabase;
 
-  /** @test */
-  public function login_uses_the_correct_form_request()
-  {
-    $this->assertActionUsesFormRequest(
-      AuthController::class,
-      'login',
-      LoginRequest::class
-    );
-  }
+    #[Test]
+    public function login_uses_the_correct_form_request()
+    {
+        $this->assertActionUsesFormRequest(
+            AuthController::class,
+            'login',
+            LoginRequest::class
+        );
+    }
 
-  /** @test */
-  public function login_request_has_the_correct_validation_rules()
-  {
-    $this->assertValidationRules([
-      'email' => [
-        'required',
-        'string',
-        'email',
-      ],
-      'password' => [
-        'required',
-        'string',
-      ],
-    ], (new LoginRequest())->rules());
-  }
+    #[Test]
+    public function login_request_has_the_correct_validation_rules()
+    {
+        $this->assertValidationRules([
+            'email' => [
+                'required',
+                'string',
+                'email',
+            ],
+            'password' => [
+                'required',
+                'string',
+            ],
+        ], (new LoginRequest())->rules());
+    }
 
-  /** @test */
-  public function can_login()
-  {
-    $user = $this->createUser(['password' => $password = 'Secret123']);
+    #[Test]
+    public function can_login()
+    {
+        $user = $this->createUser(['password' => $password = 'Secret123']);
 
-    $response = $this->postJson('/api/auth/login', [
-      'email' => $user->email,
-      'password' => $password
-    ]);
+        $response = $this->postJson('/api/auth/login', [
+            'email' => $user->email,
+            'password' => $password
+        ]);
 
-    $response->assertOk()
-      ->assertJsonStructure([
-        'data' => [
-          'id',
-          'name',
-          'email',
-          'phone',
-          'sex',
-          'birth_date',
-          'auth_token',
-        ]
-      ])
-      ->assertJson(['data' => $this->formatUserData($user)]);
+        $response->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'email',
+                    'phone',
+                    'sex',
+                    'birth_date',
+                    'auth_token',
+                ]
+            ])
+            ->assertJson(['data' => $this->formatUserData($user)]);
 
-    $this->assertCount(1, $user->fresh()->tokens);
-  }
+        $this->assertCount(1, $user->fresh()->tokens);
+    }
 
-  /** @test */
-  public function returns_unauthenticated_error_if_email_doenot_exist()
-  {
-    $response = $this->postJson('/api/auth/login', [
-      'email' => 'invalid@gmail.com',
-      'password' => 'Secret123',
-    ]);
+    #[Test]
+    public function returns_unauthenticated_error_if_email_doenot_exist()
+    {
+        $response = $this->postJson('/api/auth/login', [
+            'email' => 'invalid@gmail.com',
+            'password' => 'Secret123',
+        ]);
 
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
+        $response->assertUnauthorized()
+            ->assertJsonStructure(['message']);
+    }
 
-  /** @test */
-  public function returns_unauthenticated_error_if_password_is_incorrect()
-  {
-    $user = $this->createUser(['password' => 'Secret123']);
+    #[Test]
+    public function returns_unauthenticated_error_if_password_is_incorrect()
+    {
+        $user = $this->createUser(['password' => 'Secret123']);
 
-    $response = $this->postJson('/api/auth/login', [
-      'email' => $user->email,
-      'password' => 'Wrong-Password',
-    ]);
+        $response = $this->postJson('/api/auth/login', [
+            'email' => $user->email,
+            'password' => 'Wrong-Password',
+        ]);
 
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
+        $response->assertUnauthorized()
+            ->assertJsonStructure(['message']);
+    }
 }

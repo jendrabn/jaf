@@ -8,12 +8,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class UserChangePasswordPutTest extends TestCase
 {
   use RefreshDatabase;
 
-  /** @test */
+  #[Test]
   public function update_password_uses_the_correct_form_request()
   {
     $this->assertActionUsesFormRequest(
@@ -23,7 +24,7 @@ class UserChangePasswordPutTest extends TestCase
     );
   }
 
-  /** @test */
+  #[Test]
   public function update_password_request_has_the_correct_validation_rules()
   {
     $this->assertValidationRules([
@@ -41,7 +42,7 @@ class UserChangePasswordPutTest extends TestCase
     ], (new UpdatePasswordRequest())->rules());
   }
 
-  /** @test */
+  #[Test]
   public function unauthenticated_user_cannot_update_password()
   {
     $response = $this->putJson('/api/user/change_password');
@@ -50,7 +51,7 @@ class UserChangePasswordPutTest extends TestCase
       ->assertJsonStructure(['message']);
   }
 
-  /** @test */
+  #[Test]
   public function can_update_password()
   {
     $user = $this->createUser(['password' => $password = 'OldPassword123']);

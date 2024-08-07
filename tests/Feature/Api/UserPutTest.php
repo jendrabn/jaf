@@ -7,12 +7,13 @@ use App\Http\Requests\Api\ProfileRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\Rule;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class UserPutTest extends TestCase
 {
   use RefreshDatabase;
 
-  /** @test */
+  #[Test]
   public function update_profile_uses_the_correct_form_request()
   {
     $this->assertActionUsesFormRequest(
@@ -22,7 +23,7 @@ class UserPutTest extends TestCase
     );
   }
 
-  /** @test */
+  #[Test]
   public function profile_request_has_the_correct_validation_rules()
   {
     $user = $this->createUser();
@@ -63,7 +64,7 @@ class UserPutTest extends TestCase
     ], $rules);
   }
 
-  /** @test */
+  #[Test]
   public function unauthenticated_user_cannot_update_profile()
   {
     $response = $this->putJson('/api/user');
@@ -72,7 +73,7 @@ class UserPutTest extends TestCase
       ->assertJsonStructure(['message']);
   }
 
-  /** @test */
+  #[Test]
   public function can_update_profile()
   {
     $user = $this->createUser();

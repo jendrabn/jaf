@@ -4,12 +4,13 @@ namespace Tests\Feature\Api;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class AuthLogoutDeleteTest extends TestCase
 {
   use RefreshDatabase;
 
-  /** @test */
+  #[Test]
   public function unauthenticated_user_cannot_logout()
   {
     $response = $this->deleteJson('/api/auth/logout');
@@ -18,7 +19,7 @@ class AuthLogoutDeleteTest extends TestCase
       ->assertJsonStructure(['message']);
   }
 
-  /** @test */
+  #[Test]
   public function can_logout()
   {
     $user = $this->createUser();

@@ -4,12 +4,13 @@ namespace Tests\Feature\Api;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class UserGetTest extends TestCase
 {
   use RefreshDatabase;
 
-  /** @test */
+  #[Test]
   public function unauthenticated_user_cannot_get_profile()
   {
     $response = $this->putJson('/api/user');
@@ -18,7 +19,7 @@ class UserGetTest extends TestCase
       ->assertJsonStructure(['message']);
   }
 
-  /** @test */
+  #[Test]
   public function can_get_profile()
   {
     $user = $this->createUser();

@@ -9,22 +9,14 @@ use App\Http\Controllers\Admin\ProductBrandController;
 use App\Http\Controllers\Admin\ProductCategoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\UsersController;
-use App\Http\Controllers\Auth\ChangePasswordController;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
+Route::get('/', function () {
+    return response()->json([]);
+});
 
-Route::redirect('/', '/auth/login');
+// Route::redirect('/', '/auth/login');
+
 Route::get('/home', function () {
     if (session('status')) {
         return redirect()->route('admin.home')->with('status', session('status'));
@@ -37,10 +29,10 @@ Route::get('/home', function () {
 Route::middleware('guest')->prefix('auth')->name('auth.')->group(function () {
     Route::get('login', [AuthController::class, 'login'])->name('login');
     Route::post('login', [AuthController::class, 'login'])->name('login.post');
-    Route::get('forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot-password');
-    Route::post('forgot-password', [AuthController::class, 'sendResetPasswordLink'])->name('forgot-password.post');
-    Route::get('reset-password', [AuthController::class, 'resetPassword'])->name('reset-password');
-    Route::put('reset-password', [AuthController::class, 'resetPassword'])->name('reset-password.put');
+    Route::get('forgot_password', [AuthController::class, 'forgotPassword'])->name('forgot_password');
+    Route::post('forgot_password', [AuthController::class, 'sendResetPasswordLink'])->name('forgot_password.post');
+    Route::get('reset_password', [AuthController::class, 'resetPassword'])->name('reset_password');
+    Route::put('reset_password', [AuthController::class, 'resetPassword'])->name('reset_password.put');
 });
 Route::middleware(['auth', 'role:admin|user'])->get('auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
