@@ -8,16 +8,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Province extends Model
 {
-  use HasFactory;
+    use HasFactory;
 
-  protected $fillable = [
-    'name',
-  ];
+    protected $fillable = [
+        'name',
+    ];
 
-  public $timestamps = false;
+    public $timestamps = false;
 
-  public function cities(): HasMany
-  {
-    return $this->hasMany(City::class);
-  }
+    public function cities(): HasMany
+    {
+        return $this->hasMany(City::class);
+    }
 }

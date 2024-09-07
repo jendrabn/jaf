@@ -1,133 +1,93 @@
-@extends('layouts.admin')
-@section('content')
-  <div class="card">
-    <div class="card-header">
-      {{ __('Show') }} {{ __('Products') }}
-    </div>
+@extends('layouts.admin', ['title' => 'Show Product'])
 
-    <div class="card-body">
-      <div class="form-group">
-        <div class="form-group">
-          <a class="btn btn-default"
-            href="{{ route('admin.products.index') }}">
-            {{ __('Back to list') }}
-          </a>
+@section('content')
+    <div class="card">
+        <div class="card-header">
+            <h1 class="card-title">Show Product</h1>
         </div>
-        <table class="table-bordered table-striped table">
-          <tbody>
-            <tr>
-              <th>
-                {{ __('ID') }}
-              </th>
-              <td>
-                {{ $product->id }}
-              </td>
-            </tr>
-            <tr>
-              <th>
-                {{ __('Product Images') }}
-              </th>
-              <td>
-                @foreach ($product->images as $key => $media)
-                  <a href="{{ $media->getUrl() }}"
-                    style="display: inline-block"
-                    target="_blank">
-                    <img src="{{ $media->getUrl('thumb') }}">
-                  </a>
-                @endforeach
-              </td>
-            </tr>
-            <tr>
-              <th>
-                {{ __('Product Name') }}
-              </th>
-              <td>
-                {{ $product->name }}
-              </td>
-            </tr>
-            <tr>
-              <th>
-                {{ __('Product Slug') }}
-              </th>
-              <td>
-                {{ $product->slug }}
-              </td>
-            </tr>
-            <tr>
-              <th>
-                {{ __('Category') }}
-              </th>
-              <td>
-                {{ $product->category->name ?? '' }}
-              </td>
-            </tr>
-            <tr>
-              <th>
-                {{ __('Product Description') }}
-              </th>
-              <td>
-                {!! $product->description !!}
-              </td>
-            </tr>
-            <tr>
-              <th>
-                {{ __('Brand') }}
-              </th>
-              <td>
-                {{ $product->brand->name ?? '' }}
-              </td>
-            </tr>
-            <tr>
-              <th>
-                {{ __('Gender') }}
-              </th>
-              <td>
-                {{ App\Models\Product::SEX_SELECT[$product->sex] ?? '' }}
-              </td>
-            </tr>
-            <tr>
-              <th>
-                {{ __('Price') }}
-              </th>
-              <td>
-                @rupiah($product->price)
-              </td>
-            </tr>
-            <tr>
-              <th>
-                {{ __('Stock') }}
-              </th>
-              <td>
-                {{ $product->stock }}
-              </td>
-            </tr>
-            <tr>
-              <th>
-                {{ __('Weight') }}
-              </th>
-              <td>
-                {{ $product->weight }}
-              </td>
-            </tr>
-            <tr>
-              <th>
-                {{ __('Publish') }}
-              </th>
-              <td>
-                <input type="checkbox"
-                  disabled="disabled"
-                  {{ $product->is_publish ? 'checked' : '' }}>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="form-group">
-          <a class="btn btn-default"
-            href="{{ route('admin.products.index') }}">
-            {{ __('Back to list') }}
-          </a>
+        <div class="card-body">
+            <a class="btn btn-default mb-3"
+               href="{{ route('admin.products.index') }}">Back to list</a>
+
+            <table class="table table-bordered table-sm table-striped">
+                <tr>
+                    <th>ID</th>
+                    <td>{{ $product->id }}</td>
+                </tr>
+
+                <tr>
+                    <th>Name</th>
+                    <td>{{ $product->name }}</td>
+                </tr>
+
+                <tr>
+                    <th>Slug</th>
+                    <td>{{ $product->slug }}</td>
+                </tr>
+
+                <tr>
+                    <th>Images</th>
+                    <td>
+                        @foreach ($product->images as $image)
+                            <a href="{{ $image->url }}"
+                               target="_blank">
+                                <img class="m-1"
+                                     src="{{ $image->preview_url }}"
+                                     width="120" />
+                            </a>
+                        @endforeach
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>Product Category</th>
+                    <td>{{ $product->category?->name }}</td>
+                </tr>
+
+                <tr>
+                    <th>Product Brand</th>
+                    <td>{{ $product->brand?->name }}</td>
+                </tr>
+
+                <tr>
+                    <th>Weight (gram)</th>
+                    <td>{{ $product->weight }}</td>
+                </tr>
+
+                <tr>
+                    <th>Price</th>
+                    <td>@Rp($product->price)</td>
+                </tr>
+
+                <tr>
+                    <th>Gender</th>
+                    <td>{{ $product->sex_label }}</td>
+                </tr>
+
+                <tr>
+                    <th>Description</th>
+                    <td>{!! $product->description !!}</td>
+                </tr>
+
+                <tr>
+                    <th>Published</th>
+                    <td>
+                        <input {{ $product->is_publish ? 'checked' : '' }}
+                               disabled
+                               type="checkbox" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>Created At</th>
+                    <td>{{ $product->created_at }}</td>
+                </tr>
+
+                <tr>
+                    <th>Updated At</th>
+                    <td>{{ $product->updated_at }}</td>
+                </tr>
+            </table>
         </div>
-      </div>
     </div>
-  </div>
 @endsection

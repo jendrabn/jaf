@@ -2,65 +2,104 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\ProductCategoryRequest;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 use App\Models\ProductCategory;
-use Symfony\Component\HttpFoundation\Response;
+use App\Http\Controllers\Controller;
+use App\DataTables\ProductCategoriesDataTable;
+use App\Http\Requests\Admin\ProductCategoryRequest;
 
 class ProductCategoryController extends Controller
 {
-  public function index()
-  {
-    $productCategories = ProductCategory::all();
-
-    return view('admin.productCategories.index', compact('productCategories'));
-  }
-
-  public function create()
-  {
-    return view('admin.productCategories.create');
-  }
-
-  public function store(ProductCategoryRequest $request)
-  {
-    $validatedData = $request->validated();
-    $validatedData['slug'] = str($validatedData['name'])->slug();
-
-    $productCategory = ProductCategory::create($validatedData);
-
-    return redirect()->route('admin.product-categories.index');
-  }
-
-  public function edit(ProductCategory $productCategory)
-  {
-    return view('admin.productCategories.edit', compact('productCategory'));
-  }
-
-  public function update(ProductCategoryRequest $request, ProductCategory $productCategory)
-  {
-    $validatedData = $request->validated();
-    $validatedData['slug'] = str($validatedData['name'])->slug();
-
-    $productCategory->update($validatedData);
-
-    return redirect()->route('admin.product-categories.index');
-  }
-
-  public function destroy(ProductCategory $productCategory)
-  {
-    $productCategory->delete();
-
-    return back();
-  }
-
-  public function massDestroy(ProductCategoryRequest $request)
-  {
-    $productCategories = ProductCategory::find($request->validated('ids'));
-
-    foreach ($productCategories as $productCategory) {
-      $productCategory->delete();
+    /**
+     * Handles the display of the product categories index page.
+     *
+     * @param ProductCategoriesDataTable $dataTable
+     * @return mixed
+     */
+    public function index(ProductCategoriesDataTable $dataTable): mixed
+    {
+        return $dataTable->render('admin.productCategories.index');
     }
 
-    return response(null, Response::HTTP_NO_CONTENT);
-  }
+    /**
+     * Display the form for creating a new product category.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function create(): View
+    {
+        return view('admin.productCategories.create');
+    }
+
+    /**
+     * Handles the creation of a new product category.
+     *
+     * @param ProductCategoryRequest $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function store(ProductCategoryRequest $request)
+    {
+        ProductCategory::create($request->validated());
+
+        toastr('Product category created successfully.', 'success');
+
+        return to_route('admin.product-categories.index');
+    }
+
+    /**
+     * Edit a product category.
+     *
+     * @param ProductCategory $productCategory
+     * @return \Illuminate\View\View
+     */
+    public function edit(ProductCategory $productCategory)
+    {
+        $productCategory->loadCount('products');
+
+        return view('admin.productCategories.edit', compact('productCategory'));
+    }
+
+    /**
+     * Updates a product category based on the provided request data.
+     *
+     * @param ProductCategoryRequest $request
+     * @param ProductCategory $productCategory
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function update(ProductCategoryRequest $request, ProductCategory $productCategory)
+    {
+        $productCategory->update($request->validated());
+
+        toastr('Product category updated successfully.', 'success');
+
+        return back();
+    }
+
+
+    /**
+     * Deletes a product category.
+     *
+     * @param ProductCategory $productCategory
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy(ProductCategory $productCategory)
+    {
+        $productCategory->delete();
+
+        return response()->json(['message' => 'Product category deleted successfully.']);
+    }
+
+    /**
+     * Deletes multiple product categories based on the provided IDs.
+     *
+     * @param ProductCategoryRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function massDestroy(ProductCategoryRequest $request): JsonResponse
+    {
+        ProductCategory::whereIn('id', $request->validated('ids'))->delete();
+
+        return response()->json(['message' => 'Product categories deleted successfully.']);
+    }
 }

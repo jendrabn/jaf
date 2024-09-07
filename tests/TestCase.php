@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\File;
 use JMac\Testing\Traits\AdditionalAssertions;
 use Symfony\Component\ErrorHandler\ErrorHandler;
 
@@ -34,13 +35,12 @@ abstract class TestCase extends BaseTestCase
         // $this->fakeHttpRajaOngkir();
     }
 
-    // protected function tearDown(): void
-    // {
-    //     parent::tearDown();
-    //     // Banner::all()->each(fn ($banner) => $banner->clearMediaCollection(Banner::MEDIA_COLLECTION_NAME));
-    //     // Product::all()->each(fn ($product) => $product->clearMediaCollection(Product::MEDIA_COLLECTION_NAME));
-    //     // Bank::all()->each(fn ($bank) => $bank->clearMediaCollection(Bank::MEDIA_COLLECTION_NAME));
-    // }
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        // File::cleanDirectory(storage_path('app/public'));
+    }
 
     protected function createUser(?array $data = [], int $count = 1): User|Collection
     {

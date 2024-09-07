@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PaymentEwallet extends Model
 {
-  use HasFactory;
+    use HasFactory;
 
-  protected $fillable = [];
+    protected $fillable = [];
 }

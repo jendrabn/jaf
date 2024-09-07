@@ -4,20 +4,20 @@
 
 //General CSS
 .progress {
-  @include box-shadow(null);
-  @include border-radius($lte-progress-bar-border-radius);
+  @include box-shadow(none);
+  @include border-radius($progress-bar-border-radius);
 
   // Vertical bars
   &.vertical {
-    position: relative;
     display: inline-block;
-    width: 30px;
     height: 200px;
     margin-right: 10px;
+    position: relative;
+    width: 30px;
 
     > .progress-bar {
-      position: absolute;
       bottom: 0;
+      position: absolute;
       width: 100%;
     }
 
@@ -62,5 +62,11 @@
     .progress {
       margin: 0;
     }
+  }
+}
+
+@include dark-mode () {
+  .progress {
+    background: lighten($dark, 7.5%);
   }
 }

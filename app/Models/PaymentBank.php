@@ -8,17 +8,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PaymentBank extends Model
 {
-  use HasFactory;
+    use HasFactory;
 
-  protected $fillable = [
-    'payment_id',
-    'name',
-    'account_name',
-    'account_number',
-  ];
+    protected $fillable = [
+        'payment_id',
+        'name',
+        'account_name',
+        'account_number',
+    ];
 
-  // public function payment(): BelongsTo
-  // {
-  //   return $this->belongsTo(Payment::class);
-  // }
+    // public function payment(): BelongsTo
+    // {
+    //   return $this->belongsTo(Payment::class);
+    // }
 }

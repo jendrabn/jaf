@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('shippings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->cascadeOnDelete();
+            $table->foreignId('order_id')->constrained()->cascadeOnDelete();
             $table->text('address');
             $table->enum('courier', ['jne', 'pos', 'tiki']);
             $table->string('courier_name', 100)->nullable();

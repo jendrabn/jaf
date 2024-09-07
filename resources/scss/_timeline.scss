@@ -3,62 +3,61 @@
 //
 
 .timeline {
-  position: relative;
-  padding: 0;
   margin: 0 0 45px;
+  padding: 0;
+  position: relative;
   // The line
   &::before {
     @include border-radius($border-radius);
+    background-color: $gray-300;
+    bottom: 0;
+    content: "";
+    left: 31px;
+    margin: 0;
     position: absolute;
     top: 0;
-    bottom: 0;
-    left: 31px;
     width: 4px;
-    margin: 0;
-    content: "";
-    background-color: var(--#{$prefix}border-color);
   }
   // Element
   > div {
     &::before,
     &::after {
-      display: table;
       content: "";
+      display: table;
     }
 
-    position: relative;
-    margin-right: 10px;
     margin-bottom: 15px;
+    margin-right: 10px;
+    position: relative;
     // The content
     > .timeline-item {
-      @include box-shadow($lte-card-shadow);
+      @include box-shadow($card-shadow);
       @include border-radius($border-radius);
-      position: relative;
-      padding: 0;
-      margin-top: 0;
-      margin-right: 15px;
+      background-color: $white;
+      color: $gray-700;
       margin-left: 60px;
-      color: var(--#{$prefix}body-color);
-      background-color: var(--#{$prefix}body-bg);
+      margin-right: 15px;
+      margin-top: 0;
+      padding: 0;
+      position: relative;
       // The time and header
       > .time {
+        color: #999;
         float: right;
-        padding: 10px;
         font-size: 12px;
-        color: var(--#{$prefix}secondary-color);
+        padding: 10px;
       }
       // Header
       > .timeline-header {
-        padding: 10px;
-        margin: 0;
+        border-bottom: 1px solid $card-border-color;
+        color: $gray-700;
         font-size: 16px;
         line-height: 1.1;
-        color: var(--#{$prefix}secondary-color);
-        border-bottom: 1px solid var(--#{$prefix}border-color);
+        margin: 0;
+        padding: 10px;
         // Link in header
         > a {
           font-weight: 600;
-          text-decoration: none;
         }
       }
       // Item body and footer
@@ -78,30 +77,44 @@
         }
       }
 
-
+      > .timeline-footer {
+        > a {
+          color: $white;
+        }
+      }
     }
-
-    .timeline-icon {
-      position: absolute;
-      top: 0;
-      left: 18px;
-      width: 30px;
-      height: 30px;
+    // The icons at line
+    > .fa,
+    > .fas,
+    > .far,
+    > .fab,
+    > .fal,
+    > .fad,
+    > .svg-inline--fa,
+    > .ion {
+      background-color: $gray-500;
+      border-radius: 50%;
       font-size: 16px;
+      height: 30px;
+      left: 18px;
       line-height: 30px;
+      position: absolute;
       text-align: center;
-      background-color: var(--#{$prefix}secondary-bg);
-      border-radius: 50%; // stylelint-disable-line property-disallowed-list
+      top: 0;
+      width: 30px;
+    }
+    > .svg-inline--fa {
+      padding: 7px;
     }
   }
   // Time label
   > .time-label {
     > span {
       @include border-radius(4px);
+      background-color: $white;
       display: inline-block;
-      padding: 5px;
       font-weight: 600;
-      background-color: var(--#{$prefix}body-bg);
+      padding: 5px;
     }
   }
 }
@@ -110,11 +123,32 @@
   > div {
     > .timeline-item {
       @include box-shadow(none);
-      background-color: var(--#{$prefix}tertiary-bg);
-      border: 1px solid var(--#{$prefix}border-color);
+      background-color: $gray-100;
+      border: 1px solid $gray-300;
 
       > .timeline-header {
-        border-bottom-color: var(--#{$prefix}border-color);
+        border-bottom-color: $gray-300;
+      }
+    }
+  }
+}
+
+@include dark-mode () {
+  .timeline {
+    &::before {
+      background-color: $gray-600;
+    }
+    > div > .timeline-item {
+      background-color: $dark;
+      color: $white;
+      border-color: $gray-600;
+
+      > .timeline-header {
+        color: $gray-400;
+        border-color: $gray-600;
+      }
+      > .time {
+        color: $gray-400;
       }
     }
   }

@@ -8,14 +8,13 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductBrandController;
 use App\Http\Controllers\Admin\ProductCategoryController;
 use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return response()->json([]);
+    return view('welcome');
 });
-
-// Route::redirect('/', '/auth/login');
 
 Route::get('/home', function () {
     if (session('status')) {
@@ -39,13 +38,19 @@ Route::middleware(['auth', 'role:admin|user'])->get('auth/logout', [AuthControll
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
 
+    Route::get('profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::put('profile', [ProfileController::class, 'updateProfile'])->name('profile.update');
+    Route::put('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.update-password');
+
     // Users
-    Route::delete('users/destroy', [UsersController::class, 'massDestroy'])->name('users.massDestroy');
-    Route::resource('users', UsersController::class);
+    Route::delete('users/destroy', [UserController::class, 'massDestroy'])->name('users.massDestroy');
+    Route::resource('users', UserController::class);
 
     // Order
+    Route::delete('orders/destroy', [OrderController::class, 'massDestroy'])->name('orders.massDestroy');
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::delete('orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
     Route::put('orders/{order}/confirm_shipping', [OrderController::class, 'confirmShipping'])->name('orders.confirm-shipping');
     Route::put('orders/{order}/confirm_payment', [OrderController::class, 'confirmPayment'])->name('orders.confirm-payment');
 
@@ -61,7 +66,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::delete('banks/destroy', [BankController::class, 'massDestroy'])->name('banks.massDestroy');
     Route::post('banks/media', [BankController::class, 'storeMedia'])->name('banks.storeMedia');
     Route::post('banks/ckmedia', [BankController::class, 'storeCKEditorImages'])->name('banks.storeCKEditorImages');
-    Route::resource('banks', BankController::class);
+    Route::resource('banks', BankController::class)->except(['show']);
 
     // Banner
     Route::delete('banners/destroy', [BannerController::class, 'massDestroy'])->name('banners.massDestroy');

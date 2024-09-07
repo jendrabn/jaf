@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\DataTables\BannersDataTable;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Traits\MediaUploadingTrait;
+use App\Traits\MediaUploadingTrait;
 use App\Http\Requests\Admin\BannerRequest;
 use App\Models\Banner;
 use Illuminate\Http\Request;
@@ -14,11 +15,9 @@ class BannerController extends Controller
 {
     use MediaUploadingTrait;
 
-    public function index()
+    public function index(BannersDataTable $dataTable)
     {
-        $banners = Banner::with(['media'])->get();
-
-        return view('admin.banners.index', compact('banners'));
+        return $dataTable->render("admin.banners.index");
     }
 
     public function create()
@@ -68,26 +67,22 @@ class BannerController extends Controller
     {
         $banner->delete();
 
-        return back();
+        return response()->json(['message' => 'Banner deleted successfully.']);
     }
 
     public function massDestroy(BannerRequest $request)
     {
-        $banners = Banner::find($request->validated('ids'));
+        Banner::whereIn('id', $request->validated('ids'))->delete();
 
-        foreach ($banners as $banner) {
-            $banner->delete();
-        }
-
-        return response(null, Response::HTTP_NO_CONTENT);
+        return response()->json(['message' => 'Banners deleted successfully.']);
     }
 
     public function storeCKEditorImages(Request $request)
     {
-        $model         = new Banner();
-        $model->id     = $request->input('crud_id', 0);
+        $model = new Banner();
+        $model->id = $request->input('crud_id', 0);
         $model->exists = true;
-        $media         = $model->addMediaFromRequest('upload')->toMediaCollection('ck-media');
+        $media = $model->addMediaFromRequest('upload')->toMediaCollection('ck-media');
 
         return response()->json(['id' => $media->id, 'url' => $media->getUrl()], Response::HTTP_CREATED);
     }

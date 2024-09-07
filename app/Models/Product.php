@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use DateTimeInterface;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Support\Facades\DB;
@@ -41,7 +42,8 @@ class Product extends Model implements HasMedia
     protected $appends = [
         'image',
         'images',
-        'is_wishlist'
+        'is_wishlist',
+        'sex_label',
     ];
 
     protected $casts = [
@@ -49,6 +51,11 @@ class Product extends Model implements HasMedia
         'is_publish' => 'boolean',
         'sold_count' => 'integer',
     ];
+
+    protected function serializeDate(DateTimeInterface $date): string
+    {
+        return $date->format('d-m-Y H:i:s');
+    }
 
     public function orderItems(): HasMany
     {
@@ -67,8 +74,7 @@ class Product extends Model implements HasMedia
 
     public function registerMediaConversions(?Media $media = null): void
     {
-        $this->addMediaConversion('thumb')->fit(Fit::Crop, 50, 50);
-        $this->addMediaConversion('preview')->fit(Fit::Crop, 120, 120);
+        $this->addMediaConversion('preview')->fit(Fit::Crop, 120, 120)->nonQueued();
     }
 
     public function images(): Attribute
@@ -78,7 +84,6 @@ class Product extends Model implements HasMedia
 
             $files->each(function ($item) {
                 $item->url = $item->getUrl();
-                $item->thumbnail = $item->getUrl('thumb');
                 $item->preview = $item->getUrl('preview');
             });
 
@@ -93,7 +98,6 @@ class Product extends Model implements HasMedia
 
             if ($file) {
                 $file->url = $file->getUrl();
-                $file->thumbnail = $file->getUrl('thumb');
                 $file->preview = $file->getUrl('preview');
             }
 
@@ -121,5 +125,10 @@ class Product extends Model implements HasMedia
                     ->whereHas('order', fn($q) => $q->where('status', Order::STATUS_COMPLETED))
             ])
         );
+    }
+
+    public function sexLabel(): Attribute
+    {
+        return Attribute::get(fn() => $this->attributes['sex'] ? self::SEX_SELECT[$this->attributes['sex']] : '');
     }
 }

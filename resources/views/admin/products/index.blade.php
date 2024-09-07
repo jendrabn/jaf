@@ -1,299 +1,242 @@
-@extends('layouts.admin')
+@extends('layouts.admin', ['title' => 'Product List'])
+
 @section('content')
-  <div class="row"
-    style="margin-bottom: 10px;">
-    <div class="col-lg-12">
-      <a class="btn btn-success"
-        href="{{ route('admin.products.create') }}">
-        {{ __('Add') }} {{ __('Product') }}
-      </a>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-body">
-      <form id="form-filter">
-        <div class="row">
-          <div class="col-12 col-md-4 col-lg-3">
-            <div class="form-group">
-              <label for="category_id">{{ __('Category') }}</label>
-              <select class="form-control select2"
-                id="category_id"
-                name="category_id">
-                @foreach ($product_categories as $id => $name)
-                  <option value="{{ $id }}">{{ $name }}</option>
-                @endforeach
-              </select>
-            </div>
-          </div>
-
-          <div class="col-12 col-md-4 col-lg-3">
-            <div class="form-group">
-              <label for="brand_id">{{ __('Brand') }}</label>
-              <select class="form-control select2"
-                id="brand_id"
-                name="brand_id">
-                @foreach ($product_brands as $id => $name)
-                  <option value="{{ $id }}">{{ $name }}</option>
-                @endforeach
-              </select>
-            </div>
-          </div>
-
-          <div class="col-12 col-md-4 col-lg-3">
-            <div class="form-group">
-              <label>{{ __('Gender') }}</label>
-              <select class="form-control select2"
-                id="sex"
-                name="sex">
-                <option value
-                  selected>{{ __('All') }}</option>
-                @foreach (App\Models\Product::SEX_SELECT as $key => $label)
-                  <option value="{{ $key }}">{{ $label }}</option>
-                @endforeach
-              </select>
-            </div>
-          </div>
-
-          <div class="col-sm-12 col-md-4 col-lg-3">
-            <div class="form-group">
-              <label>{{ __('Publish Status') }}</label>
-              <select class="form-control select2"
-                id="is_publish"
-                name="is_publish">
-                <option value
-                  selected>{{ __('All') }}</option>
-                <option value="1">{{ __('Published') }}</option>
-                <option value="0">{{ __('Unpublished') }}</option>
-              </select>
-            </div>
-          </div>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Product List</h3>
         </div>
 
-        <div class="form-group">
-          <button class="btn btn-primary mr-1"
-            type="submit">
-            {{ __('Search') }}
-          </button>
-
-          <button class="btn btn-light"
-            type="reset">
-            {{ __('Reset') }}
-          </button>
+        <div class="card-body">
+            <div class="table-responsive">
+                {{ $dataTable->table(['class' => 'table table-sm table-striped table-bordered datatable ajaxTable']) }}
+            </div>
         </div>
-      </form>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      {{ __('Product') }} {{ __('List') }}
     </div>
 
-    <div class="card-body">
-      <table class="table-bordered table-striped table-hover ajaxTable datatable datatable-Product table">
-        <thead>
-          <tr>
-            <th width="10">
+    <div aria-hidden="true"
+         aria-labelledby="exampleModalLabel"
+         class="modal fade"
+         data-backdrop="static"
+         id="modal-filter"
+         tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"
+                        id="exampleModalLabel">
+                        Filter Products
+                    </h5>
+                    <button aria-label="Close"
+                            class="close"
+                            data-dismiss="modal"
+                            type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form class="form-row"
+                          id="form-filter">
+                        <div class="form-group col-md-6">
+                            <label for="_product_category_id">Category</label>
+                            <select class="form-control select2"
+                                    id="_product_category_id"
+                                    name="product_category_id"
+                                    style="width: 100%">
+                                @foreach ($product_categories as $id => $name)
+                                    <option @selected($id === null)
+                                            value="{{ $id }}">
+                                        {{ $name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
-            </th>
-            <th>
-              {{ __('ID') }}
-            </th>
-            <th>
-              {{ __('Product Image') }}
-            </th>
-            <th>
-              {{ __('Product Name') }}
-            </th>
-            <th>
-              {{ __('Category') }}
-            </th>
-            <th>
-              {{ __('Brand') }}
-            </th>
-            <th>
-              {{ __('Gender') }}
-            </th>
-            <th>
-              {{ __('Price') }}
-            </th>
-            <th>
-              {{ __('Stock') }}
-            </th>
-            <th>
-              {{ __('Weight') }}
-            </th>
-            <th>
-              {{ __('Publish') }}
-            </th>
-            <th>
-              &nbsp;
-            </th>
-          </tr>
-        </thead>
-      </table>
+                        <div class="form-group col-md-6">
+                            <label for="_product_brand_id">Brand</label>
+                            <select class="form-control select2"
+                                    id="_product_brand_id"
+                                    name="product_brand_id"
+                                    style="width: 100%">
+                                @foreach ($product_brands as $id => $name)
+                                    <option @selected($id === null)
+                                            value="{{ $id }}">
+                                        {{ $name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label for="_sex">Gender</label>
+                            <select class="form-control select2"
+                                    id="_sex"
+                                    name="sex"
+                                    style="width: 100%">
+                                <option selected
+                                        value="">All</option>
+                                @foreach (App\Models\Product::SEX_SELECT as $key => $label)
+                                    <option value="{{ $key }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label for="_is_publish">Publish Status</label>
+                            <select class="form-control select2"
+                                    id="_is_publish"
+                                    name="is_publish"
+                                    style="width: 100%">
+                                <option selected
+                                        value="">All</option>
+                                <option value="1">Published</option>
+                                <option value="0">Unpublished</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary"
+                            data-dismiss="modal"
+                            type="button">
+                        Close
+                    </button>
+                    <button class="btn btn-primary"
+                            id="btn-filter"
+                            type="button">
+                        Save changes
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 @endsection
+
 @section('scripts')
-  @parent
-  <script>
-    $(function() {
-      let dtButtons = $.extend(true, [], $.fn.dataTable.defaults.buttons)
-      let deleteButton = {
-        text: '{{ __('Delete selected') }}',
-        url: "{{ route('admin.products.massDestroy') }}",
-        className: 'btn-danger',
-        action: function(e, dt, node, config) {
-          var ids = $.map(dt.rows({
-            selected: true
-          }).data(), function(entry) {
-            return entry.id
-          });
-
-          if (ids.length === 0) {
-            alert('{{ __('No rows selected') }}')
-
-            return
-          }
-
-          if (confirm('{{ __('Are you sure?') }}')) {
-            $.ajax({
-                headers: {
-                  'x-csrf-token': _token
+    {{ $dataTable->scripts(attributes: ['type' => 'text/javascript']) }}
+    <script>
+        $(function() {
+            $.fn.dataTable.ext.buttons.filter = {
+                text: '<i class="fas fa-filter"></i> Filter',
+                attr: {
+                    "data-toggle": "modal",
+                    "data-target": "#modal-filter",
                 },
-                method: 'POST',
-                url: config.url,
-                data: {
-                  ids: ids,
-                  _method: 'DELETE'
+            };
+
+            $.fn.dataTable.ext.buttons.bulkDelete = {
+                text: "Delete selected",
+                url: "{{ route('admin.products.massDestroy') }}",
+                action: function(e, dt, node, config) {
+                    let ids = $.map(
+                        dt.rows({
+                            selected: true,
+                        }).data(),
+
+                        function(entry) {
+                            return entry.id;
+                        }
+                    );
+
+                    if (ids.length === 0) {
+                        toastr.warning("No rows selected", 'Warning');
+
+                        return;
+                    }
+
+                    Swal.fire({
+                        title: "Are you sure?",
+                        text: "You won't be able to revert this!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Delete"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $.ajax({
+                                headers: {
+                                    "x-csrf-token": _token,
+                                },
+                                method: "POST",
+                                url: config.url,
+                                data: {
+                                    ids: ids,
+                                    _method: "DELETE",
+                                },
+                                success: function(data) {
+                                    toastr.success(data.message);
+                                    dt.ajax.reload();
+                                },
+                            });
+                        }
+                    });
+                },
+            };
+
+            const table = window.LaravelDataTables["dataTable-products"];
+
+            table.on("click", ".btn-delete", function(e) {
+                e.preventDefault();
+
+                let url = $(this).attr("href");
+
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Delete"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            headers: {
+                                "x-csrf-token": _token,
+                            },
+                            method: "POST",
+                            url: url,
+                            data: {
+                                _method: "DELETE",
+                            },
+                            success: function(data) {
+                                toastr.success(data.message);
+
+                                table.ajax.reload();
+                            },
+                        });
+                    }
+                });
+            });
+
+            $("#btn-filter").on("click", function() {
+                $("#modal-filter").modal("hide");
+
+                table.ajax.reload();
+            });
+
+            $('a[data-toggle="tab"]').on("shown.bs.tab click", function(e) {
+                $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+            });
+
+            let visibleColumnsIndexes = null;
+
+            $(".datatable thead").on("input", ".search", function() {
+                let strict = $(this).attr("strict") || false;
+                let value =
+                    strict && this.value ? "^" + this.value + "$" : this.value;
+
+                let index = $(this).parent().index();
+                if (visibleColumnsIndexes !== null) {
+                    index = visibleColumnsIndexes[index];
                 }
-              })
-              .done(function() {
-                location.reload()
-              })
-          }
-        }
-      }
-      dtButtons.push(deleteButton)
 
-      let formFilter = $('#form-filter')
+                table.column(index).search(value, strict).draw();
+            });
 
-      let dtOverrideGlobals = {
-        buttons: dtButtons,
-        processing: true,
-        serverSide: true,
-        retrieve: true,
-        aaSorting: [],
-        ajax: {
-          url: "{{ route('admin.products.index') }}",
-          data: function(d) {
-            $.each(formFilter.serializeArray(), function(key, val) {
-              d[val.name] = val.value;
-            })
-          }
-        },
-        columns: [{
-            data: 'placeholder',
-            name: 'placeholder'
-          },
-          {
-            data: 'id',
-            name: 'id'
-          },
-          {
-            data: 'image',
-            name: 'image',
-            sortable: false,
-            searchable: false
-          },
-          {
-            data: 'name',
-            name: 'name'
-          },
-          {
-            data: 'category_name',
-            name: 'category.name'
-          },
-          {
-            data: 'brand_name',
-            name: 'brand.name',
-            visible: false
-          },
-          {
-            data: 'sex',
-            name: 'sex',
-            visible: false
-          },
-          {
-            data: 'price',
-            name: 'price'
-          },
-          {
-            data: 'stock',
-            name: 'stock'
-          },
-          {
-            data: 'weight',
-            name: 'weight',
-            visible: false
-          },
-          {
-            data: 'is_publish',
-            name: 'is_publish',
-            visible: false
-          },
-          {
-            data: 'actions',
-            name: '{{ __('Actions') }}'
-          }
-        ],
-        orderCellsTop: true,
-        order: [
-          [1, 'desc']
-        ],
-        pageLength: 25,
-      };
+            table.on("column-visibility.dt", function(e, settings, column, state) {
+                visibleColumnsIndexes = [];
 
-      let table = $('.datatable-Product').DataTable(dtOverrideGlobals);
-
-      $('a[data-toggle="tab"]').on('shown.bs.tab click', function(e) {
-        $($.fn.dataTable.tables(true)).DataTable()
-          .columns.adjust();
-      });
-
-      formFilter.on('submit', function(e) {
-        e.preventDefault()
-
-        table.ajax.reload()
-      })
-
-      formFilter.on('reset', function(e) {
-        e.preventDefault()
-
-        $(this).find('select').each(function() {
-          $(this).val(null).trigger('change')
-        })
-
-        table.ajax.reload()
-      })
-
-      // $('.datatable thead').on('input', '.search', function() {
-      //   let strict = $(this).attr('strict') || false
-      //   let value = strict && this.value ? "^" + this.value + "$" : this.value
-
-      //   let index = $(this).parent().index()
-      //   if (visibleColumnsIndexes !== null) {
-      //     index = visibleColumnsIndexes[index]
-      //   }
-
-      //   table
-      //     .column(index)
-      //     .search(value, strict)
-      //     .draw()
-      // })
-
-    });
-  </script>
+                table.columns(":visible").every(function(colIdx) {
+                    visibleColumnsIndexes.push(colIdx);
+                });
+            });
+        });
+    </script>
 @endsection

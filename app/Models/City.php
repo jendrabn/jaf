@@ -8,18 +8,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class City extends Model
 {
-  use HasFactory;
+    use HasFactory;
 
-  protected $fillable = [
-    'province_id',
-    'name',
-    'type',
-  ];
+    protected $fillable = [
+        'province_id',
+        'name',
+        'type',
+    ];
 
-  public $timestamps = false;
+    public $timestamps = false;
 
-  public function province(): BelongsTo
-  {
-    return $this->belongsTo(Province::class);
-  }
+    public function province(): BelongsTo
+    {
+        return $this->belongsTo(Province::class);
+    }
 }

@@ -14,28 +14,31 @@ use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-  public function index()
-  {
-    $total_admin = User::role(User::ROLE_ADMIN)->count();
-    $total_users = User::role(User::ROLE_USER)->count();
-    $total_categories = ProductCategory::count();
-    $total_brands = ProductBrand::count();
-    $total_products = Product::count();
-    $total_orders = Order::count();
-    $total_banners = Banner::count();
-    $total_payment_banks = Bank::count();
-    $orders = Order::latest()->take(5)->get();
+    public function index()
+    {
+        $total_admin = User::role(User::ROLE_ADMIN)->count();
+        $total_users = User::role(User::ROLE_USER)->count();
+        $total_categories = ProductCategory::count();
+        $total_brands = ProductBrand::count();
+        $total_products = Product::count();
+        $total_orders = Order::count();
+        $total_banners = Banner::count();
+        $total_payment_banks = Bank::count();
+        $orders = Order::latest()->take(5)->get();
 
-    return view('admin.home', compact(
-      'total_admin',
-      'total_users',
-      'total_categories',
-      'total_brands',
-      'total_products',
-      'total_orders',
-      'total_banners',
-      'total_payment_banks',
-      'orders'
-    ));
-  }
+        return view(
+            'admin.dashboard',
+            compact(
+                'total_admin',
+                'total_users',
+                'total_categories',
+                'total_brands',
+                'total_products',
+                'total_orders',
+                'total_banners',
+                'total_payment_banks',
+                'orders',
+            )
+        );
+    }
 }

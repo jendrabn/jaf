@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Blade::directive('rupiah', function ($money) {
+        Blade::directive('Rp', function ($money) {
             return "<?php echo 'Rp '. number_format((float) $money,0,',','.'); ?>";
         });
 

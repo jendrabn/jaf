@@ -10,35 +10,35 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Invoice extends Model
 {
-  use HasFactory;
+    use HasFactory;
 
-  public const STATUS_PAID = 'paid';
-  public const STATUS_UNPAID = 'unpaid';
+    public const STATUS_PAID = 'paid';
+    public const STATUS_UNPAID = 'unpaid';
 
-  public const STATUSES = [
-    self::STATUS_PAID => ['label' => 'Paid'],
-    self::STATUS_UNPAID => ['label' => 'Unpaid']
-  ];
+    public const STATUSES = [
+        self::STATUS_PAID => ['label' => 'Paid'],
+        self::STATUS_UNPAID => ['label' => 'Unpaid']
+    ];
 
-  protected $fillable = [
-    'order_id',
-    'number',
-    'amount',
-    'status',
-    'due_date',
-  ];
+    protected $fillable = [
+        'order_id',
+        'number',
+        'amount',
+        'status',
+        'due_date',
+    ];
 
-  protected $casts = [
-    'due_date' => 'datetime'
-  ];
+    protected $casts = [
+        'due_date' => 'datetime'
+    ];
 
-  public function payment(): HasOne
-  {
-    return $this->hasOne(Payment::class);
-  }
+    public function payment(): HasOne
+    {
+        return $this->hasOne(Payment::class);
+    }
 
-  public function order(): BelongsTo
-  {
-    return $this->belongsTo(Order::class);
-  }
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
+    }
 }

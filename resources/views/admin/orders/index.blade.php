@@ -1,222 +1,229 @@
-@extends('layouts.admin')
+@extends('layouts.admin', ['title' => 'Order List'])
+
 @section('content')
-  <div class="card">
-    <div class="card-body">
-      <form id="form-filter">
-        <div class="row">
-          <div class="col-sm-12 col-md-4 col-md-3">
-            <div class="form-group">
-              <label for="status">Status</label>
-              <select class="form-control select2"
-                id="status"
-                name="status"
-                strict="true">
-                <option value
-                  selected>{{ __('All') }}</option>
-                @foreach (App\Models\Order::STATUSES as $key => $status)
-                  <option value="{{ $key }}">{{ $status['label'] }}</option>
-                @endforeach
-              </select>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Order List</h3>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                {{ $dataTable->table(['class' => 'table table-sm table-striped table-bordered datatable ajaxTable']) }}
             </div>
-          </div>
         </div>
+    </div>
 
-        <div class="form-group">
-          <button class="btn btn-primary mr-1"
-            type="submit">
-            {{ __('Search') }}
-          </button>
-
-          <button class="btn btn-light"
-            type="reset">
-            {{ __('Reset') }}
-          </button>
+    <div aria-hidden="true"
+         aria-labelledby="exampleModalLabel"
+         class="modal fade"
+         data-backdrop="static"
+         id="modal-filter"
+         tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"
+                        id="exampleModalLabel">
+                        Filter Orders
+                    </h5>
+                    <button aria-label="Close"
+                            class="close"
+                            data-dismiss="modal"
+                            type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form class="form-row"
+                          id="form-filter">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="status">Status</label>
+                                <select class="form-control select2"
+                                        id="status"
+                                        name="status"
+                                        style="width: 100%">
+                                    <option selected
+                                            value>All</option>
+                                    @foreach (App\Models\Order::STATUSES as $key => $status)
+                                        <option value="{{ $key }}">
+                                            {{ $status['label'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary"
+                            data-dismiss="modal"
+                            type="button">
+                        Close
+                    </button>
+                    <button class="btn btn-primary"
+                            id="btn-filter"
+                            type="button">
+                        Save changes
+                    </button>
+                </div>
+            </div>
         </div>
-      </form>
     </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      {{ __('Order') }} {{ __('List') }}
-    </div>
-
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table-bordered table-striped table-hover datatable ajaxTable datatable-Order table">
-          <thead>
-            <tr>
-              <th width="10">
-
-              </th>
-              <th>
-                {{ __('ID') }}
-              </th>
-              <th>
-                {{ __('User') }}
-              </th>
-              <th>
-                {{ __('Product(s)') }}
-              </th>
-              <th>
-                {{ __('Amount') }}
-              </th>
-              <th>
-                {{ __('Shipping') }}
-              </th>
-              <th>
-                {{ __('Status') }}
-              </th>
-              <th>
-                {{ __('Created at') }}
-              </th>
-              <th>
-                {{ __('Confirmed at') }}
-              </th>
-              <th>
-                {{ __('Completed at') }}
-              </th>
-              <th>
-                {{ __('Cancelled at') }}
-              </th>
-              <th>
-                &nbsp;
-              </th>
-            </tr>
-          </thead>
-        </table>
-      </div>
-    </div>
-  </div>
 @endsection
+
 @section('scripts')
-  @parent
-  <script>
-    $(function() {
-      let dtButtons = $.extend(true, [], $.fn.dataTable.defaults.buttons);
-      let formFilter = $('#form-filter');
-      let dtOverrideGlobals = {
-        buttons: dtButtons,
-        processing: true,
-        serverSide: true,
-        retrieve: true,
-        aaSorting: [],
-        ajax: {
-          url: "{{ route('admin.orders.index') }}",
-          data: function(d) {
-            $.each(formFilter.serializeArray(), function(key, val) {
-              d[val.name] = val.value;
-            })
-          }
-        },
-        columns: [{
-            data: 'placeholder',
-            name: 'placeholder'
-          },
-          {
-            data: 'id',
-            name: 'id'
-          },
-          {
-            data: 'user',
-            name: 'user.name'
-          },
-          {
-            data: 'items',
-            name: 'items',
-            orderable: false,
-            searchable: false
-          },
-          {
-            data: 'amount',
-            name: 'invoice.amount'
-          },
-          {
-            data: 'shipping',
-            name: 'shipping.tracking_number',
-            orderable: false,
-          },
-          {
-            data: 'status',
-            name: 'status'
-          },
-          {
-            data: 'created_at',
-            name: 'created_at',
-            visible: false
-          },
-          {
-            data: 'confirmed_at',
-            name: 'confirmed_at',
-            visible: false
-          },
-          {
-            data: 'completed_at',
-            name: 'completed_at',
-            visible: false
-          },
-          {
-            data: 'cancelled_at',
-            name: 'cancelled_at',
-            visible: false
-          },
-          {
-            data: 'actions',
-            name: '{{ __('Actions') }}'
-          }
-        ],
-        orderCellsTop: true,
-        order: [
-          [1, 'desc']
-        ],
-        pageLength: 25,
-      };
+    {{ $dataTable->scripts(attributes: ['type' => 'text/javascript']) }}
+    <script>
+        $(function() {
+            $.fn.dataTable.ext.buttons.filter = {
+                text: '<i class="fas fa-filter"></i> Filter',
+                attr: {
+                    "data-toggle": "modal",
+                    "data-target": "#modal-filter",
+                },
+            };
 
-      let table = $('.datatable-Order').DataTable(dtOverrideGlobals);
-      $('a[data-toggle="tab"]').on('shown.bs.tab click', function(e) {
-        $($.fn.dataTable.tables(true)).DataTable()
-          .columns.adjust();
-      });
+            $.fn.dataTable.ext.buttons.bulkDelete = {
+                text: "Delete selected",
+                url: "{{ route('admin.orders.massDestroy') }}",
+                action: function(e, dt, node, config) {
+                    let ids = $.map(
+                        dt
+                        .rows({
+                            selected: true,
+                        })
+                        .data(),
+                        function(entry) {
+                            return entry.id;
+                        }
+                    );
 
-      let visibleColumnsIndexes = null;
+                    if (ids.length === 0) {
+                        toastr.warning("No rows selected", "Warning");
 
-      $('.datatable thead').on('input', '.search', function() {
-        let strict = $(this).attr('strict') || false
-        let value = strict && this.value ? "^" + this.value + "$" : this.value
+                        return;
+                    }
 
-        let index = $(this).parent().index()
-        if (visibleColumnsIndexes !== null) {
-          index = visibleColumnsIndexes[index]
-        }
+                    Swal.fire({
+                        title: "Are you sure?",
+                        text: "You won't be able to revert this!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Delete",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $.ajax({
+                                headers: {
+                                    "x-csrf-token": _token,
+                                },
+                                method: "POST",
+                                url: config.url,
+                                data: {
+                                    ids: ids,
+                                    _method: "DELETE",
+                                },
+                                success: function(data) {
+                                    toastr.success(data.message);
 
-        table
-          .column(index)
-          .search(value, strict)
-          .draw()
-      });
+                                    dt.ajax.reload();
+                                },
+                            });
+                        }
+                    });
+                },
+            };
 
-      table.on('column-visibility.dt', function(e, settings, column, state) {
-        visibleColumnsIndexes = []
-        table.columns(":visible").every(function(colIdx) {
-          visibleColumnsIndexes.push(colIdx);
+            $(".datatable thead").on("input", ".search", function() {
+                let strict = $(this).attr("strict") || false;
+                let value =
+                    strict && this.value ? "^" + this.value + "$" : this.value;
+
+                let index = $(this).parent().index();
+                if (visibleColumnsIndexes !== null) {
+                    index = visibleColumnsIndexes[index];
+                }
+
+                table.column(index).search(value, strict).draw();
+            });
+
+            const table = LaravelDataTables["dataTable-orders"];
+
+            table.on("click", ".btn-delete", function(e) {
+                e.preventDefault();
+
+                let url = $(this).attr("href");
+
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Delete",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            headers: {
+                                "x-csrf-token": _token,
+                            },
+                            method: "POST",
+                            url: url,
+                            data: {
+                                _method: "DELETE",
+                            },
+                            success: function(data) {
+                                toastr.success(data.message);
+
+                                table.ajax.reload();
+                            },
+                        });
+                    }
+                });
+            });
+
+            table.on("click", ".btn-delete", function(e) {
+                e.preventDefault();
+
+                let url = $(this).attr("href");
+
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Delete",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            headers: {
+                                "x-csrf-token": _token,
+                            },
+                            method: "POST",
+                            url: url,
+                            data: {
+                                _method: "DELETE",
+                            },
+                            success: function(data) {
+                                toastr.success(data.message);
+
+                                table.ajax.reload();
+                            },
+                        });
+                    }
+                });
+            });
+
+            table.on("column-visibility.dt", function(e, settings, column, state) {
+                visibleColumnsIndexes = [];
+                table.columns(":visible").every(function(colIdx) {
+                    visibleColumnsIndexes.push(colIdx);
+                });
+            });
+
+            $("#btn-filter").on("click", function() {
+                $("#modal-filter").modal("hide");
+                table.ajax.reload();
+            });
         });
-      })
-
-      formFilter.on('submit', function(e) {
-        e.preventDefault()
-
-        table.ajax.reload()
-      })
-
-      formFilter.on('reset', function(e) {
-        e.preventDefault()
-
-        $(this).find('select').each(function() {
-          $(this).val(null).trigger('change')
-        })
-
-        table.ajax.reload()
-      })
-    });
-  </script>
+    </script>
 @endsection

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use DateTimeInterface;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Database\Eloquent\Model;
@@ -25,10 +26,14 @@ class Banner extends Model implements HasMedia
         'image',
     ];
 
+    protected function serializeDate(DateTimeInterface $date): string
+    {
+        return $date->format('d-m-Y H:i:s');
+    }
+
     public function registerMediaConversions(?Media $media = null): void
     {
-        $this->addMediaConversion('thumb')->fit(Fit::Crop, 50, 50);
-        $this->addMediaConversion('preview')->fit(Fit::Crop, 120, 120);
+        $this->addMediaConversion('preview')->fit(Fit::Crop, 120, 120)->nonQueued();
     }
 
     public function image(): Attribute
@@ -38,7 +43,6 @@ class Banner extends Model implements HasMedia
 
             if ($file) {
                 $file->url = $file->getUrl();
-                $file->thumbnail = $file->getUrl('thumb');
                 $file->preview = $file->getUrl('preview');
             }
 

@@ -1,170 +1,132 @@
-@extends('layouts.admin')
+@extends('layouts.admin', ['title' => 'Bank List'])
+
 @section('content')
-  <div class="row"
-    style="margin-bottom: 10px;">
-    <div class="col-lg-12">
-      <a class="btn btn-success"
-        href="{{ route('admin.banks.create') }}">
-        {{ __('Add') }} {{ __('Bank') }}
-      </a>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Bank List</h3>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                {{ $dataTable->table(['class' => 'table table-sm table-striped table-bordered datatable ajaxTable']) }}
+            </div>
+        </div>
     </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      {{ __('Bank') }} {{ __('List') }}
-    </div>
-
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table-bordered table-striped table-hover datatable datatable-Bank table">
-          <thead>
-            <tr>
-              <th width="10">
-
-              </th>
-              <th>
-                {{ __('ID') }}
-              </th>
-              <th>
-                {{ __('Bank Logo') }}
-              </th>
-              <th>
-                {{ __('Bank Name') }}
-              </th>
-              <th>
-                {{ __('Bank Code') }}
-              </th>
-              <th>
-                {{ __('Account Name') }}
-              </th>
-              <th>
-                {{ __('Account Number') }}
-              </th>
-              <th>
-                &nbsp;
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            @foreach ($banks as $key => $bank)
-              <tr data-entry-id="{{ $bank->id }}">
-                <td>
-
-                </td>
-                <td>
-                  {{ $bank->id ?? '' }}
-                </td>
-                <td>
-                  @if ($bank->logo)
-                    <a href="{{ $bank->logo->getUrl() }}"
-                      style="display: inline-block"
-                      target="_blank">
-                      <img src="{{ $bank->logo->getUrl('thumb') }}">
-                    </a>
-                  @endif
-                </td>
-                <td>
-                  {{ $bank->name ?? '' }}
-                </td>
-                <td>
-                  {{ $bank->code ?? '' }}
-                </td>
-                <td>
-                  {{ $bank->account_name ?? '' }}
-                </td>
-                <td>
-                  {{ $bank->account_number ?? '' }}
-                </td>
-                <td>
-                  <a class="btn btn-xs btn-info"
-                    href="{{ route('admin.banks.edit', $bank->id) }}">
-                    {{ __('Edit') }}
-                  </a>
-
-                  <form style="display: inline-block;"
-                    action="{{ route('admin.banks.destroy', $bank->id) }}"
-                    method="POST"
-                    onsubmit="return confirm('{{ __('Are you sure?') }}');">
-                    <input name="_method"
-                      type="hidden"
-                      value="DELETE">
-                    <input name="_token"
-                      type="hidden"
-                      value="{{ csrf_token() }}">
-                    <input class="btn btn-xs btn-danger"
-                      type="submit"
-                      value="{{ __('Delete') }}">
-                  </form>
-
-                </td>
-
-              </tr>
-            @endforeach
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
 @endsection
+
 @section('scripts')
-  @parent
-  <script>
-    $(function() {
-      let dtButtons = $.extend(true, [], $.fn.dataTable.defaults.buttons);
-      let deleteButton = {
-        text: '{{ __('Delete selected') }}',
-        url: "{{ route('admin.banks.massDestroy') }}",
-        className: 'btn-danger',
-        action: function(e, dt, node, config) {
-          var ids = $.map(dt.rows({
-            selected: true
-          }).nodes(), function(entry) {
-            return $(entry).data('entry-id')
-          });
+    {{ $dataTable->scripts(attributes: ['type' => 'text/javascript']) }}
+    <script>
+        $(function() {
+            $.fn.dataTable.ext.buttons.bulkDelete = {
+                text: "Delete selected",
+                url: "{{ route('admin.banks.massDestroy') }}",
+                action: function(e, dt, node, config) {
+                    let ids = $.map(
+                        dt
+                        .rows({
+                            selected: true,
+                        })
+                        .data(),
+                        function(entry) {
+                            return entry.id;
+                        }
+                    );
 
-          if (ids.length === 0) {
-            alert('{{ __('No rows selected') }}')
+                    if (ids.length === 0) {
+                        toastr.warning("No rows selected", 'Warning');
 
-            return
-          }
+                        return;
+                    }
 
-          if (confirm('{{ __('Are you sure?') }}')) {
-            $.ajax({
-                headers: {
-                  'x-csrf-token': _token
+                    Swal.fire({
+                        title: "Are you sure?",
+                        text: "You won't be able to revert this!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Delete",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $.ajax({
+                                headers: {
+                                    "x-csrf-token": _token,
+                                },
+                                method: "POST",
+                                url: config.url,
+                                data: {
+                                    ids: ids,
+                                    _method: "DELETE",
+                                },
+                                success: function(data) {
+                                    toastr.success(data.message);
+                                    dt.ajax.reload();
+                                },
+                            });
+                        }
+                    });
                 },
-                method: 'POST',
-                url: config.url,
-                data: {
-                  ids: ids,
-                  _method: 'DELETE'
+            };
+
+            const table = window.LaravelDataTables["dataTable-banks"];
+
+            table.on("click", ".btn-delete", function(e) {
+                e.preventDefault();
+
+                let url = $(this).attr("href");
+
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Delete",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            headers: {
+                                "x-csrf-token": _token,
+                            },
+                            method: "POST",
+                            url: url,
+                            data: {
+                                _method: "DELETE",
+                            },
+                            success: function(data) {
+                                toastr.success(data.message);
+
+                                table.ajax.reload();
+                            },
+                        });
+                    }
+                });
+            });
+
+            $('a[data-toggle="tab"]').on("shown.bs.tab click", function(e) {
+                $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+            });
+
+            let visibleColumnsIndexes = null;
+
+            $(".datatable thead").on("input", ".search", function() {
+                let strict = $(this).attr("strict") || false;
+                let value =
+                    strict && this.value ? "^" + this.value + "$" : this.value;
+
+                let index = $(this).parent().index();
+                if (visibleColumnsIndexes !== null) {
+                    index = visibleColumnsIndexes[index];
                 }
-              })
-              .done(function() {
-                location.reload()
-              })
-          }
-        }
-      }
 
-      dtButtons.push(deleteButton);
+                table.column(index).search(value, strict).draw();
+            });
 
-      $.extend(true, $.fn.dataTable.defaults, {
-        orderCellsTop: true,
-        order: [
-          [1, 'desc']
-        ],
-        pageLength: 25,
-      });
+            table.on("column-visibility.dt", function(e, settings, column, state) {
+                visibleColumnsIndexes = [];
 
-      let table = $('.datatable-Bank:not(.ajaxTable)').DataTable({
-        buttons: dtButtons
-      });
-
-      $('a[data-toggle="tab"]').on('shown.bs.tab click', function(e) {
-        $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
-      });
-    });
-  </script>
+                table.columns(":visible").every(function(colIdx) {
+                    visibleColumnsIndexes.push(colIdx);
+                });
+            });
+        });
+    </script>
 @endsection

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="UTF-8" />
@@ -10,48 +10,61 @@
     <meta content="{{ csrf_token() }}"
           name="csrf-token" />
 
-    <title>{{ __("JAF Parfum's") }}</title>
+    <title>{{ $title }} | {{ config('app.name') }}</title>
 
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/css/bootstrap.min.css"
-          rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/css/select2.min.css"
-          rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css"
-          rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css"
-          rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-          rel="stylesheet" />
+    <link href="{{ asset('img/favicon.ico') }}"
+          rel="icon"
+          type="image/x-icon">
+
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700"
           rel="stylesheet" />
-    <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css"
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css"
           rel="stylesheet" />
-    <link href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
           rel="stylesheet" />
-    <link href="https://cdn.datatables.net/select/1.3.0/css/select.dataTables.min.css"
-          rel="stylesheet" />
-    <link href="https://cdn.datatables.net/buttons/1.2.4/css/buttons.dataTables.min.css"
-          rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.css"
-          rel="stylesheet" />
-    <link href=" https://printjs-4de6.kxcdn.com/print.min.css"
+    <link href="https://cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.1.3/b-3.1.1/b-colvis-3.1.1/b-html5-3.1.1/b-print-3.1.1/r-3.0.2/sb-1.7.1/sp-2.3.1/sl-2.0.4/datatables.min.css"
+          rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.css"
           rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bs-stepper/dist/css/bs-stepper.min.css"
           rel="stylesheet" />
-    <link href="{{ asset('css/custom.css') }}"
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
           rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/css/tempusdominus-bootstrap-4.min.css"
+          rel="stylesheet" />
+    @vite('resources/scss/adminlte.scss')
     @yield('styles')
 </head>
 
-<body class="hold-transition sidebar-mini">
+<body class="hold-transition sidebar-mini fixed-layout">
     <div class="wrapper">
         <nav class="main-header navbar navbar-expand navbar-light border-bottom bg-white">
-            <!-- Left navbar links -->
             <ul class="navbar-nav">
                 <li class="nav-item">
                     <a class="nav-link"
                        data-widget="pushmenu"
-                       href="#"><i class="fa fa-bars"></i></a>
+                       href="#"><i class="fa-solid fa-bars"></i></a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item dropdown user-menu">
+                    <a aria-expanded="false"
+                       class="nav-link dropdown-toggle"
+                       data-toggle="dropdown"
+                       href="#">
+                        <img alt="User Image"
+                             class="user-image rounded-circle shadow"
+                             src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}">
+                        <span class="d-none d-md-inline font-weight-bold">{{ Auth::user()->name }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-lg-right"
+                        style="max-width: 150px;">
+                        <a class="dropdown-item btn btn-light"
+                           href="{{ route('admin.profile.index') }}">Profile</a>
+                        <a class="dropdown-item btn btn-light"
+                           href="{{ route('auth.logout') }}">Logout</a>
+                    </ul>
                 </li>
             </ul>
         </nav>
@@ -85,142 +98,78 @@
         </div>
 
         <footer class="main-footer">
-            <div class="d-none d-sm-block float-right"><b>Version</b> 1.0.0</div>
-            <strong> &copy;</strong> {{ __('All Rights Reserved') }}
+            <strong> &copy; <a href="{{ config('app.url') }}">{{ config('app.name') }}</a></strong> All rights
+            reserved.
         </footer>
-
-        <form action="{{ route('auth.logout') }}"
-              id="logoutform"
-              method="POST"
-              style="display: none">
-            @csrf
-        </form>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/js/select2.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/1.2.4/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdn.datatables.net/select/1.3.0/js/dataTables.select.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.flash.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.print.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.colVis.min.js"></script>
-    <script src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.18/build/pdfmake.min.js"></script>
-    <script src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.18/build/vfs_fonts.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
-    <script src="https://cdn.ckeditor.com/ckeditor5/16.0.0/classic/ckeditor.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script
-            src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js">
+            src="https://cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.1.3/b-3.1.1/b-colvis-3.1.1/b-html5-3.1.1/b-print-3.1.1/r-3.0.2/sb-1.7.1/sp-2.3.1/sl-2.0.4/datatables.min.js">
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/locale/id.min.js"></script>
+    <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js">
+    </script>
+    <script src="{{ asset('vendor/datatables/buttons.server-side.js') }}"></script>
     <script src="{{ asset('js/main.js') }}"></script>
+
     <script>
         $(function() {
+
+            Swal = Swal.mixin({
+                customClass: {
+                    confirmButton: 'btn btn-primary',
+                    cancelButton: 'btn btn-secondary'
+                },
+            })
+
+            toastr.options = {
+                progressBar: true,
+                positionClass: 'toast-top-right',
+                timeOut: 5000,
+            };
+
+            $.ajaxSetup({
+                error: function(jqXHR, textStatus, errorThrown) {
+                    toastr.error(jqXHR.responseJSON.message || errorThrown);
+                }
+            })
+
             $.extend(true, $.fn.dataTable.Buttons.defaults.dom.button, {
-                className: "btn",
+                className: "btn btn-secondary",
             });
 
             $.extend(true, $.fn.dataTable.defaults, {
                 language: {
                     url: "https://cdn.datatables.net/plug-ins/1.10.19/i18n/English.json",
                 },
-                columnDefs: [{
-                        orderable: false,
-                        className: "select-checkbox",
-                        targets: 0,
-                    },
-                    {
-                        orderable: false,
-                        searchable: false,
-                        targets: -1,
-                    },
-                ],
-                select: {
-                    style: "multi+shift",
-                    selector: "td:first-child",
-                },
-                order: [],
+                order: [1, "desc"],
                 scrollX: true,
-                pageLength: 100,
+                pageLength: 10,
+                lengthMenu: [10, 25, 50, 100, {
+                    label: 'All',
+                    value: -1
+                }],
                 dom: 'lBfrtip<"actions">',
-                buttons: [{
-                        extend: "selectAll",
-                        className: "btn-primary",
-                        exportOptions: {
-                            columns: ":visible",
-                        },
-                        action: function(e, dt) {
-                            e.preventDefault();
-                            dt.rows().deselect();
-                            dt.rows({
-                                search: "applied",
-                            }).select();
-                        },
-                    },
-                    {
-                        extend: "selectNone",
-                        className: "btn-primary",
-                        exportOptions: {
-                            columns: ":visible",
-                        },
-                    },
-                    {
-                        extend: "copy",
-                        className: "btn-default",
-                        exportOptions: {
-                            columns: ":visible",
-                        },
-                    },
-                    {
-                        extend: "csv",
-                        className: "btn-default",
-                        exportOptions: {
-                            columns: ":visible",
-                        },
-                    },
-                    {
-                        extend: "excel",
-                        className: "btn-default",
-                        exportOptions: {
-                            columns: ":visible",
-                        },
-                    },
-                    {
-                        extend: "pdf",
-                        className: "btn-default",
-                        exportOptions: {
-                            columns: ":visible",
-                        },
-                    },
-                    {
-                        extend: "print",
-                        className: "btn-default",
-                        exportOptions: {
-                            columns: ":visible",
-                        },
-                    },
-                    {
-                        extend: "colvis",
-                        className: "btn-default",
-                        exportOptions: {
-                            columns: ":visible",
-                        },
-                    },
-                ],
+                initComplete: function() {
+                    this.api().columns.adjust().draw();
+                },
             });
 
             $.fn.dataTable.ext.classes.sPageButton = "";
         });
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+
     @yield('scripts')
 </body>
 

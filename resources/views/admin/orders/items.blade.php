@@ -1,22 +1,19 @@
-@foreach ($row->items as $item)
-  <div class="d-flex mb-1">
-    <div class="d-flex">
-      @if ($item->product?->image)
-        <div class="mr-1">
-          <a href="{{ $item->product->image->getUrl() }}"
-            style="display: inline-block"
-            target="_blank"
-            rel="noopener noreferrer">
-            <img src="{{ $item->product->image->getUrl('thumb') }}">
-          </a>
+@foreach ($items as $item)
+    <div class="d-flex align-items-center justify-content-between mb-1">
+        <div class="d-flex align-items-center">
+            <div class="mr-1">
+                <div style="width: 35px; overflow: hidden;">
+                    <img class="img-fluid w-100 h-100"
+                         src="{{ $item->product?->image->preview_url }}"
+                         style="object-fit: cover;">
+                </div>
+            </div>
+
+            <a href="{{ $item->product_id ? route('admin.products.show', $item->product_id) : 'javascript:;' }}"
+               target="_blank">
+                {{ $item->name }}
+            </a>
         </div>
-      @endif
-      <div>
-        <a href="{{ route('admin.products.show', [$item->product_id]) }}"
-          target="_blank"
-          rel="noopener noreferrer">{{ $item->name }}</a>
-      </div>
+        <div>x{{ $item->quantity }}</div>
     </div>
-    <div class="ml-auto">x{{ $item->quantity }}</div>
-  </div>
 @endforeach

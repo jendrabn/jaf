@@ -2,62 +2,35 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
-    <meta content="text/html; charset=utf-8"
-          http-equiv="Content-Type">
-    <title>{{ $title }} | {{ config('app.name') }}</title>
-    <meta content="width=device-width, initial-scale=1.0"
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1"
           name="viewport">
-    <link href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css"
-          rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.3.0/styles/overlayscrollbars.min.css"
-          rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.min.css"
-          rel="stylesheet">
+    <meta content="{{ csrf_token() }}"
+          name="csrf-token" />
 
-    @vite(['resources/scss/adminlte.scss'])
+    <title>{{ $title }} | {{ config('app.name') }}</title>
+
+    <link href="{{ asset('img/favicon.ico') }}"
+          rel="icon"
+          type="image/x-icon">
+
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback"
+          rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+          rel="stylesheet" />
+    @vite('resources/scss/adminlte.scss')
 </head>
 
-<body class="login-page bg-body-secondary">
-
+<body class="hold-transition login-page">
     <div class="login-box">
-        <div class="login-logo">
-            <a href="{{ url('/') }}"><b>{{ $title }}</b></a>
-        </div>
-        <div class="card">
-            <div class="card-body login-card-body">
-                @yield('content')
-            </div>
-        </div>
+        {{-- <div class="login-logo">
+            <a href="/"><b>{{ config('app.name') }}</b></a>
+        </div> --}}
+        @yield('content')
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.3.0/browser/overlayscrollbars.browser.es6.min.js">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
-    <script src="{{ asset('js/adminlte.min.js') }}"></script>
-    <script>
-        const SELECTOR_SIDEBAR_WRAPPER = ".sidebar-wrapper";
-        const Default = {
-            scrollbarTheme: "os-theme-light",
-            scrollbarAutoHide: "leave",
-            scrollbarClickScroll: true,
-        };
-        document.addEventListener("DOMContentLoaded", function() {
-            const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
-            if (
-                sidebarWrapper &&
-                typeof OverlayScrollbarsGlobal?.OverlayScrollbars !== "undefined"
-            ) {
-                OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
-                    scrollbars: {
-                        theme: Default.scrollbarTheme,
-                        autoHide: Default.scrollbarAutoHide,
-                        clickScroll: Default.scrollbarClickScroll,
-                    },
-                });
-            }
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

@@ -3,13 +3,14 @@
 //
 
 @import "../root";
-@import "../app-wrapper";
-@import "../app-content";
-@import "../app-header";
-@import "../app-sidebar";
-@import "../app-main";
-@import "../app-footer";
+@import "../animation-effects";
+@import "../preloader";
+@import "../layout";
+@import "../main-header";
+@import "../brand";
+@import "../main-sidebar";
+@import "../sidebar-mini";
+@import "../control-sidebar";
 @import "../dropdown";
-@import "../callouts";
-@import "../compact-mode";
-@import "../docs";
+@import "../navs";
+@import "../pagination";
