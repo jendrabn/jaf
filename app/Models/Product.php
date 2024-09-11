@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use DateTimeInterface;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Support\Facades\DB;
@@ -52,7 +51,7 @@ class Product extends Model implements HasMedia
         'sold_count' => 'integer',
     ];
 
-    protected function serializeDate(DateTimeInterface $date): string
+    public function serializeDate(\DateTimeInterface $date)
     {
         return $date->format('d-m-Y H:i:s');
     }

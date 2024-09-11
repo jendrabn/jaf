@@ -29,6 +29,11 @@ class Payment extends Model
         'status',
     ];
 
+    public function serializeDate(\DateTimeInterface $date)
+    {
+        return $date->format('d-m-Y H:i:s');
+    }
+
     public function bank(): HasOne
     {
         return $this->hasOne(PaymentBank::class);

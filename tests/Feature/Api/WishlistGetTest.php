@@ -5,53 +5,57 @@ namespace Tests\Feature\Api;
 use App\Models\Wishlist;
 use Database\Seeders\{ProductBrandSeeder, ProductCategorySeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
+use Tests\ApiTestCase;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class WishlistGetTest extends TestCase
+class WishlistGetTest extends ApiTestCase
 {
-  use RefreshDatabase;
+    use RefreshDatabase;
 
-  #[Test]
-  public function unauthenticated_user_cannot_get_all_wishlist()
-  {
-    $response = $this->getJson('/api/wishlist');
+    #[Test]
+    public function unauthenticated_user_cannot_get_all_wishlist()
+    {
+        $response = $this->getJson('/api/wishlist');
 
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
+        $response->assertUnauthorized()
+            ->assertJson(['message' => 'Unauthenticated.']);
+    }
 
-  #[Test]
-  public function can_get_all_wishlist()
-  {
-    $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
+    #[Test]
+    public function can_get_all_wishlist()
+    {
+        $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
 
-    $user = $this->createUser();
+        $user = $this->createUser();
 
-    Wishlist::factory()
-      ->for($this->createProduct(['is_publish' => false]))
-      ->for($user)
-      ->create();
+        Wishlist::factory()
+            ->for($this->createProduct(['is_publish' => false]))
+            ->for($user)
+            ->create();
 
-    $wishlists = Wishlist::factory(3)
-      ->sequence(
-        ['product_id' => $this->createProduct()->id],
-        ['product_id' => $this->createProduct()->id],
-        ['product_id' => $this->createProduct()->id],
-      )
-      ->for($user)
-      ->create();
+        $wishlists = Wishlist::factory(3)
+            ->sequence(
+                ['product_id' => $this->createProduct()->id],
+                ['product_id' => $this->createProduct()->id],
+                ['product_id' => $this->createProduct()->id],
+            )
+            ->for($user)
+            ->create();
 
-    $expectedWishlists = $wishlists->sortByDesc('id')->values();
+        $expectedWishlists = $wishlists->sortByDesc('id')->values();
 
-    $response = $this->getJson('/api/wishlist', $this->authBearerToken($user));
+        Sanctum::actingAs($user);
 
-    $response->assertOk()
-      ->assertExactJson([
-        'data' => $expectedWishlists->map(fn ($item) => [
-          'id' => $item->id,
-          'product' => $this->formatProductData($item->product)
-        ])->toArray()
-      ])->assertJsonCount(3, 'data');
-  }
+        $response = $this->getJson('/api/wishlist');
+
+        $response->assertOk()
+            ->assertJson([
+                'data' => $expectedWishlists->map(fn($item) => [
+                    'id' => $item->id,
+                    'product' => $this->formatProductData($item->product)
+                ])->toArray()
+            ])->assertJsonCount(3, 'data');
+    }
 }

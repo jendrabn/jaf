@@ -32,6 +32,11 @@ class Invoice extends Model
         'due_date' => 'datetime'
     ];
 
+    public function serializeDate(\DateTimeInterface $date)
+    {
+        return $date->format('d-m-Y H:i:s');
+    }
+
     public function payment(): HasOne
     {
         return $this->hasOne(Payment::class);

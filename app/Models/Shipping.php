@@ -37,6 +37,11 @@ class Shipping extends Model
         'status',
     ];
 
+    public function serializeDate(\DateTimeInterface $date)
+    {
+        return $date->format('d-m-Y H:i:s');
+    }
+
     public function address(): Attribute
     {
         return Attribute::make(

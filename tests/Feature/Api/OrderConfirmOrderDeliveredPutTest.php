@@ -5,87 +5,86 @@ namespace Tests\Feature\Api;
 use App\Models\{Order, Shipping, User};
 use Database\Seeders\{CitySeeder, ProvinceSeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
+use Tests\ApiTestCase;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class OrderConfirmOrderDeliveredPutTest extends TestCase
+class OrderConfirmOrderDeliveredPutTest extends ApiTestCase
 {
-  use RefreshDatabase;
+    use RefreshDatabase;
 
-  private User $user;
+    private User $user;
 
-  protected function setUp(): void
-  {
-    parent::setUp();
-    $this->user = $this->createUser();
-  }
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->user = $this->createUser();
+    }
 
-  #[Test]
-  public function unauthenticated_user_cannot_confirm_order_delivered()
-  {
-    $response = $this->putJson('/api/orders/1/confirm_order_delivered');
+    #[Test]
+    public function unauthenticated_user_cannot_confirm_order_delivered()
+    {
+        $response = $this->putJson('/api/orders/1/confirm_order_delivered');
 
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
+        $response->assertUnauthorized()
+            ->assertJson(['message' => 'Unauthenticated.']);
+    }
 
-  #[Test]
-  public function can_confirm_order_delivered()
-  {
-    $this->seed([ProvinceSeeder::class, CitySeeder::class]);
+    #[Test]
+    public function can_confirm_order_delivered()
+    {
+        $this->seed([ProvinceSeeder::class, CitySeeder::class]);
 
-    $order = Order::factory()
-      ->has(Shipping::factory(state: ['status' => Shipping::STATUS_PROCESSING]))
-      ->for($this->user)
-      ->create(['status' => Order::STATUS_ON_DELIVERY]);
+        $order = Order::factory()
+            ->has(Shipping::factory(state: ['status' => Shipping::STATUS_PROCESSING]))
+            ->for($this->user)
+            ->create(['status' => Order::STATUS_ON_DELIVERY]);
 
-    $response = $this->putJson('/api/orders/' . $order->id . '/confirm_order_delivered', headers: $this->authBearerToken($this->user));
+        Sanctum::actingAs($this->user);
 
-    $response->assertOk()
-      ->assertExactJson(['data' => true]);
+        $response = $this->putJson('/api/orders/' . $order->id . '/confirm_order_delivered');
 
-    $this->assertTrue($order->fresh()->status === Order::STATUS_COMPLETED);
-    $this->assertTrue($order->shipping->fresh()->status === Shipping::STATUS_SHIPPED);
-  }
+        $response->assertOk()
+            ->assertJson(['data' => true]);
+
+        $this->assertTrue($order->fresh()->status === Order::STATUS_COMPLETED);
+        $this->assertTrue($order->shipping->fresh()->status === Shipping::STATUS_SHIPPED);
+    }
 
 
-  #[Test]
-  public function cannot_confirm_order_delivered_if_order_doenot_exist()
-  {
-    $order = Order::factory()->for(User::factory())->create();
+    #[Test]
+    public function cannot_confirm_order_delivered_if_order_doenot_exist()
+    {
+        $order = Order::factory()->for(User::factory())->create();
 
-    // Unauthorized order id
-    $response1 = $this->putJson(
-      '/api/orders/' . $order->id . '/confirm_order_delivered',
-      headers: $this->authBearerToken($this->user)
-    );
+        Sanctum::actingAs($this->user);
 
-    $response1->assertNotFound()
-      ->assertJsonStructure(['message']);
+        // Unauthorized order id
+        $response1 = $this->putJson('/api/orders/' . $order->id . '/confirm_order_delivered');
 
-    // Invalid order id
-    $response2 = $this->putJson(
-      '/api/orders/' . $order->id + 1 . '/confirm_order_delivered',
-      headers: $this->authBearerToken($this->user)
-    );
+        $response1->assertNotFound()
+            ->assertJsonStructure(['message']);
 
-    $response2->assertNotFound()
-      ->assertJsonStructure(['message']);
-  }
+        // Invalid order id
+        $response2 = $this->putJson('/api/orders/' . $order->id + 1 . '/confirm_order_delivered');
 
-  #[Test]
-  public function cannot_confirm_order_delivered_if_order_status_is_not_on_delivery()
-  {
-    $order = Order::factory()
-      ->for($this->user)
-      ->create(['status' => Order::STATUS_PROCESSING]);
+        $response2->assertNotFound()
+            ->assertJsonStructure(['message']);
+    }
 
-    $response = $this->putJson(
-      '/api/orders/' . $order->id . '/confirm_order_delivered',
-      headers: $this->authBearerToken($this->user)
-    );
+    #[Test]
+    public function cannot_confirm_order_delivered_if_order_status_is_not_on_delivery()
+    {
+        $order = Order::factory()
+            ->for($this->user)
+            ->create(['status' => Order::STATUS_PROCESSING]);
 
-    $response->assertUnprocessable()
-      ->assertJsonValidationErrors(['order_id']);
-  }
+        Sanctum::actingAs($this->user);
+
+        $response = $this->putJson('/api/orders/' . $order->id . '/confirm_order_delivered');
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['order_id']);
+    }
 }

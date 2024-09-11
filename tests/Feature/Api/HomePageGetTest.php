@@ -6,46 +6,46 @@ use App\Models\Banner;
 use Database\Seeders\{ProductBrandSeeder, ProductCategorySeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Tests\TestCase;
+use Tests\ApiTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class HomePageGetTest extends TestCase
+class HomePageGetTest extends ApiTestCase
 {
-  use RefreshDatabase;
+    use RefreshDatabase;
 
-  #[Test]
-  public function can_get_banners_and_latest_products()
-  {
-    $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
+    #[Test]
+    public function can_get_banners_and_latest_products()
+    {
+        $this->seed([ProductCategorySeeder::class, ProductBrandSeeder::class]);
 
-    $banners = Banner::factory(12)->create();
-    // Add image for first banner
-    $banners[0]->addMedia(UploadedFile::fake()->image('banner.jpg'))
-      ->toMediaCollection(Banner::MEDIA_COLLECTION_NAME);
+        $banners = Banner::factory(12)->create();
 
-    $this->createProduct(['is_publish' => false]);
-    $products = $this->createProduct(count: 12);
+        // Add image only for first banner
+        $banners[0]->addMedia(UploadedFile::fake()->image('banner.jpg'))->toMediaCollection(Banner::MEDIA_COLLECTION_NAME);
 
-    $expectedBanners = $banners->sortBy('id')->take(10);
-    $expectedProducts = $products->sortByDesc('id')->take(10);
+        $this->createProduct(['is_publish' => false]);
+        $products = $this->createProduct(count: 12);
 
-    $response = $this->getJson('/api/home_page');
+        $expectedBanners = $banners->sortBy('id')->take(10);
+        $expectedProducts = $products->sortByDesc('id')->take(10);
 
-    $response
-      ->assertOk()
-      ->assertExactJson([
-        'data' => [
-          'banners' =>
-          $expectedBanners->map(fn ($banner) => [
-            'id' => $banner->id,
-            'image' => $banner->image ? $banner->image->getUrl() : null,
-            'image_alt' => $banner->image_alt,
-            'url' => $banner->url
-          ])->toArray(),
-          'products' => $this->formatProductData($expectedProducts)
-        ]
-      ]);
+        $response = $this->getJson('/api/home_page');
 
-    $this->assertStringStartsWith('http', $response['data']['banners'][0]['image']);
-  }
+        $response
+            ->assertOk()
+            ->assertJson([
+                'data' => [
+                    'banners' =>
+                        $expectedBanners->map(fn($banner) => [
+                            'id' => $banner->id,
+                            'image' => $banner->image ? $banner->image->getUrl() : null,
+                            'image_alt' => $banner->image_alt,
+                            'url' => $banner->url
+                        ])->toArray(),
+                    'products' => $this->formatProductData($expectedProducts)
+                ]
+            ]);
+
+        $this->assertStringStartsWith('http', $response['data']['banners'][0]['image']);
+    }
 }

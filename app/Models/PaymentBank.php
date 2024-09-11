@@ -17,8 +17,13 @@ class PaymentBank extends Model
         'account_number',
     ];
 
-    // public function payment(): BelongsTo
-    // {
-    //   return $this->belongsTo(Payment::class);
-    // }
+    public function serializeDate(\DateTimeInterface $date)
+    {
+        return $date->format('d-m-Y H:i:s');
+    }
+
+    public function payment(): BelongsTo
+    {
+        return $this->belongsTo(Payment::class);
+    }
 }

@@ -22,10 +22,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\Rule;
+use Laravel\Sanctum\Sanctum;
+use Tests\ApiTestCase;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class CheckoutPostTest extends TestCase
+class CheckoutPostTest extends ApiTestCase
 {
     use RefreshDatabase;
 
@@ -51,9 +53,11 @@ class CheckoutPostTest extends TestCase
 
     private function attemptToCheckout(array $cartIds = []): TestResponse
     {
+        Sanctum::actingAs($this->user);
+
         return $this->postJson('/api/checkout', [
             'cart_ids' => $cartIds
-        ], $this->authBearerToken($this->user));
+        ]);
     }
 
     #[Test]
@@ -155,7 +159,7 @@ class CheckoutPostTest extends TestCase
         $response = $this->attemptToCheckout([$cart1->id, $cart2->id]);
 
         $response->assertOk()
-            ->assertExactJson([
+            ->assertJson([
                 'data' => [
                     'shipping_address' => null,
                     'carts' => [

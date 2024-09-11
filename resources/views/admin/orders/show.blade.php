@@ -249,8 +249,12 @@
             <div class="col-sm-4 invoice-col">
                 <strong>Order ID: </strong> {{ $order->id }}<br />
                 <strong>Order Date: </strong>{{ $order->created_at }}<br />
-                <strong>Customer: </strong><a href="{{ route('admin.users.show', $order->user->id) }}"
-                   target="_blank">{{ $order->user->name }}</a><br />
+                <strong>Customer: </strong>
+                @if ($order->user)
+                    <a href="{{ route('admin.users.show', $order->user->id) }}"
+                       target="_blank">{{ $order->user->name }}</a>
+                @endif
+                <br />
                 <strong>Payment Method:</strong>
                 {{ strtoupper($payment->method) . '-' . $payment->info['name'] ?? '' }}
                 <br />
@@ -341,6 +345,9 @@
         <input id="_action"
                name="action"
                type="text" />
+        <input id="_cancel_reason"
+               name="cancel_reason"
+               type="text">
     </form>
 
     @if ($order->status === App\Models\Order::STATUS_PROCESSING)
@@ -370,7 +377,7 @@
                 Swal.fire({
                     titleText: "Payment Acceptance",
                     text: "You won't be able to revert this!",
-                    icon: "question",
+                    icon: "warning",
                     showCancelButton: true,
                     confirmButtonText: "Accept Payment",
                 }).then(function(result) {
@@ -386,7 +393,7 @@
                 Swal.fire({
                     title: "Payment Rejection",
                     text: "You won't be able to revert this!",
-                    icon: "question",
+                    icon: "warning",
                     showCancelButton: true,
                     confirmButtonText: "Reject Payment",
                     input: "text",
@@ -399,6 +406,7 @@
                     if (result.isConfirmed) {
                         const form = $("#form-payment");
                         form.find("#_action").val("reject");
+                        form.find("#_cancel_reason").val(result.value);
                         form.submit();
                     }
                 });

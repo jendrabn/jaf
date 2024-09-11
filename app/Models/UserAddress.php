@@ -20,6 +20,11 @@ class UserAddress extends Model
         'address',
     ];
 
+    public function serializeDate(\DateTimeInterface $date)
+    {
+        return $date->format('d-m-Y H:i:s');
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

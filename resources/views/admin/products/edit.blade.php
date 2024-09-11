@@ -121,18 +121,13 @@
                 <div class="form-group">
                     <label class="required"
                            for="_stock">Stock</label>
-                    <div class="input-group">
-                        <input class="form-control {{ $errors->has('stock') ? 'is-invalid' : '' }}"
-                               id="_stock"
-                               name="stock"
-                               required
-                               step="1"
-                               type="number"
-                               value="{{ old('stock', $product->stock) }}" />
-                        <div class="input-group-append">
-                            <span class="input-group-text">Gram</span>
-                        </div>
-                    </div>
+                    <input class="form-control {{ $errors->has('stock') ? 'is-invalid' : '' }}"
+                           id="_stock"
+                           name="stock"
+                           required
+                           step="1"
+                           type="number"
+                           value="{{ old('stock', $product->stock) }}" />
                     @if ($errors->has('stock'))
                         <span class="invalid-feedback">{{ $errors->first('stock') }}</span>
                     @endif

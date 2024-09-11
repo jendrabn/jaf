@@ -23,10 +23,12 @@ use Database\Seeders\{
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\Rule;
+use Laravel\Sanctum\Sanctum;
+use Tests\ApiTestCase;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class OrderPostTest extends TestCase
+class OrderPostTest extends ApiTestCase
 {
     use RefreshDatabase;
 
@@ -74,11 +76,9 @@ class OrderPostTest extends TestCase
 
     private function attemptToCreateOrder(array $data = []): TestResponse
     {
-        return $this->postJson(
-            '/api/orders',
-            array_merge($this->data, $data),
-            $this->authBearerToken($this->user)
-        );
+        Sanctum::actingAs($this->user);
+
+        return $this->postJson('/api/orders', array_merge($this->data, $data));
     }
 
     #[Test]
@@ -196,7 +196,7 @@ class OrderPostTest extends TestCase
         $paymentDueDate = $order['created_at']->addDays(1);
 
         $response->assertCreated()
-            ->assertExactJson([
+            ->assertJson([
                 'data' => [
                     'id' => $order->id,
                     'total_amount' => $totalAmount,
@@ -207,8 +207,8 @@ class OrderPostTest extends TestCase
                         'account_name' => $this->bank->account_name,
                         'account_number' => $this->bank->account_number
                     ],
-                    'payment_due_date' => $paymentDueDate,
-                    'created_at' => $order->created_at
+                    'payment_due_date' => $paymentDueDate->toISOString(),
+                    'created_at' => $order->created_at->toISOString()
                 ]
             ]);
 

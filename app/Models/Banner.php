@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use DateTimeInterface;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Database\Eloquent\Model;
@@ -26,7 +25,7 @@ class Banner extends Model implements HasMedia
         'image',
     ];
 
-    protected function serializeDate(DateTimeInterface $date): string
+    public function serializeDate(\DateTimeInterface $date)
     {
         return $date->format('d-m-Y H:i:s');
     }

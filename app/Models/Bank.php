@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use DateTimeInterface;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Database\Eloquent\Model;
@@ -28,7 +27,7 @@ class Bank extends Model implements HasMedia
         'logo',
     ];
 
-    protected function serializeDate(DateTimeInterface $date): string
+    public function serializeDate(\DateTimeInterface $date)
     {
         return $date->format('d-m-Y H:i:s');
     }

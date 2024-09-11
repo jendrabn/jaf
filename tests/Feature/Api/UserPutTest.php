@@ -6,10 +6,11 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Requests\Api\ProfileRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\Rule;
-use Tests\TestCase;
+use Laravel\Sanctum\Sanctum;
+use Tests\ApiTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class UserPutTest extends TestCase
+class UserPutTest extends ApiTestCase
 {
     use RefreshDatabase;
 
@@ -70,25 +71,28 @@ class UserPutTest extends TestCase
         $response = $this->putJson('/api/user');
 
         $response->assertUnauthorized()
-            ->assertJsonStructure(['message']);
+            ->assertJson(['message' => 'Unauthenticated.']);
     }
 
     #[Test]
     public function can_update_profile()
     {
         $user = $this->createUser();
+
         $data = [
             'name' => 'Ali',
             'email' => 'ali@gmail.com',
             'phone' => '087991776171',
             'sex' => 1,
-            'birth_date' => fake('d-m-Y')->date
+            'birth_date' => fake()->date,
         ];
 
-        $response = $this->putJson('/api/user', $data, $this->authBearerToken($user));
+        Sanctum::actingAs($user);
+
+        $response = $this->putJson('/api/user', $data);
 
         $response->assertOk()
-            ->assertExactJson(['data' => ['id' => $user->id, ...$data]]);
+            ->assertJson(['data' => ['id' => $user->id, ...$data]]);
 
         $this->assertDatabaseHas('users', $data);
     }

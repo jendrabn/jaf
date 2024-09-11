@@ -11,10 +11,10 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
-use Tests\TestCase;
+use Tests\ApiTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class AuthRegisterPostTest extends TestCase
+class AuthRegisterPostTest extends ApiTestCase
 {
     use RefreshDatabase;
 
@@ -73,7 +73,6 @@ class AuthRegisterPostTest extends TestCase
         $response->assertCreated()
             ->assertJson([
                 'data' => [
-                    //   'id' => 1,
                     'name' => $data['name'],
                     'email' => $data['email'],
                     'phone' => null,

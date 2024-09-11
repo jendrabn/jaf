@@ -7,67 +7,71 @@ use App\Http\Requests\Api\UpdatePasswordRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
-use Tests\TestCase;
+use Laravel\Sanctum\Sanctum;
+use Tests\ApiTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class UserChangePasswordPutTest extends TestCase
+class UserChangePasswordPutTest extends ApiTestCase
 {
-  use RefreshDatabase;
+    use RefreshDatabase;
 
-  #[Test]
-  public function update_password_uses_the_correct_form_request()
-  {
-    $this->assertActionUsesFormRequest(
-      UserController::class,
-      'updatePassword',
-      UpdatePasswordRequest::class
-    );
-  }
+    #[Test]
+    public function update_password_uses_the_correct_form_request()
+    {
+        $this->assertActionUsesFormRequest(
+            UserController::class,
+            'updatePassword',
+            UpdatePasswordRequest::class
+        );
+    }
 
-  #[Test]
-  public function update_password_request_has_the_correct_validation_rules()
-  {
-    $this->assertValidationRules([
-      'current_password' => [
-        'required',
-        'string',
-        'current_password',
-      ],
-      'password' => [
-        'required',
-        'string', Password::min(8)->mixedCase()->numbers(),
-        'max:30',
-        'confirmed',
-      ],
-    ], (new UpdatePasswordRequest())->rules());
-  }
+    #[Test]
+    public function update_password_request_has_the_correct_validation_rules()
+    {
+        $this->assertValidationRules([
+            'current_password' => [
+                'required',
+                'string',
+                'current_password',
+            ],
+            'password' => [
+                'required',
+                'string',
+                Password::min(8)->mixedCase()->numbers(),
+                'max:30',
+                'confirmed',
+            ],
+        ], (new UpdatePasswordRequest())->rules());
+    }
 
-  #[Test]
-  public function unauthenticated_user_cannot_update_password()
-  {
-    $response = $this->putJson('/api/user/change_password');
+    #[Test]
+    public function unauthenticated_user_cannot_update_password()
+    {
+        $response = $this->putJson('/api/user/change_password');
 
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
+        $response->assertUnauthorized()
+            ->assertJsonStructure(['message']);
+    }
 
-  #[Test]
-  public function can_update_password()
-  {
-    $user = $this->createUser(['password' => $password = 'OldPassword123']);
-    $newPassword = 'NewPassword123';
+    #[Test]
+    public function can_update_password()
+    {
+        $user = $this->createUser(['password' => $password = 'OldPassword123']);
+        $newPassword = 'NewPassword123';
 
-    $data = [
-      'current_password' => $password,
-      'password' => $newPassword,
-      'password_confirmation' => $newPassword
-    ];
+        $data = [
+            'current_password' => $password,
+            'password' => $newPassword,
+            'password_confirmation' => $newPassword
+        ];
 
-    $response = $this->putJson('/api/user/change_password', $data, $this->authBearerToken($user));
+        Sanctum::actingAs($user);
 
-    $response->assertOk()
-      ->assertExactJson(['data' => true]);
+        $response = $this->putJson('/api/user/change_password', $data);
 
-    $this->assertTrue(Hash::check($newPassword, $user->fresh()->password));
-  }
+        $response->assertOk()
+            ->assertJson(['data' => true]);
+
+        $this->assertTrue(Hash::check($newPassword, $user->fresh()->password));
+    }
 }

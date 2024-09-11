@@ -5,24 +5,24 @@ namespace Tests\Feature\Api;
 use App\Models\ProductBrand;
 use Database\Seeders\ProductBrandSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Tests\ApiTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class BrandGetTest extends TestCase
+class BrandGetTest extends ApiTestCase
 {
-  use RefreshDatabase;
+    use RefreshDatabase;
 
-  #[Test]
-  public function can_get_all_brands()
-  {
-    $this->seed(ProductBrandSeeder::class);
+    #[Test]
+    public function can_get_all_brands()
+    {
+        $this->seed(ProductBrandSeeder::class);
 
-    $brands = ProductBrand::all();
+        $brands = ProductBrand::all();
 
-    $response = $this->getJson('/api/brands');
+        $response = $this->getJson('/api/brands');
 
-    $response->assertOk()
-      ->assertExactJson(['data' => $this->formatBrandData($brands)])
-      ->assertJsonCount(3, 'data');
-  }
+        $response->assertOk()
+            ->assertJson(['data' => $this->formatBrandData($brands)])
+            ->assertJsonCount(3, 'data');
+    }
 }

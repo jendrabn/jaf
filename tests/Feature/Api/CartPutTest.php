@@ -7,102 +7,108 @@ use App\Http\Requests\Api\UpdateCartRequest;
 use App\Models\{Cart, User};
 use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
+use Tests\ApiTestCase;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class CartPutTest extends TestCase
+class CartPutTest extends ApiTestCase
 {
-  use RefreshDatabase;
+    use RefreshDatabase;
 
-  private User $user;
+    private User $user;
 
-  protected function setUp(): void
-  {
-    parent::setUp();
-    $this->seed(ProductCategorySeeder::class);
-    $this->user = $this->createUser();
-  }
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(ProductCategorySeeder::class);
+        $this->user = $this->createUser();
+    }
 
-  #[Test]
-  public function update_cart_uses_the_correct_form_request()
-  {
-    $this->assertActionUsesFormRequest(
-      CartController::class,
-      'update',
-      UpdateCartRequest::class
-    );
-  }
+    #[Test]
+    public function update_cart_uses_the_correct_form_request()
+    {
+        $this->assertActionUsesFormRequest(
+            CartController::class,
+            'update',
+            UpdateCartRequest::class
+        );
+    }
 
-  #[Test]
-  public function update_cart_request_has_the_correct_validation_rules()
-  {
-    $this->assertValidationRules([
-      'quantity' => [
-        'required', 'integer', 'min:1'
-      ]
-    ], (new UpdateCartRequest())->rules());
-  }
+    #[Test]
+    public function update_cart_request_has_the_correct_validation_rules()
+    {
+        $this->assertValidationRules([
+            'quantity' => [
+                'required',
+                'integer',
+                'min:1'
+            ]
+        ], (new UpdateCartRequest())->rules());
+    }
 
-  #[Test]
-  public function unauthenticated_user_cannot_update_cart()
-  {
-    $response = $this->putJson('/api/carts/1');
+    #[Test]
+    public function unauthenticated_user_cannot_update_cart()
+    {
+        $response = $this->putJson('/api/carts/1');
 
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
+        $response->assertUnauthorized()
+            ->assertJson(['message' => 'Unauthenticated.']);
+    }
 
-  #[Test]
-  public function can_update_cart()
-  {
-    $cart = Cart::factory()
-      ->for($this->createProduct(['stock' => 2]))
-      ->for($this->user)
-      ->create(['quantity' => 1]);
+    #[Test]
+    public function can_update_cart()
+    {
+        $cart = Cart::factory()
+            ->for($this->createProduct(['stock' => 2]))
+            ->for($this->user)
+            ->create(['quantity' => 1]);
 
-    $data = ['quantity' => 2];
+        $data = ['quantity' => 2];
 
-    $response = $this->putJson('/api/carts/' . $cart->id, $data, $this->authBearerToken($this->user));
+        Sanctum::actingAs($this->user);
 
-    $response->assertOk()
-      ->assertExactJson(['data' => true]);
+        $response = $this->putJson('/api/carts/' . $cart->id, $data);
 
-    $this->assertDatabaseCount('carts', 1)
-      ->assertDatabaseHas('carts', $data);
-  }
+        $response->assertOk()
+            ->assertJson(['data' => true]);
 
-  #[Test]
-  public function return_not_found_error_if_cart_id_doenot_exists()
-  {
-    $cart = Cart::factory()
-      ->for($this->createProduct())
-      ->for($this->user)
-      ->create();
+        $this->assertDatabaseCount('carts', 1)
+            ->assertDatabaseHas('carts', $data);
+    }
 
-    $response = $this->putJson('/api/carts/' . $cart->id + 1, [
-      'quantity' => 1
-    ], $this->authBearerToken($this->user));
+    #[Test]
+    public function return_not_found_error_if_cart_id_doenot_exists()
+    {
+        $cart = Cart::factory()
+            ->for($this->createProduct())
+            ->for($this->user)
+            ->create();
 
-    $response->assertNotFound()
-      ->assertJsonStructure(['message']);
-  }
+        Sanctum::actingAs($this->user);
 
-  #[Test]
-  public function cannot_update_cart_if_quantity_exceeds_stock()
-  {
-    $cart = Cart::factory()
-      ->for($this->createProduct(['stock' => 1]))
-      ->for($this->user)
-      ->create(['quantity' => 1]);
+        $response = $this->putJson('/api/carts/' . $cart->id + 1, ['quantity' => 1]);
 
-    $response = $this->putJson('/api/carts/' . $cart->id, [
-      'quantity' => 2
-    ], $this->authBearerToken($this->user));
+        $response->assertNotFound()
+            ->assertJsonStructure(['message']);
+    }
 
-    $response->assertUnprocessable()
-      ->assertJsonValidationErrors(['quantity']);
+    #[Test]
+    public function cannot_update_cart_if_quantity_exceeds_stock()
+    {
+        $cart = Cart::factory()
+            ->for($this->createProduct(['stock' => 1]))
+            ->for($this->user)
+            ->create(['quantity' => 1]);
 
-    $this->assertDatabaseCount('carts', 1)
-      ->assertModelExists($cart);
-  }
+        Sanctum::actingAs($this->user);
+
+        $response = $this->putJson('/api/carts/' . $cart->id, ['quantity' => 2]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['quantity']);
+
+        $this->assertDatabaseCount('carts', 1)
+            ->assertModelExists($cart);
+    }
 }

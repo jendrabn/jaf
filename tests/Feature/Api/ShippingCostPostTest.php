@@ -7,21 +7,18 @@ use App\Http\Requests\Api\ShippingCostRequest;
 use App\Models\Shipping;
 use Database\Seeders\{CitySeeder, ProvinceSeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\ApiTestCase;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class ShippingCostPostTest extends TestCase
+class ShippingCostPostTest extends ApiTestCase
 {
     use RefreshDatabase;
 
     #[Test]
     public function shipping_costs_uses_the_correct_form_request()
     {
-        $this->assertActionUsesFormRequest(
-            CheckoutController::class,
-            'shippingCosts',
-            ShippingCostRequest::class
-        );
+        $this->assertActionUsesFormRequest(CheckoutController::class, 'shippingCosts', ShippingCostRequest::class);
     }
 
     #[Test]
@@ -50,14 +47,16 @@ class ShippingCostPostTest extends TestCase
 
         $response->assertOk()
             ->assertJsonStructure([
-                'data' => ['*' => [
-                    'courier',
-                    'courier_name',
-                    'service',
-                    'service_name',
-                    'cost',
-                    'etd',
-                ]]
+                'data' => [
+                    '*' => [
+                        'courier',
+                        'courier_name',
+                        'service',
+                        'service_name',
+                        'cost',
+                        'etd',
+                    ]
+                ]
             ])
             ->assertJsonFragment([
                 'courier' => 'jne',

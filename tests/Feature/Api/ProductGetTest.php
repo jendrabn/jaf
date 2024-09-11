@@ -9,10 +9,11 @@ use Database\Seeders\ProductBrandSeeder;
 use Database\Seeders\ProductCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;
+use Tests\ApiTestCase;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class ProductGetTest extends TestCase
+class ProductGetTest extends ApiTestCase
 {
     use RefreshDatabase;
 
@@ -57,13 +58,11 @@ class ProductGetTest extends TestCase
         return $response;
     }
 
-    // #[Test]
+    #[Test]
     public function test_can_get_all_products()
     {
+        $products = Product::factory(3)->hasImages()->create();
 
-        $products = Product::factory(3)
-            ->hasImages()
-            ->create();
         $this->createProduct(['is_publish' => false]);
 
         $expectedProducts = $products->sortByDesc('id');
@@ -76,7 +75,7 @@ class ProductGetTest extends TestCase
         $this->assertStringStartsWith('http', $response['data'][0]['image']);
     }
 
-    // #[Test]
+    #[Test]
     public function test_can_get_products_by_page()
     {
         $this->createProduct(count: 23);
@@ -96,8 +95,6 @@ class ProductGetTest extends TestCase
     #[Test]
     public function can_get_products_by_search()
     {
-
-
         $products = Product::factory(3)
             ->sequence(
                 [

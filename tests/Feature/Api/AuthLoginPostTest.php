@@ -5,10 +5,10 @@ namespace Tests\Feature\Api;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Requests\Api\LoginRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Tests\ApiTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class AuthLoginPostTest extends TestCase
+class AuthLoginPostTest extends ApiTestCase
 {
     use RefreshDatabase;
 
@@ -60,7 +60,9 @@ class AuthLoginPostTest extends TestCase
                     'auth_token',
                 ]
             ])
-            ->assertJson(['data' => $this->formatUserData($user)]);
+            ->assertJson([
+                'data' => $this->formatUserData($user)
+            ]);
 
         $this->assertCount(1, $user->fresh()->tokens);
     }

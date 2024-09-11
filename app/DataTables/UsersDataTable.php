@@ -100,7 +100,7 @@ class UsersDataTable extends DataTable
             Column::make('phone'),
             Column::make('sex_label', 'sex')->title('Sex')->visible(false),
             Column::make('birth_date')->visible(false),
-            Column::make('orders_count'),
+            Column::make('orders_count')->searchable(false),
             Column::make('created_at')->visible(false),
             Column::make('updated_at')->visible(false),
             Column::computed('action', '&nbsp;')->exportable(false)->printable(false)->addClass('text-center'),

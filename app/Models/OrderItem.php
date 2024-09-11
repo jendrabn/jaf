@@ -19,6 +19,11 @@ class OrderItem extends Model
         'quantity',
     ];
 
+    public function serializeDate(\DateTimeInterface $date)
+    {
+        return $date->format('d-m-Y H:i:s');
+    }
+
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);

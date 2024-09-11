@@ -3,32 +3,35 @@
 namespace Tests\Feature\Api;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Laravel\Sanctum\Sanctum;
+use Tests\ApiTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class AuthLogoutDeleteTest extends TestCase
+class AuthLogoutDeleteTest extends ApiTestCase
 {
-  use RefreshDatabase;
+    use RefreshDatabase;
 
-  #[Test]
-  public function unauthenticated_user_cannot_logout()
-  {
-    $response = $this->deleteJson('/api/auth/logout');
+    #[Test]
+    public function unauthenticated_user_cannot_logout()
+    {
+        $response = $this->deleteJson('/api/auth/logout');
 
-    $response->assertUnauthorized()
-      ->assertJsonStructure(['message']);
-  }
+        $response->assertUnauthorized()
+            ->assertJson(['message' => 'Unauthenticated.']);
+    }
 
-  #[Test]
-  public function can_logout()
-  {
-    $user = $this->createUser();
+    #[Test]
+    public function can_logout()
+    {
+        $user = $this->createUser();
 
-    $response = $this->deleteJson('/api/auth/logout', headers: $this->authBearerToken($user));
+        Sanctum::actingAs($user);
 
-    $response->assertOk()
-      ->assertExactJson(['data' => true]);
+        $response = $this->deleteJson('/api/auth/logout');
 
-    $this->assertCount(0, $user->fresh()->tokens);
-  }
+        $response->assertOk()
+            ->assertJson(['data' => true]);
+
+        $this->assertCount(0, $user->fresh()->tokens);
+    }
 }
