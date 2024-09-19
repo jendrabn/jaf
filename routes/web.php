@@ -3,6 +3,9 @@
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Admin\BannerController;
+use App\Http\Controllers\Admin\BlogCategoryController;
+use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\Admin\BlogTagController;
 use App\Http\Controllers\Admin\HomeController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductBrandController;
@@ -84,4 +87,20 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('products/media', [ProductController::class, 'storeMedia'])->name('products.storeMedia');
     Route::post('products/ckmedia', [ProductController::class, 'storeCKEditorImages'])->name('products.storeCKEditorImages');
     Route::resource('products', ProductController::class);
+
+    // Blog Tag
+    Route::delete('blog-tags/destroy', [BlogTagController::class, 'massDestroy'])->name('blog-tags.massDestroy');
+    Route::resource('blog-tags', BlogTagController::class, ['except' => ['show', 'edit']]);
+
+    // Blog Category
+    Route::delete('blog-categories/destroy', [BlogCategoryController::class, 'massDestroy'])->name('blog-categories.massDestroy');
+    Route::resource('blog-categories', BlogCategoryController::class, ['except' => ['show', 'edit']]);
+
+    // Blog
+    Route::delete('blogs/destroy', [BlogController::class, 'massDestroy'])->name('blogs.massDestroy');
+    Route::put('blogs/published/{blog}', [BlogController::class, 'published'])->name('blogs.published');
+    Route::post('blogs/media', [BlogController::class, 'storeMedia'])->name('blogs.storeMedia');
+    Route::post('blogs/ckmedia', [ProductController::class, 'storeCKEditorImages'])->name('blogs.storeCKEditorImages');
+    Route::resource('blogs', BlogController::class);
+
 });

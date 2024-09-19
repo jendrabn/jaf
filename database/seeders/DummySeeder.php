@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Blog;
+use App\Models\BlogCategory;
+use App\Models\BlogTag;
 use App\Models\User;
 use App\Models\Order;
 use App\Models\Invoice;
@@ -13,21 +16,13 @@ use App\Models\PaymentBank;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
-
-class DatabaseSeeder extends Seeder
+class DummySeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * Run the database seeds.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
-
         File::cleanDirectory(storage_path('app/public'));
 
         $this->call([
@@ -50,5 +45,21 @@ class DatabaseSeeder extends Seeder
             'email' => 'user@mail.com',
             'password' => 'password',
         ])->assignRole(User::ROLE_USER);
+
+        Product::factory(25)->hasImages(3)->create();
+
+        for ($i = 0; $i < 50; $i++) {
+            Order::factory()
+                ->has(OrderItem::factory(random_int(1, 5)), 'items')
+                ->has(Invoice::factory()->has(Payment::factory()->has(PaymentBank::factory(), 'bank')))
+                ->has(Shipping::factory())
+                ->for(User::factory()->afterCreating(fn($user) => $user->assignRole(User::ROLE_USER))->create())
+                ->create();
+        }
+
+
+        BlogCategory::factory(5)->create();
+        BlogTag::factory(10)->create();
+        Blog::factory(25)->create();
     }
 }

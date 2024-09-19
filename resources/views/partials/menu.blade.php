@@ -137,8 +137,9 @@
                     </a>
                 </li>
 
-                <li class="nav-item">
-                    <a class="nav-link"
+                <li
+                    class="nav-item {{ request()->is('admin/blogs') || request()->is('admin/blogs/*') || request()->is('admin/blog-categories') || request()->is('admin/blog-categories/*') || request()->is('admin/blog-tags') || request()->is('admin/blog-tags/*') ? 'menu-open' : '' }}">
+                    <a class="nav-link {{ request()->is('admin/blog-categories') || request()->is('admin/blog-categories/*') || request()->is('admin/blog-tags') || request()->is('admin/blog-tags/*') ? 'active' : '' }}"
                        href="#">
                         <i class="nav-icon fa-solid fa-newspaper"></i>
                         <p>
@@ -148,23 +149,23 @@
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a class="nav-link"
-                               href="">
+                            <a class="nav-link {{ request()->is('admin/blog-categories') || request()->is('admin/blog-categories/*') ? 'active' : '' }}"
+                               href="{{ route('admin.blog-categories.index') }}">
                                 <i class="fa-solid fa-folder nav-icon"></i>
                                 <p>Categories</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link"
-                               href="">
+                            <a class="nav-link {{ request()->is('admin/blog-tags') || request()->is('admin/blog-tags/*') ? 'active' : '' }}"
+                               href="{{ route('admin.blog-tags.index') }}">
                                 <i class="fa-solid fa-folder nav-icon"></i>
                                 <p>Tags</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link"
-                               href="">
+                            <a class="nav-link {{ request()->is('admin/blogs') || request()->is('admin/blogs/*') ? 'active' : '' }}"
+                               href="{{ route('admin.blogs.index') }}">
                                 <i class="fa-solid fa-folder nav-icon"></i>
                                 <p>Posts</p>
                             </a>

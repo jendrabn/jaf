@@ -48,6 +48,14 @@
             </ul>
 
             <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link"
+                       data-widget="fullscreen"
+                       href="#"
+                       role="button">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                    </a>
+                </li>
                 <li class="nav-item dropdown user-menu">
                     <a aria-expanded="false"
                        class="nav-link dropdown-toggle"
@@ -167,6 +175,21 @@
             });
 
             $.fn.dataTable.ext.classes.sPageButton = "";
+
+            $('a[data-widget^="pushmenu"]').click(function() {
+
+                let isCollapsed = document.body.classList.contains("sidebar-collapse");
+
+                localStorage.setItem("pushmenu", !isCollapsed);
+
+                setTimeout(function() {
+                    $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+                }, 350);
+            });
+
+            if (localStorage.getItem("pushmenu") === 'true') {
+                document.body.classList.add("sidebar-collapse")
+            }
         });
     </script>
 

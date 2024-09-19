@@ -32,7 +32,7 @@ class ProductsDataTable extends DataTable
             })
             ->editColumn('price', fn($row) => 'Rp ' . number_format((float) $row->price, 0, ',', '.'))
             ->editColumn('is_publish', function ($row) {
-                return sprintf('<input type="checkbox" disabled %s />', $row->is_publish ? 'checked' : '');
+                return sprintf('<input type="checkbox" onclick="return false" %s />', $row->is_publish ? 'checked' : '');
             })
             ->setRowId('id')
             ->rawColumns(['action', 'image', 'is_publish']);

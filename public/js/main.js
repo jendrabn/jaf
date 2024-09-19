@@ -66,9 +66,4 @@ $(document).ready(function () {
         }
     });
 
-    $('a[data-widget^="pushmenu"]').click(function () {
-        setTimeout(function () {
-            $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
-        }, 350);
-    });
 });
