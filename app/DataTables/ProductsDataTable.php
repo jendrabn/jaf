@@ -22,7 +22,7 @@ class ProductsDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'admin.products.action')
+            ->addColumn('action', 'admin.products.partials.action')
             ->editColumn('image', function ($row) {
                 return sprintf(
                     '<a href="%s" target="_blank"><img src="%s" width="50"></a>',
@@ -30,9 +30,15 @@ class ProductsDataTable extends DataTable
                     $row->image?->preview_url
                 );
             })
-            ->editColumn('price', fn($row) => 'Rp ' . number_format((float) $row->price, 0, ',', '.'))
+            ->editColumn(
+                'price',
+                fn($row) => formatRupiah($row->price)
+            )
             ->editColumn('is_publish', function ($row) {
-                return sprintf('<input type="checkbox" onclick="return false" %s />', $row->is_publish ? 'checked' : '');
+                return sprintf(
+                    '<input type="checkbox" onclick="return false" %s />',
+                    $row->is_publish ? 'checked' : ''
+                );
             })
             ->setRowId('id')
             ->rawColumns(['action', 'image', 'is_publish']);
@@ -105,7 +111,7 @@ class ProductsDataTable extends DataTable
             Column::make('stock'),
             Column::make('weight')->title('Weight (gram)')->visible(false),
             Column::computed('is_publish', 'Published')->visible(false),
-            Column::make('sold_count')->searchable(false),
+            Column::make('sold_count')->title('Sales')->searchable(false),
             Column::make('created_at')->visible(false),
             Column::make('updated_at')->visible(false),
             Column::computed('action', '&nbsp;')->exportable(false)->printable(false)->addClass('text-center'),

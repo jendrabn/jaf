@@ -60,7 +60,7 @@ class Order extends Model
     ];
 
     protected $appends = [
-        'total_quantity'
+        'total_quantity',
     ];
 
     protected $casts = [

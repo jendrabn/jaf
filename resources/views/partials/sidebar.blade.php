@@ -1,14 +1,11 @@
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
-    <!-- Brand Logo -->
     <a class="brand-link text-center"
-       href="#">
+       href="{{ route('admin.home') }}">
         <span class="brand-text font-weight-bold text-uppercase"
               style="letter-spacing: 0.15rem;">{{ config('app.name') }}</span>
     </a>
 
-    <!-- Sidebar -->
     <div class="sidebar">
-        <!-- Sidebar Menu -->
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column"
                 data-accordion="false"
@@ -43,6 +40,13 @@
                         </i>
                         <p>
                             Orders
+                            @php
+                                $orders_count = \App\Models\Order::where(['status' => 'pending'])->count();
+                            @endphp
+
+                            @if ($orders_count > 0)
+                                <span class="badge badge-light right">{{ $orders_count }}</span>
+                            @endif
                         </p>
                     </a>
                 </li>
@@ -62,7 +66,7 @@
                         <li class="nav-item">
                             <a class="nav-link {{ request()->is('admin/product-categories') || request()->is('admin/product-categories/*') ? 'active' : '' }}"
                                href="{{ route('admin.product-categories.index') }}">
-                                <i class="nav-icon fa-solid fa-folder">
+                                <i class="nav-icon fa-regular fa-folder">
                                 </i>
                                 <p>
                                     Categories
@@ -72,7 +76,7 @@
                         <li class="nav-item">
                             <a class="nav-link {{ request()->is('admin/product-brands') || request()->is('admin/product-brands/*') ? 'active' : '' }}"
                                href="{{ route('admin.product-brands.index') }}">
-                                <i class="nav-icon fa-solid fa-folder">
+                                <i class="nav-icon fa-regular fa-folder">
                                 </i>
                                 <p>
                                     Brands
@@ -82,7 +86,7 @@
                         <li class="nav-item">
                             <a class="nav-link {{ request()->is('admin/products') || request()->is('admin/products/*') ? 'active' : '' }}"
                                href="{{ route('admin.products.index') }}">
-                                <i class="nav-icon fa-solid fa-folder">
+                                <i class="nav-icon fa-regular fa-folder">
                                 </i>
                                 <p>
                                     Products
@@ -106,7 +110,7 @@
                         <li class="nav-item">
                             <a class="nav-link {{ request()->is('admin/banks') || request()->is('admin/banks/*') ? 'active' : '' }}"
                                href="{{ route('admin.banks.index') }}">
-                                <i class="nav-icon fa-solid fa-folder">
+                                <i class="nav-icon fa-regular fa-folder">
                                 </i>
                                 <p>
                                     Banks
@@ -116,7 +120,7 @@
                         <li class="nav-item">
                             <a class="nav-link "
                                href="#">
-                                <i class="nav-icon fa-solid fa-folder">
+                                <i class="nav-icon fa-regular fa-folder">
                                 </i>
                                 <p>
                                     E-Wallets
@@ -144,21 +148,21 @@
                         <i class="nav-icon fa-solid fa-newspaper"></i>
                         <p>
                             Blog
-                            <i class="fas fa-angle-left right"></i>
+                            <i class="right fa fa-angle-left nav-icon"></i>
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a class="nav-link {{ request()->is('admin/blog-categories') || request()->is('admin/blog-categories/*') ? 'active' : '' }}"
                                href="{{ route('admin.blog-categories.index') }}">
-                                <i class="fa-solid fa-folder nav-icon"></i>
+                                <i class="fa-regular fa-folder nav-icon"></i>
                                 <p>Categories</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->is('admin/blog-tags') || request()->is('admin/blog-tags/*') ? 'active' : '' }}"
                                href="{{ route('admin.blog-tags.index') }}">
-                                <i class="fa-solid fa-folder nav-icon"></i>
+                                <i class="fa-regular fa-folder nav-icon"></i>
                                 <p>Tags</p>
                             </a>
                         </li>
@@ -166,7 +170,7 @@
                         <li class="nav-item">
                             <a class="nav-link {{ request()->is('admin/blogs') || request()->is('admin/blogs/*') ? 'active' : '' }}"
                                href="{{ route('admin.blogs.index') }}">
-                                <i class="fa-solid fa-folder nav-icon"></i>
+                                <i class="fa-regular fa-folder nav-icon"></i>
                                 <p>Posts</p>
                             </a>
                         </li>

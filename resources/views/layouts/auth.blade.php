@@ -2,9 +2,9 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1"
-          name="viewport">
+          name="viewport" />
     <meta content="{{ csrf_token() }}"
           name="csrf-token" />
 
@@ -12,10 +12,10 @@
 
     <link href="{{ asset('img/favicon.ico') }}"
           rel="icon"
-          type="image/x-icon">
+          type="image/x-icon" />
 
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback"
-          rel="stylesheet">
+          rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
           rel="stylesheet" />
     @vite('resources/scss/adminlte.scss')
@@ -23,9 +23,6 @@
 
 <body class="hold-transition login-page">
     <div class="login-box">
-        {{-- <div class="login-logo">
-            <a href="/"><b>{{ config('app.name') }}</b></a>
-        </div> --}}
         @yield('content')
     </div>
 

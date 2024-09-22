@@ -19,7 +19,7 @@
                             <td class="text-center">
                                 <a href="{{ $blog->featured_image->url }}"
                                    target="_blank">
-                                    <img class="img-fluid w-100 border border-1"
+                                    <img class="img-fluid img-thumbnail"
                                          src="{{ $blog->featured_image->url }}" />
                                 </a>
                                 <br />

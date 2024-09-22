@@ -13,102 +13,7 @@
         </div>
     </div>
 
-    <div aria-hidden="true"
-         aria-labelledby="exampleModalLabel"
-         class="modal fade"
-         data-backdrop="static"
-         id="modal-filter"
-         tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"
-                        id="exampleModalLabel">
-                        Filter Products
-                    </h5>
-                    <button aria-label="Close"
-                            class="close"
-                            data-dismiss="modal"
-                            type="button">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form class="form-row"
-                          id="form-filter">
-                        <div class="form-group col-md-6">
-                            <label for="_product_category_id">Category</label>
-                            <select class="form-control select2"
-                                    id="_product_category_id"
-                                    name="product_category_id"
-                                    style="width: 100%">
-                                @foreach ($product_categories as $id => $name)
-                                    <option @selected($id === null)
-                                            value="{{ $id }}">
-                                        {{ $name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="form-group col-md-6">
-                            <label for="_product_brand_id">Brand</label>
-                            <select class="form-control select2"
-                                    id="_product_brand_id"
-                                    name="product_brand_id"
-                                    style="width: 100%">
-                                @foreach ($product_brands as $id => $name)
-                                    <option @selected($id === null)
-                                            value="{{ $id }}">
-                                        {{ $name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="form-group col-md-6">
-                            <label for="_sex">Gender</label>
-                            <select class="form-control select2"
-                                    id="_sex"
-                                    name="sex"
-                                    style="width: 100%">
-                                <option selected
-                                        value="">All</option>
-                                @foreach (App\Models\Product::SEX_SELECT as $key => $label)
-                                    <option value="{{ $key }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="form-group col-md-6">
-                            <label for="_is_publish">Publish Status</label>
-                            <select class="form-control select2"
-                                    id="_is_publish"
-                                    name="is_publish"
-                                    style="width: 100%">
-                                <option selected
-                                        value="">All</option>
-                                <option value="1">Published</option>
-                                <option value="0">Unpublished</option>
-                            </select>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary"
-                            data-dismiss="modal"
-                            type="button">
-                        Close
-                    </button>
-                    <button class="btn btn-primary"
-                            id="btn-filter"
-                            type="button">
-                        Save changes
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('admin.products.partials.modal-filter')
 @endsection
 
 @section('scripts')
@@ -116,11 +21,10 @@
     <script>
         $(function() {
             $.fn.dataTable.ext.buttons.filter = {
-                text: '<i class="fas fa-filter"></i> Filter',
-                attr: {
-                    "data-toggle": "modal",
-                    "data-target": "#modal-filter",
-                },
+                text: '<i class="fa-solid fa-filter"></i>',
+                action: function(e, dt, node, config) {
+                    $("#modal-filter").modal("show");
+                }
             };
 
             $.fn.dataTable.ext.buttons.bulkDelete = {
@@ -206,8 +110,11 @@
             });
 
             $("#btn-filter").on("click", function() {
-                $("#modal-filter").modal("hide");
+                table.ajax.reload();
+            });
 
+            $('#btn-reset-filter').on('click', function() {
+                $('#form-filter')[0].reset();
                 table.ajax.reload();
             });
 

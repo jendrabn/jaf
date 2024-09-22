@@ -7,81 +7,78 @@
         </div>
 
         <div class="card-body">
+            <ul class="nav nav-pills nav-fill mb-5"
+                id="nav-pills-status">
+                <li class="nav-item">
+                    <a class="nav-link active"
+                       data-status=""
+                       href="#">All
+                    </a>
+                </li>
+                @foreach (\App\Models\Order::STATUSES as $key => $status)
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           data-status="{{ $key }}"
+                           href="#">{{ $status['label'] }}
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+
             <div class="table-responsive">
                 {{ $dataTable->table(['class' => 'table table-sm table-striped table-bordered datatable ajaxTable']) }}
             </div>
         </div>
     </div>
 
-    <div aria-hidden="true"
-         aria-labelledby="exampleModalLabel"
-         class="modal fade"
-         data-backdrop="static"
-         id="modal-filter"
-         tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"
-                        id="exampleModalLabel">
-                        Filter Orders
-                    </h5>
-                    <button aria-label="Close"
-                            class="close"
-                            data-dismiss="modal"
-                            type="button">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form class="form-row"
-                          id="form-filter">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="status">Status</label>
-                                <select class="form-control select2"
-                                        id="status"
-                                        name="status"
-                                        style="width: 100%">
-                                    <option selected
-                                            value>All</option>
-                                    @foreach (App\Models\Order::STATUSES as $key => $status)
-                                        <option value="{{ $key }}">
-                                            {{ $status['label'] }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary"
-                            data-dismiss="modal"
-                            type="button">
-                        Close
-                    </button>
-                    <button class="btn btn-primary"
-                            id="btn-filter"
-                            type="button">
-                        Save changes
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('admin.orders.partials.modal-filter')
+@endsection
+
+@section('styles')
+    <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css"
+          rel="stylesheet"
+          type="text/css" />
 @endsection
 
 @section('scripts')
+    <script type="text/javascript"
+            src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     {{ $dataTable->scripts(attributes: ['type' => 'text/javascript']) }}
     <script>
         $(function() {
+            $('input[name="daterange"]').daterangepicker({
+                opens: 'left',
+                maxDate: moment(new Date()),
+                autoUpdateInput: false,
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1,
+                        'month').endOf('month')]
+                }
+            }, function(start, end, label) {
+                $('input[name="daterange"]').val(start.format('YYYY-MM-DD') + ' - ' + end.format(
+                    'YYYY-MM-DD'));
+            });
+
+            $('#nav-pills-status .nav-link').on('click', function(e) {
+                e.preventDefault();
+
+                $('#nav-pills-status .nav-link').removeClass('active');
+
+                $(this).addClass('active');
+
+                table.ajax.reload();
+            });
+
             $.fn.dataTable.ext.buttons.filter = {
-                text: '<i class="fas fa-filter"></i> Filter',
-                attr: {
-                    "data-toggle": "modal",
-                    "data-target": "#modal-filter",
-                },
+                text: '<i class="fas fa-filter"></i>',
+                action: function(e, dt, node, config) {
+                    $("#modal-filter").modal("show");
+                }
             };
 
             $.fn.dataTable.ext.buttons.bulkDelete = {
@@ -221,7 +218,11 @@
             });
 
             $("#btn-filter").on("click", function() {
-                $("#modal-filter").modal("hide");
+                table.ajax.reload();
+            });
+
+            $("#btn-reset-filter").on("click", function() {
+                $("#form-filter")[0].reset();
                 table.ajax.reload();
             });
         });

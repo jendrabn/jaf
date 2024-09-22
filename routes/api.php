@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BlogController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\HomePageController;
@@ -81,6 +82,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/carts/{cart}', 'update');
         Route::delete('/carts', 'delete');
     });
+});
+
+// Blog
+Route::controller(BlogController::class)->group(function () {
+    Route::get('/blogs', 'list');
+    Route::get('/blogs/{blog}', 'get');
+    Route::get('/blogs/categories', 'categories');
+    Route::get('/blogs/tags', 'tags');
 });
 
 // Route::fallback(fn () => abort(404));

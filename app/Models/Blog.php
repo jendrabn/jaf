@@ -82,4 +82,9 @@ class Blog extends Model implements HasMedia
         });
     }
 
+    public function scopePublished($query)
+    {
+        return $query->where('is_publish', true);
+    }
+
 }

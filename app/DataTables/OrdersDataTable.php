@@ -4,6 +4,7 @@ namespace App\DataTables;
 
 use App\Models\Order;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
+use Illuminate\Support\Carbon;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
@@ -22,19 +23,11 @@ class OrdersDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'admin.orders.action')
-            ->editColumn('user', function ($row) {
-                return $row->user
-                    ? sprintf(
-                        '<a href="%s" target="_blank">%s</a>',
-                        route('admin.users.show', $row->user->id),
-                        $row->user->name
-                    )
-                    : '';
-            })
-            ->editColumn('items', function ($row) {
-                return view('admin.orders.items', ['items' => $row->items]);
-            })
+            ->addColumn('action', 'admin.orders.partials.action')
+            ->editColumn(
+                'items',
+                fn($row) => view('admin.orders.partials.item', ['items' => $row->items])
+            )
             ->editColumn('status', function ($row) {
                 $status = Order::STATUSES[$row->status];
 
@@ -44,12 +37,16 @@ class OrdersDataTable extends DataTable
                     $status['label']
                 );
             })
-            ->editColumn('amount', fn($row) => 'Rp ' . number_format((float) $row->invoice->amount, 0, ',', '.'))
-            ->editColumn('shipping', function ($row) {
-                return $row->shipping ? strtoupper($row->shipping->courier) . '-' . $row->shipping->tracking_number : '';
-            })
+            ->editColumn(
+                'amount',
+                fn($row) => formatRupiah($row->invoice->amount)
+            )
+            ->editColumn(
+                'shipping',
+                fn($row) => $row->shipping ? strtoupper($row->shipping->courier) . ' - ' . $row->shipping->tracking_number : ''
+            )
             ->setRowId('id')
-            ->rawColumns(['action', 'user', 'items', 'status']);
+            ->rawColumns(['action', 'items', 'status']);
     }
 
     /**
@@ -57,13 +54,28 @@ class OrdersDataTable extends DataTable
      */
     public function query(Order $model): QueryBuilder
     {
-        return $model->newQuery()
-            ->with(['user', 'items', 'items.product', 'items.product.media', 'invoice', 'shipping'])
-            ->select('orders.*')
-            ->when(request()->filled('status'), function ($q) {
-                return $q->where('status', request('status'));
-            });
+        $model = $model->newQuery()
+            ->with([
+                'user',
+                'items',
+                'items.product',
+                'items.product.media',
+                'invoice',
+                'shipping'
+            ])
+            ->select('orders.*');
 
+        $model->when(
+            request()->filled('status'),
+            fn($q) => $q->where('status', request('status'))
+        );
+
+        $model->when(
+            request()->filled('daterange'),
+            fn($q) => $q->whereBetween('created_at', explode(' - ', request('daterange')))
+        );
+
+        return $model;
     }
 
     /**
@@ -93,6 +105,9 @@ class OrdersDataTable extends DataTable
                         $.each($("#form-filter").serializeArray(), function(key, val) {
                             d[val.name] = val.value;
                         })
+
+                        let status = $("#nav-pills-status .nav-link.active").data("status");
+                        d["status"] = status;
                     }'
             ])
         ;
@@ -107,7 +122,7 @@ class OrdersDataTable extends DataTable
             Column::checkbox('&nbsp;')->exportable(false)->printable(false)->width(35),
             Column::make('id')->title('ID'),
             Column::make('invoice.number', 'invoice.number')->visible(false),
-            Column::make('user', 'user.name')->title('Buyer'),
+            Column::make('user.name', 'user.name')->title('Buyer'),
             Column::make('items', 'items.name')->title('Product(s)')->orderable(false),
             Column::make('amount', 'invoice.amount'),
             Column::make('shipping', 'shipping.tracking_number'),
