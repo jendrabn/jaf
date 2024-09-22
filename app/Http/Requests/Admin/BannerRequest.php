@@ -26,7 +26,7 @@ class BannerRequest extends FormRequest
         'image' => [
           'required',
         ],
-        'image_alt' => [
+        'image_description' => [
           'string',
           'min:1',
           'max:100',
@@ -46,7 +46,7 @@ class BannerRequest extends FormRequest
         'image' => [
           'required',
         ],
-        'image_alt' => [
+        'image_description' => [
           'required',
           'string',
           'min:1',
@@ -63,7 +63,7 @@ class BannerRequest extends FormRequest
 
     if ($this->routeIs('admin.banners.massDestroy')) {
       return [
-        'ids'   => 'required|array',
+        'ids' => 'required|array',
         'ids.*' => 'exists:banners,id',
       ];
     }

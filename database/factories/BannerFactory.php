@@ -19,7 +19,7 @@ class BannerFactory extends Factory
   public function definition(): array
   {
     return [
-      'image_alt' => fake()->sentence(),
+      'image_description' => fake()->sentence(),
       'url' => fake()->url(),
     ];
   }

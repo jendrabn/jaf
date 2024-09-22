@@ -39,7 +39,7 @@ class HomePageGetTest extends ApiTestCase
                         $expectedBanners->map(fn($banner) => [
                             'id' => $banner->id,
                             'image' => $banner->image ? $banner->image->getUrl() : null,
-                            'image_alt' => $banner->image_alt,
+                            'image_description' => $banner->image_description,
                             'url' => $banner->url
                         ])->toArray(),
                     'products' => $this->formatProductData($expectedProducts)

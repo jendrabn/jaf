@@ -32,9 +32,9 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        if (env('DB_CONNECTION') === 'mysql') {
-            DB::update('ALTER TABLE orders AUTO_INCREMENT = 1000000');
-        }
+        // if (env('DB_CONNECTION') === 'mysql') {
+        //     DB::update('ALTER TABLE orders AUTO_INCREMENT = 1000000');
+        // }
     }
 
     /**

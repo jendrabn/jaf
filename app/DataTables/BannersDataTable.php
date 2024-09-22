@@ -74,7 +74,7 @@ class BannersDataTable extends DataTable
             Column::checkbox('&nbsp;')->exportable(false)->printable(false)->width(35),
             Column::make('id')->title('ID'),
             Column::make('image'),
-            Column::make('image_alt'),
+            Column::make('image_description'),
             Column::make('url'),
             Column::make('created_at')->visible(false),
             Column::make('updated_at')->visible(false),

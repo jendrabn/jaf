@@ -91,4 +91,12 @@ class User extends Authenticatable implements CanResetPassword
         parent::delete();
     }
 
+    public function birthDate(): Attribute
+    {
+        return Attribute::make(
+            get: fn($value) => Carbon::parse($value)->format('d-m-Y'),
+            set: fn($value) => Carbon::parse($value)->format('Y-m-d')
+        );
+    }
+
 }
