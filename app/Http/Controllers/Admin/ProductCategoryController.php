@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\JsonResponse;
+use App\Traits\MediaUploadingTrait;
 use Illuminate\View\View;
 use App\Models\ProductCategory;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\DataTables\ProductCategoriesDataTable;
 use App\Http\Requests\Admin\ProductCategoryRequest;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class ProductCategoryController extends Controller
 {
+    use MediaUploadingTrait;
+
     /**
      * Handles the display of the product categories index page.
      *
@@ -40,7 +44,16 @@ class ProductCategoryController extends Controller
      */
     public function store(ProductCategoryRequest $request)
     {
-        ProductCategory::create($request->validated());
+        $productCategory = ProductCategory::create($request->validated());
+
+        if ($request->input('logo', false)) {
+            $productCategory->addMedia(storage_path('tmp/uploads/' . basename($request->input('logo'))))
+                ->toMediaCollection(ProductCategory::MEDIA_COLLECTION_NAME);
+        }
+
+        if ($media = $request->input('ck-media', false)) {
+            Media::whereIn('id', $media)->update(['model_id' => $productCategory->id]);
+        }
 
         toastr('Product category created successfully.', 'success');
 
@@ -70,6 +83,19 @@ class ProductCategoryController extends Controller
     public function update(ProductCategoryRequest $request, ProductCategory $productCategory)
     {
         $productCategory->update($request->validated());
+
+        if ($request->input('logo', false)) {
+            if (!$productCategory->logo || $request->input('logo') !== $productCategory->logo->file_name) {
+                if ($productCategory->logo) {
+                    $productCategory->logo->delete();
+                }
+
+                $productCategory->addMedia(storage_path('tmp/uploads/' . basename($request->input('logo'))))
+                    ->toMediaCollection(ProductCategory::MEDIA_COLLECTION_NAME);
+            }
+        } elseif ($productCategory->logo) {
+            $productCategory->logo->delete();
+        }
 
         toastr('Product category updated successfully.', 'success');
 

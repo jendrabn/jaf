@@ -6,10 +6,13 @@ use App\DataTables\BlogCategoryDataTable;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BlogCategoryRequest;
 use App\Models\BlogCategory;
+use App\Traits\MediaUploadingTrait;
 use Illuminate\Http\JsonResponse;
 
 class BlogCategoryController extends Controller
 {
+    use MediaUploadingTrait;
+
     /**
      * Display a listing of the blog categories.
      *

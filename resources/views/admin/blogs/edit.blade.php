@@ -162,8 +162,8 @@
             },
             params: {
                 size: 2,
-                width: 3840,
-                height: 2160
+                width: 4000,
+                height: 3000
             },
             maxFiles: 1,
             success: function(file, response) {

@@ -84,7 +84,7 @@
 
                 <button class="btn btn-primary"
                         type="submit">
-                    <i class="fa-solid fa-floppy-disk"></i> Update
+                    <i class="fa-solid fa-floppy-disk"></i> Save Changes
                 </button>
             </form>
         </div>
@@ -104,8 +104,8 @@
             },
             params: {
                 size: 1,
-                width: 1024,
-                height: 1024
+                width: 1000,
+                height: 1000
             },
             success: function(file, response) {
                 $('form').find('input[name="logo"]').remove()

@@ -65,10 +65,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Product Category
     Route::delete('product-categories/destroy', [ProductCategoryController::class, 'massDestroy'])->name('product-categories.massDestroy');
+    Route::post('product-categories/media', [ProductCategoryController::class, 'storeMedia'])->name('product-categories.storeMedia');
     Route::resource('product-categories', ProductCategoryController::class, ['except' => ['show']]);
 
     // Product Brand
     Route::delete('product-brands/destroy', [ProductBrandController::class, 'massDestroy'])->name('product-brands.massDestroy');
+    Route::post('product-brands/media', [ProductBrandController::class, 'storeMedia'])->name('product-brands.storeMedia');
     Route::resource('product-brands', ProductBrandController::class, ['except' => ['show']]);
 
     // Bank

@@ -29,15 +29,15 @@
 
                 <div class="form-group">
                     <label class="required"
-                           for="_image_description">Image Alt</label>
-                    <input class="form-control {{ $errors->has('image_description') ? 'is-invalid' : '' }}"
-                           id="_image_description"
-                           name="image_description"
+                           for="_image_alt">Image Alt</label>
+                    <input class="form-control {{ $errors->has('image_alt') ? 'is-invalid' : '' }}"
+                           id="_image_alt"
+                           name="image_alt"
                            required
                            type="text"
-                           value="{{ old('image_description', $banner->image_description) }}">
-                    @if ($errors->has('image_description'))
-                        <span class="invalid-feedback">{{ $errors->first('image_description') }}</span>
+                           value="{{ old('image_alt', $banner->image_alt) }}">
+                    @if ($errors->has('image_alt'))
+                        <span class="invalid-feedback">{{ $errors->first('image_alt') }}</span>
                     @endif
                 </div>
 

@@ -127,7 +127,7 @@
 
                 <button class="btn btn-primary"
                         type="submit">
-                    <i class="fas fa-save"></i> Update
+                    <i class="fa-solid fa-floppy-disk"></i> Save Changes
                 </button>
             </form>
         </div>

@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\DataTables\ProductBrandsDataTable;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\ProductBrandRequest;
+use Illuminate\View\View;
 use App\Models\ProductBrand;
 use Illuminate\Http\JsonResponse;
+use App\Traits\MediaUploadingTrait;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use App\DataTables\ProductBrandsDataTable;
+use App\Http\Requests\Admin\ProductBrandRequest;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class ProductBrandController extends Controller
 {
+    use MediaUploadingTrait;
+
     /**
      * Renders the index view for the ProductBrandsDataTable.
      *
@@ -41,7 +45,16 @@ class ProductBrandController extends Controller
      */
     public function store(ProductBrandRequest $request)
     {
-        ProductBrand::create($request->validated());
+        $productBrand = ProductBrand::create($request->validated());
+
+        if ($request->input('logo', false)) {
+            $productBrand->addMedia(storage_path('tmp/uploads/' . basename($request->input('logo'))))
+                ->toMediaCollection(ProductBrand::MEDIA_COLLECTION_NAME);
+        }
+
+        if ($media = $request->input('ck-media', false)) {
+            Media::whereIn('id', $media)->update(['model_id' => $productBrand->id]);
+        }
 
         toastr('Product brand created successfully.', 'success');
 
@@ -71,6 +84,19 @@ class ProductBrandController extends Controller
     public function update(ProductBrandRequest $request, ProductBrand $productBrand): RedirectResponse
     {
         $productBrand->update($request->validated());
+
+        if ($request->input('logo', false)) {
+            if (!$productBrand->logo || $request->input('logo') !== $productBrand->logo->file_name) {
+                if ($productBrand->logo) {
+                    $productBrand->logo->delete();
+                }
+
+                $productBrand->addMedia(storage_path('tmp/uploads/' . basename($request->input('logo'))))
+                    ->toMediaCollection(ProductBrand::MEDIA_COLLECTION_NAME);
+            }
+        } elseif ($productBrand->logo) {
+            $productBrand->logo->delete();
+        }
 
         toastr('Product brand updated successfully.', 'success');
 

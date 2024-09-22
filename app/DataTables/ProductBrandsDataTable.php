@@ -24,7 +24,15 @@ class ProductBrandsDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('action', 'admin.productbrands.action')
             ->setRowId('id')
-            ->rawColumns(['action']);
+            ->editColumn(
+                'logo',
+                fn($row) => sprintf(
+                    '<a href="%s" target="_blank"><img src="%s" width="50"></a>',
+                    $row->logo?->url,
+                    $row->logo?->preview_url
+                )
+            )
+            ->rawColumns(['action', 'logo']);
     }
 
     /**
@@ -64,14 +72,35 @@ class ProductBrandsDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::checkbox('&nbsp;')->exportable(false)->printable(false)->width(35),
-            Column::make('id')->title('ID'),
-            Column::make('name'),
-            Column::make('slug'),
+            Column::checkbox('&nbsp;')
+                ->exportable(false)
+                ->printable(false)
+                ->width(35),
+
+            Column::make('id')
+                ->title('ID'),
+
+            Column::computed('logo')
+                ->addClass('text-center'),
+
+            Column::make('name')
+                ->title('Brand Name'),
+
+            Column::make('slug')
+                ->visible(false),
+
             Column::make('products_count'),
-            Column::make('created_at')->visible(false),
-            Column::make('updated_at')->visible(false),
-            Column::computed('action', '&nbsp;')->exportable(false)->printable(false)->addClass('text-center'),
+
+            Column::make('created_at')
+                ->visible(false),
+
+            Column::make('updated_at')
+                ->visible(false),
+
+            Column::computed('action', '&nbsp;')
+                ->exportable(false)
+                ->printable(false)
+                ->addClass('text-center'),
         ];
     }
 

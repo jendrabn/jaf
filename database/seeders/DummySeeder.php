@@ -48,7 +48,7 @@ class DummySeeder extends Seeder
 
         Product::factory(25)->hasImages(3)->create();
 
-        for ($i = 0; $i < 100; $i++) {
+        for ($i = 0; $i < 50; $i++) {
             Order::factory()
                 ->has(OrderItem::factory(random_int(1, 5)), 'items')
                 ->has(Invoice::factory()->has(Payment::factory()->has(PaymentBank::factory(), 'bank')))
