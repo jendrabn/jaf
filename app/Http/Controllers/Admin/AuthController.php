@@ -25,7 +25,7 @@ class AuthController extends Controller
      */
     public function login(LoginRequest $request): View|RedirectResponse
     {
-        if ($request->isMethod('GET')) {
+        if ($request->routeIs('auth.login')) {
             return view('admin.auth.login');
         }
 

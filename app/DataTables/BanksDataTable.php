@@ -71,16 +71,34 @@ class BanksDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::checkbox('&nbsp;')->exportable(false)->printable(false)->width(35),
-            Column::make('id')->title('ID'),
-            Column::computed('logo')->addClass('text-center'),
-            Column::make('name')->title('Bank Name'),
-            Column::make('code')->title('Bank Code'),
+            Column::checkbox('&nbsp;')
+                ->exportable(false)
+                ->printable(false)
+                ->width(35),
+
+            Column::make('id')
+                ->title('ID'),
+
+            Column::computed('logo')
+                ->addClass('text-center'),
+
+            Column::make('name')
+                ->title('Bank Name'),
+
+            Column::make('code')
+                ->title('Bank Code'),
+
             Column::make('account_name'),
+
             Column::make('account_number'),
-            Column::make('created_at')->visible(false),
-            Column::make('updated_at')->visible(false),
-            Column::computed('action', '&nbsp;')->exportable(false)->printable(false)->addClass('text-center'),
+
+            Column::make('created_at')
+                ->visible(false),
+
+            Column::computed('action', 'Action')
+                ->exportable(false)
+                ->printable(false)
+                ->addClass('text-center'),
         ];
     }
 

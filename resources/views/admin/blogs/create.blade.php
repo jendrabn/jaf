@@ -16,21 +16,6 @@
                 @csrf
 
                 <div class="form-group">
-                    <label class="required"
-                           for="_title">Title</label>
-                    <input autofocus
-                           class="form-control {{ $errors->has('title') ? 'is-invalid' : '' }}"
-                           id="_title"
-                           name="title"
-                           required
-                           type="text"
-                           value="{{ old('title') }}">
-                    @if ($errors->has('title'))
-                        <div class="invalid-feedback">{{ $errors->first('title') }}</div>
-                    @endif
-                </div>
-
-                <div class="form-group">
                     <label class="required">Featured Image</label>
                     <div class="needsclick dropzone {{ $errors->has('featured_image') ? 'is-invalid' : '' }}"
                          id="images-dropzone">
@@ -49,74 +34,84 @@
                     @endif
                 </div>
 
-                <div class="form-group">
-                    <label class="required"
-                           for="_user_id">Author</label>
-                    <select class="form-control select2 {{ $errors->has('user_id') ? 'is-invalid' : '' }}"
-                            id="_user_id"
-                            name="user_id"
-                            required>
-                        @foreach ($authors as $id => $name)
-                            <option @selected(old('user_id', auth()->user()->id) == $id)
-                                    value="{{ $id }}">{{ $name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @if ($errors->has('user_id'))
-                        <div class="invalid-feedback">{{ $errors->first('user_id') }}</div>
-                    @endif
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="required">Title</label>
+                        <input autofocus
+                               class="form-control {{ $errors->has('title') ? 'is-invalid' : '' }}"
+                               name="title"
+                               required
+                               type="text"
+                               value="{{ old('title') }}">
+                        @if ($errors->has('title'))
+                            <div class="invalid-feedback">{{ $errors->first('title') }}</div>
+                        @endif
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label class="required">Author</label>
+                        <select class="form-control select2 {{ $errors->has('user_id') ? 'is-invalid' : '' }}"
+                                name="user_id"
+                                required
+                                style="width: 100%;">
+                            @foreach ($authors as $id => $name)
+                                <option @selected(old('user_id', auth()->user()->id) == $id)
+                                        value="{{ $id }}">{{ $name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @if ($errors->has('user_id'))
+                            <div class="invalid-feedback">{{ $errors->first('user_id') }}</div>
+                        @endif
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label class="required">Category</label>
+                        <select class="form-control select2 {{ $errors->has('blog_category_id') ? 'is-invalid' : '' }}"
+                                name="blog_category_id"
+                                required
+                                style="width: 100%">
+                            @foreach ($categories as $id => $name)
+                                <option @selected(old('blog_category_id') == $id)
+                                        value="{{ $id }}">{{ $name }}</option>
+                            @endforeach
+                        </select>
+                        @if ($errors->has('blog_category_id'))
+                            <div class="invalid-feedback">{{ $errors->first('category_id') }}</div>
+                        @endif
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label>Tags</label>
+                        <div style="padding-bottom: 4px">
+                            <span class="btn btn-info btn-xs select-all"
+                                  style="border-radius: 0">Select all</span>
+                            <span class="btn btn-info btn-xs deselect-all"
+                                  style="border-radius: 0">Deselect all</span>
+                        </div>
+                        <select class="form-control select2 {{ $errors->has('tag_ids') ? 'is-invalid' : '' }}"
+                                multiple
+                                name="tag_ids[]"
+                                style="width: 100%;">
+                            @foreach ($tags as $id => $name)
+                                <option @selected(in_array($id, old('tag_ids', [])))
+                                        value="{{ $id }}">
+                                    {{ $name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @if ($errors->has('tag_ids'))
+                            <div class="invalid-feedback">{{ $errors->first('tag_ids') }}</div>
+                        @endif
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="required"
-                           for="_blog_category_id">Category</label>
-                    <select class="form-control select2 {{ $errors->has('blog_category_id') ? 'is-invalid' : '' }}"
-                            id="_blog_category_id"
-                            name="blog_category_id"
-                            required>
-                        @foreach ($categories as $id => $name)
-                            <option @selected(old('blog_category_id') == $id)
-                                    value="{{ $id }}">{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    @if ($errors->has('blog_category_id'))
-                        <div class="invalid-feedback">{{ $errors->first('category_id') }}</div>
-                    @endif
-                </div>
-
-                <div class="form-group">
-                    <label class="required"
-                           for="_content">Content</label>
+                    <label class="required">Content</label>
                     <textarea class="form-control ckeditor {{ $errors->has('content') ? 'is-invalid' : '' }}"
-                              id="_content"
                               name="content">{!! old('content') !!}</textarea>
                     @if ($errors->has('content'))
                         <div class="invalid-feedback">{{ $errors->first('content') }}</div>
-                    @endif
-                </div>
-
-                <div class="form-group">
-                    <label for="tag_ids">Tags</label>
-                    <div style="padding-bottom: 4px">
-                        <span class="btn btn-info btn-xs select-all"
-                              style="border-radius: 0">Select all</span>
-                        <span class="btn btn-info btn-xs deselect-all"
-                              style="border-radius: 0">Deselect all</span>
-                    </div>
-                    <select class="form-control select2 {{ $errors->has('tag_ids') ? 'is-invalid' : '' }}"
-                            id="tag_ids"
-                            multiple
-                            name="tag_ids[]"
-                            style="width: 100%;">
-                        @foreach ($tags as $id => $name)
-                            <option @selected(in_array($id, old('tag_ids', [])))
-                                    value="{{ $id }}">
-                                {{ $name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @if ($errors->has('tag_ids'))
-                        <div class="invalid-feedback">{{ $errors->first('tag_ids') }}</div>
                     @endif
                 </div>
 
@@ -125,11 +120,9 @@
                         <input @checked(old('is_publish'))
                                checked
                                class="custom-control-input {{ $errors->has('is_publish') ? 'is-invalid' : '' }}"
-                               id="is_publish"
                                name="is_publish"
                                type="checkbox">
-                        <label class="custom-control-label"
-                               for="is_publish">Publish Status</label>
+                        <label class="custom-control-label">Publish Status</label>
                         @if ($errors->has('is_publish'))
                             <div class="invalid-feedback">{{ $errors->first('is_publish') }}</div>
                         @endif

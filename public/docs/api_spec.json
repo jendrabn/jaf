@@ -2477,6 +2477,9 @@
                     "birth_date": {
                         "type": "string",
                         "format": "date"
+                    },
+                    "avatar": {
+                        "type": "string"
                     }
                 },
                 "required": [
@@ -2485,7 +2488,8 @@
                     "email",
                     "phone",
                     "sex",
-                    "birth_date"
+                    "birth_date",
+                    "avatar"
                 ]
             },
             "Category": {

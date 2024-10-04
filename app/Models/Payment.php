@@ -39,6 +39,11 @@ class Payment extends Model
         return $this->hasOne(PaymentBank::class);
     }
 
+    public function ewallet(): HasOne
+    {
+        return $this->hasOne(PaymentEwallet::class);
+    }
+
     public function info(): Attribute
     {
         return Attribute::make(

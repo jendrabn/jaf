@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\User;
 use Illuminate\View\View;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -33,6 +34,12 @@ class ProfileController extends Controller
     public function updateProfile(ProfileRequest $request)
     {
         $request->user()->update($request->validated());
+
+        if ($request->hasFile('avatar')) {
+            $request->user()->clearMediaCollection(User::MEDIA_COLLECTION_NAME);
+            $request->user()->addMediaFromRequest('avatar')
+                ->toMediaCollection(User::MEDIA_COLLECTION_NAME);
+        }
 
         toastr('Profile updated successfully.', 'success');
 

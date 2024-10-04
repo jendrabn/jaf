@@ -43,7 +43,7 @@ class OrdersDataTable extends DataTable
             )
             ->editColumn(
                 'shipping',
-                fn($row) => $row->shipping ? strtoupper($row->shipping->courier) . ' - ' . $row->shipping->tracking_number : ''
+                fn($row) => $row->shipping ? strtoupper($row->shipping->courier) . '/' . $row->shipping->tracking_number : ''
             )
             ->setRowId('id')
             ->rawColumns(['action', 'items', 'status']);
@@ -61,7 +61,8 @@ class OrdersDataTable extends DataTable
                 'items.product',
                 'items.product.media',
                 'invoice',
-                'shipping'
+                'shipping',
+                'invoice.payment',
             ])
             ->select('orders.*');
 
@@ -73,6 +74,11 @@ class OrdersDataTable extends DataTable
         $model->when(
             request()->filled('daterange'),
             fn($q) => $q->whereBetween('created_at', explode(' - ', request('daterange')))
+        );
+
+        $model->when(
+            request()->filled('payment_method'),
+            fn($q) => $q->whereHas('invoice', fn($q) => $q->whereHas('payment', fn($q) => $q->where('method', request('payment_method'))))
         );
 
         return $model;
@@ -119,20 +125,50 @@ class OrdersDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::checkbox('&nbsp;')->exportable(false)->printable(false)->width(35),
-            Column::make('id')->title('ID'),
-            Column::make('invoice.number', 'invoice.number')->visible(false),
-            Column::make('user.name', 'user.name')->title('Buyer'),
-            Column::make('items', 'items.name')->title('Product(s)')->orderable(false),
+            Column::checkbox('&nbsp;')
+                ->exportable(false)
+                ->printable(false)
+                ->width(35),
+
+            Column::make('id')
+                ->title('ID'),
+
+            Column::make('invoice.number', 'invoice.number')
+                ->visible(false),
+
+            Column::make('user.name', 'user.name')
+                ->title('Buyer'),
+
+            Column::make('items', 'items.name')
+                ->title('Product(s)')
+                ->orderable(false),
+
             Column::make('amount', 'invoice.amount'),
+
+            Column::make('invoice.payment.method', 'invoice.payment.method')
+                ->title('Payment Method')
+                ->visible(false),
+
             Column::make('shipping', 'shipping.tracking_number'),
+
             Column::make('status'),
-            Column::make('confirmed_at')->visible(false),
-            Column::make('completed_at')->visible(false),
-            Column::make('cancelled_at')->visible(false),
-            Column::make('created_at')->visible(false),
-            Column::make('updated_at')->visible(false),
-            Column::computed('action', '&nbsp;')->exportable(false)->printable(false)->addClass('text-center'),
+
+            Column::make('created_at')
+                ->visible(false),
+
+            Column::make('confirmed_at')
+                ->visible(false),
+
+            Column::make('completed_at')
+                ->visible(false),
+
+            Column::make('cancelled_at')
+                ->visible(false),
+
+            Column::computed('action', 'Action')
+                ->exportable(false)
+                ->printable(false)
+                ->addClass('text-center'),
         ];
     }
 

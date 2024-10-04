@@ -108,6 +108,13 @@
                         </div>
 
                         <div class="form-group">
+                            <label>Avatar</label>
+                            <input class="custom-file {{ $errors->has('avatar') ? 'is-invalid' : '' }}"
+                                   name="avatar"
+                                   type="file" />
+                        </div>
+
+                        <div class="form-group">
                             <label>Created At</label>
                             <input class="form-control"
                                    readonly
@@ -125,7 +132,7 @@
 
                         <button class="btn btn-primary"
                                 type="submit">
-                            <i class="fa-solid fa-floppy-disk"></i> Update
+                            <i class="fa-solid fa-floppy-disk"></i> Save Changes
                         </button>
                     </form>
                 </div>

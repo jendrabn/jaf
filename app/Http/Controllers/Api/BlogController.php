@@ -50,6 +50,8 @@ class BlogController extends Controller
 
     public function get(Blog $blog)
     {
+        $blog->increment('views_count');
+
         return BlogDetailResource::make($blog)
             ->response()
             ->setStatusCode(Response::HTTP_OK);

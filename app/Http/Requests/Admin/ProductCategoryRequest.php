@@ -24,18 +24,46 @@ class ProductCategoryRequest extends FormRequest
     {
         if ($this->routeIs('admin.product-categories.store')) {
             return [
-                'name' => ['required', 'string', 'min:1', 'max:100', 'unique:product_categories'],
-                'slug' => ['required', 'string', 'min:1', 'max:255'],
+                'name' => [
+                    'required',
+                    'string',
+                    'min:1',
+                    'max:100',
+                    'unique:product_categories'
+                ],
+                'slug' => [
+                    'required',
+                    'string',
+                    'min:1',
+                    'max:255'
+                ],
             ];
         } else if ($this->routeIs('admin.product-categories.update')) {
             return [
-                'name' => ['required', 'string', 'min:1', 'max:100', 'unique:product_categories,name,' . $this->route('product_category')->id,],
-                'slug' => ['required', 'string', 'min:1', 'max:255'],
+                'name' => [
+                    'required',
+                    'string',
+                    'min:1',
+                    'max:100',
+                    'unique:product_categories,name,' . $this->route('product_category')->id,
+                ],
+                'slug' => [
+                    'required',
+                    'string',
+                    'min:1',
+                    'max:255'
+                ],
             ];
         } else if ($this->routeIs('admin.product-categories.massDestroy')) {
             return [
-                'ids' => ['required', 'array'],
-                'ids.*' => ['integer', 'exists:product_categories,id'],
+                'ids' => [
+                    'required',
+                    'array'
+                ],
+                'ids.*' => [
+                    'integer',
+                    'exists:product_categories,id'
+                ],
             ];
         } else {
             return [];

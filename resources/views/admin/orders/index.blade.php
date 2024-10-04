@@ -7,7 +7,7 @@
         </div>
 
         <div class="card-body">
-            <ul class="nav nav-pills nav-fill mb-5"
+            <ul class="nav nav-pills nav-fill mb-3 border-bottom"
                 id="nav-pills-status">
                 <li class="nav-item">
                     <a class="nav-link active"

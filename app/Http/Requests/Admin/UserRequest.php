@@ -67,9 +67,7 @@ class UserRequest extends FormRequest
                     'date',
                 ],
             ];
-        }
-
-        if ($this->routeIs('admin.users.update')) {
+        } else if ($this->routeIs('admin.users.update')) {
             return [
                 'name' => [
                     'required',
@@ -114,16 +112,15 @@ class UserRequest extends FormRequest
                     'date',
                 ],
             ];
-        }
-
-        if ($this->routeIs('admin.users.massDestroy')) {
+        } else if ($this->routeIs('admin.users.massDestroy')) {
             return [
                 'ids' => ['required', 'array'],
                 'ids.*' => ['integer', 'exists:users,id'],
             ];
+        } else {
+            return [];
         }
 
-        return [];
     }
 
     /**

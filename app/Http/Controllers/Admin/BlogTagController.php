@@ -4,25 +4,26 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\BlogTag;
 use Illuminate\Http\JsonResponse;
-use App\DataTables\BlogTagDataTable;
+use App\DataTables\BlogTagsDataTable;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BlogTagRequest;
+use Symfony\Component\HttpFoundation\Response;
 
 class BlogTagController extends Controller
 {
     /**
-     * Display a listing of the blog tags.
+     * Display a listing of the resource.
      *
-     * @param BlogTagDataTable $dataTable
+     * @param BlogTagsDataTable $dataTable
      * @return mixed
      */
-    public function index(BlogTagDataTable $dataTable): mixed
+    public function index(BlogTagsDataTable $dataTable): mixed
     {
         return $dataTable->render('admin.blogTags.index');
     }
 
     /**
-     * Store a newly created BlogTag resource in storage.
+     * Store a newly created resource in storage.
      *
      * @param BlogTagRequest $request
      * @return JsonResponse
@@ -31,11 +32,11 @@ class BlogTagController extends Controller
     {
         BlogTag::create($request->validated());
 
-        return response()->json(['message' => 'Blog Category created successfully.'], 200);
+        return response()->json(['message' => 'Blog Category created successfully.'], Response::HTTP_OK);
     }
 
     /**
-     * Update a BlogTag resource in storage.
+     * Update the specified resource in storage.
      *
      * @param BlogTagRequest $request
      * @param BlogTag $blogTag
@@ -45,11 +46,11 @@ class BlogTagController extends Controller
     {
         $blogTag->update($request->validated());
 
-        return response()->json(['message' => 'Blog Tag updated successfully.'], 200);
+        return response()->json(['message' => 'Blog Tag updated successfully.'], Response::HTTP_OK);
     }
 
     /**
-     * Deletes a BlogTag resource from storage.
+     * Remove the specified resource from storage.
      *
      * @param BlogTag $blogTag
      * @return JsonResponse
@@ -58,11 +59,11 @@ class BlogTagController extends Controller
     {
         $blogTag->delete();
 
-        return response()->json(['message' => 'Blog Tag deleted successfully.'], 200);
+        return response()->json(['message' => 'Blog Tag deleted successfully.'], Response::HTTP_OK);
     }
 
     /**
-     * Deletes multiple BlogTag resources from storage.
+     * Remove the specified resources from storage.
      *
      * @param BlogTagRequest $request
      * @return JsonResponse
@@ -71,6 +72,6 @@ class BlogTagController extends Controller
     {
         BlogTag::whereIn('id', $request->validated('ids'))->delete();
 
-        return response()->json(['message' => 'Blog Tag deleted successfully.']);
+        return response()->json(['message' => 'Blog Tag deleted successfully.'], Response::HTTP_OK);
     }
 }

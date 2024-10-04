@@ -17,11 +17,9 @@
                 @csrf
 
                 <div class="form-group">
-                    <label class="required"
-                           for="_name">Category Name</label>
+                    <label class="required">Category Name</label>
                     <input autofocus
                            class="form-control {{ $errors->has('name') ? 'is-invalid' : '' }}"
-                           id="_name"
                            name="name"
                            required
                            type="text"
@@ -32,7 +30,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="logo-dropzone">Category Logo</label>
+                    <label>Logo</label>
                     <div class="needsclick dropzone {{ $errors->has('logo') ? 'is-invalid' : '' }}"
                          id="logo-dropzone">
                     </div>

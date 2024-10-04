@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('invoice_id')->constrained()->cascadeOnDelete();
-            $table->enum('method', ['bank']);
+            $table->enum('method', ['bank', 'ewallet']);
             $table->text('info');
             $table->bigInteger('amount');
             $table->enum('status', ['pending', 'cancelled', 'realeased']);

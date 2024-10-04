@@ -12,7 +12,7 @@ class ResetPasswordRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return T_ATTRIBUTE;
+        return true;
     }
 
     /**
@@ -22,7 +22,7 @@ class ResetPasswordRequest extends FormRequest
      */
     public function rules(): array
     {
-        if ($this->isMethod('PUT')) {
+        if ($this->routeIs('admin.profile.update-password')) {
             return [
                 'password' => [
                     'required',

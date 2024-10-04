@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\BlogCategoryController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\BlogTagController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EwalletController;
 use App\Http\Controllers\Admin\HomeController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductBrandController;
@@ -18,10 +19,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
-});
-
-Route::get('/api-spec', function () {
-    return view('api-spec');
 });
 
 
@@ -78,6 +75,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('banks/media', [BankController::class, 'storeMedia'])->name('banks.storeMedia');
     Route::post('banks/ckmedia', [BankController::class, 'storeCKEditorImages'])->name('banks.storeCKEditorImages');
     Route::resource('banks', BankController::class)->except(['show']);
+
+    // E-Wallet
+    Route::delete('ewallets/destroy', [EwalletController::class, 'massDestroy'])->name('ewallets.massDestroy');
+    Route::post('ewallets/media', [EwalletController::class, 'storeMedia'])->name('ewallets.storeMedia');
+    Route::post('ewallets/ckmedia', [EwalletController::class, 'storeCKEditorImages'])->name('ewallets.storeCKEditorImages');
+    Route::resource('ewallets', EwalletController::class)->except(['show']);
 
     // Banner
     Route::delete('banners/destroy', [BannerController::class, 'massDestroy'])->name('banners.massDestroy');

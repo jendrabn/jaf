@@ -34,9 +34,9 @@
                              src="{{ asset('img/logo.png') }}">
                     </div>
                     <a class="btn btn-primary btn-block btn-lg mb-2"
-                       href="{{ route('auth.login') }}">Go to Admin Dashboard</a>
+                       href="{{ route('auth.login') }}">Admin Panel</a>
                     <a class="btn btn-outline-primary btn-block btn-lg"
-                       href="https://jaf.zenby.fun">Go to Shop</a>
+                       href="https://jaf.zenby.fun">Shop</a>
                 </div>
             </div>
         </div>

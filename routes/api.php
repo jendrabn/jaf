@@ -93,3 +93,7 @@ Route::controller(BlogController::class)->group(function () {
 });
 
 // Route::fallback(fn () => abort(404));
+
+Route::get('docs', function () {
+    return view('docs');
+});

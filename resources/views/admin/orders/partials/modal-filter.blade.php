@@ -31,6 +31,17 @@
                                    type="text">
                         </div>
                     </div>
+
+                    <div class="form-group col-md-6">
+                        <label for="payment_method">Payment Method</label>
+                        <select class="custom-select"
+                                id="payment_method"
+                                name="payment_method">
+                            <option value="">All</option>
+                            <option value="bank">Bank</option>
+                            <option value="ewallet">E-Wallet</option>
+                        </select>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">

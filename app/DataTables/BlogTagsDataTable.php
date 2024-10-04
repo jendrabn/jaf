@@ -12,7 +12,7 @@ use Yajra\DataTables\Html\Editor\Editor;
 use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
-class BlogTagDataTable extends DataTable
+class BlogTagsDataTable extends DataTable
 {
     /**
      * Build the DataTable class.
@@ -69,16 +69,22 @@ class BlogTagDataTable extends DataTable
                 ->exportable(false)
                 ->printable(false)
                 ->width(35),
+
             Column::make('id')
                 ->title('ID'),
-            Column::make('name'),
-            Column::make('slug'),
+
+            Column::make('name')
+                ->title('Tag Name'),
+
+            Column::make('slug')
+                ->visible(false),
+
             Column::make('blogs_count'),
+
             Column::make('created_at')
                 ->visible(false),
-            Column::make('updated_at')
-                ->visible(false),
-            Column::computed('action', '&nbsp;')
+
+            Column::computed('action', 'Action')
                 ->exportable(false)
                 ->printable(false)
                 ->addClass('text-center'),
@@ -90,6 +96,6 @@ class BlogTagDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'BlogTag_' . date('YmdHis');
+        return 'BlogTag_' . date('dmY');
     }
 }

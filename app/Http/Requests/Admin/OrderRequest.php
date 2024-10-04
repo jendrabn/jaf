@@ -23,13 +23,17 @@ class OrderRequest extends FormRequest
     {
         if ($this->routeIs('admin.orders.massDestroy')) {
             return [
-                'ids' => ['required', 'array'],
-                'ids.*' => ['integer', 'exists:orders,id'],
+                'ids' => [
+                    'required',
+                    'array'
+                ],
+                'ids.*' => [
+                    'integer',
+                    'exists:orders,id'
+                ],
             ];
         } else {
-            return [
-                //
-            ];
+            return [];
 
         }
     }

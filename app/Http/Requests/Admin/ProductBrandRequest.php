@@ -25,26 +25,51 @@ class ProductBrandRequest extends FormRequest
     {
         if ($this->routeIs('admin.product-brands.store')) {
             return [
-                'name' => ['required', 'string', 'min:1', 'max:100', 'unique:product_brands'],
-                'slug' => ['required', 'string', 'min:1', 'max:255'],
+                'name' => [
+                    'required',
+                    'string',
+                    'min:1',
+                    'max:100',
+                    'unique:product_brands'
+                ],
+                'slug' => [
+                    'required',
+                    'string',
+                    'min:1',
+                    'max:255'
+                ],
             ];
-        }
-
-        if ($this->routeIs('admin.product-brands.update')) {
+        } else if ($this->routeIs('admin.product-brands.update')) {
             return [
-                'name' => ['required', 'string', 'min:1', 'max:100', 'unique:product_brands,name,' . $this->route('product_brand')->id,],
-                'slug' => ['required', 'string', 'min:1', 'max:255'],
+                'name' => [
+                    'required',
+                    'string',
+                    'min:1',
+                    'max:100',
+                    'unique:product_brands,name,' . $this->route('product_brand')->id,
+                ],
+                'slug' => [
+                    'required',
+                    'string',
+                    'min:1',
+                    'max:255'
+                ],
             ];
-        }
-
-        if ($this->routeIs('admin.product-brands.massDestroy')) {
+        } else if ($this->routeIs('admin.product-brands.massDestroy')) {
             return [
-                'ids' => ['required', 'array'],
-                'ids.*' => ['integer', 'exists:product_brands,id'],
+                'ids' => [
+                    'required',
+                    'array'
+                ],
+                'ids.*' => [
+                    'integer',
+                    'exists:product_brands,id'
+                ],
             ];
+        } else {
+            return [];
         }
 
-        return [];
     }
 
     public function prepareForValidation(): void

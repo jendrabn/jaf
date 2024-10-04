@@ -62,13 +62,8 @@
                     </tr>
 
                     <tr>
-                        <th>Crated at</th>
+                        <th>Crated At</th>
                         <td>{{ $user->created_at }}</td>
-                    </tr>
-
-                    <tr>
-                        <th>Updated at</th>
-                        <td>{{ $user->updated_at }}</td>
                     </tr>
                 </tbody>
             </table>

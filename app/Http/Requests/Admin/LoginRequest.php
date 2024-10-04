@@ -31,7 +31,7 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
-        if ($this->isMethod('POST')) {
+        if ($this->routeIs('auth.login.post')) {
             return [
                 'email' => [
                     'required',

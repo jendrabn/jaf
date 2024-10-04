@@ -16,8 +16,7 @@
                 @csrf
 
                 <div class="form-group">
-                    <label class="required"
-                           for="_image">Image</label>
+                    <label class="required">Image</label>
                     <div class="needsclick dropzone {{ $errors->has('image') ? 'is-invalid' : '' }}"
                          id="image-dropzone">
                     </div>
@@ -26,30 +25,30 @@
                     @endif
                 </div>
 
-                <div class="form-group">
-                    <label class="required"
-                           for="_image_description">Image Alt</label>
-                    <input class="form-control {{ $errors->has('image_description') ? 'is-invalid' : '' }}"
-                           id="_image_description"
-                           name="image_description"
-                           required
-                           type="text"
-                           value="{{ old('image_description', 'Image Name') }}">
-                    @if ($errors->has('image_description'))
-                        <span class="invalid-feedback">{{ $errors->first('image_description') }}</span>
-                    @endif
-                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="required">Image Description</label>
+                        <input autofocus
+                               class="form-control {{ $errors->has('image_description') ? 'is-invalid' : '' }}"
+                               name="image_description"
+                               required
+                               type="text"
+                               value="{{ old('image_description', '') }}">
+                        @if ($errors->has('image_description'))
+                            <span class="invalid-feedback">{{ $errors->first('image_description') }}</span>
+                        @endif
+                    </div>
 
-                <div class="form-group">
-                    <label for="_url">Url</label>
-                    <input class="form-control {{ $errors->has('url') ? 'is-invalid' : '' }}"
-                           id="_url"
-                           name="url"
-                           type="text"
-                           value="{{ old('url', '') }}">
-                    @if ($errors->has('url'))
-                        <span class="invalid-feedback">{{ $errors->first('url') }}</span>
-                    @endif
+                    <div class="form-group col-md-6">
+                        <label>Url</label>
+                        <input class="form-control {{ $errors->has('url') ? 'is-invalid' : '' }}"
+                               name="url"
+                               type="text"
+                               value="{{ old('url', '') }}">
+                        @if ($errors->has('url'))
+                            <span class="invalid-feedback">{{ $errors->first('url') }}</span>
+                        @endif
+                    </div>
                 </div>
 
                 <button class="btn btn-primary"

@@ -8,25 +8,26 @@ use App\Models\BlogTag;
 use Illuminate\View\View;
 use App\Models\BlogCategory;
 use Illuminate\Http\Request;
-use App\DataTables\BlogDataTable;
+use App\DataTables\BlogsDataTable;
 use Illuminate\Http\JsonResponse;
 use App\Traits\MediaUploadingTrait;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\Admin\BlogRequest;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Symfony\Component\HttpFoundation\Response;
 
 class BlogController extends Controller
 {
     use MediaUploadingTrait;
 
     /**
-     * Display a listing of the blogs resource.
+     * Display a listing of the resources.
      *
-     * @param BlogDataTable $dataTable
+     * @param BlogsDataTable $dataTable
      * @return mixed
      */
-    public function index(BlogDataTable $dataTable): mixed
+    public function index(BlogsDataTable $dataTable): mixed
     {
         $categories = BlogCategory::pluck('name', 'id')->prepend('All', null);
         $tags = BlogTag::pluck('name', 'id')->prepend('All', null);
@@ -47,7 +48,7 @@ class BlogController extends Controller
     public function create(): View
     {
         $categories = BlogCategory::pluck('name', 'id')->prepend('---', null);
-        $tags = BlogTag::pluck('name', 'id')->prepend('---', null);
+        $tags = BlogTag::pluck('name', 'id');
         $authors = User::role(User::ROLE_ADMIN)->pluck('name', 'id')->prepend('---', null);
 
         return view('admin.blogs.create', compact(
@@ -70,8 +71,8 @@ class BlogController extends Controller
         $blog->tags()->attach($request->validated('tag_ids'));
 
         if ($request->input('featured_image', false)) {
-            $blog->addMedia(storage_path('tmp/uploads/' . basename($request->input('featured_image'))))
-                ->toMediaCollection(Blog::MEDIA_COLLECTION_NAME);
+            $path = storage_path('tmp/uploads/' . basename($request->input('featured_image')));
+            $blog->addMedia($path)->toMediaCollection(Blog::MEDIA_COLLECTION_NAME);
         }
 
         if ($media = $request->input('ck-media', false)) {
@@ -84,7 +85,7 @@ class BlogController extends Controller
     }
 
     /**
-     * Display the specified blog resource.
+     * Display the specified resource.
      *
      * @param Blog $blog
      * @return View
@@ -95,7 +96,7 @@ class BlogController extends Controller
     }
 
     /**
-     * Edit a blog resource.
+     * Show the form for editing the specified resource.
      *
      * @param Blog $blog
      * @return View
@@ -103,7 +104,7 @@ class BlogController extends Controller
     public function edit(Blog $blog): View
     {
         $categories = BlogCategory::pluck('name', 'id')->prepend('---', null);
-        $tags = BlogTag::pluck('name', 'id')->prepend('---', null);
+        $tags = BlogTag::pluck('name', 'id');
         $authors = User::role(User::ROLE_ADMIN)->pluck('name', 'id')->prepend('---', null);
 
         return view('admin.blogs.edit', compact(
@@ -115,7 +116,7 @@ class BlogController extends Controller
     }
 
     /**
-     * Updates a blog resource with the provided request data.
+     * Updates the specified resource in storage.
      *
      * @param BlogRequest $request
      * @param Blog $blog
@@ -132,8 +133,8 @@ class BlogController extends Controller
                     $blog->featured_image->delete();
                 }
 
-                $blog->addMedia(storage_path('tmp/uploads/' . basename($request->input('featured_image'))))
-                    ->toMediaCollection(Blog::MEDIA_COLLECTION_NAME);
+                $path = storage_path('tmp/uploads/' . basename($request->input('featured_image')));
+                $blog->addMedia($path)->toMediaCollection(Blog::MEDIA_COLLECTION_NAME);
             }
         } elseif ($blog->featured_image) {
             $blog->featured_image->delete();
@@ -145,7 +146,7 @@ class BlogController extends Controller
     }
 
     /**
-     * Deletes a blog resource.
+     * Removes the specified resource from storage.
      *
      * @param Blog $blog
      * @return JsonResponse
@@ -154,11 +155,11 @@ class BlogController extends Controller
     {
         $blog->delete();
 
-        return response()->json(['message' => 'Blog deleted successfully.'], 200);
+        return response()->json(['message' => 'Blog deleted successfully.'], Response::HTTP_OK);
     }
 
     /**
-     * Deletes multiple blogs from the database.
+     * Removes the specified resources from storage.
      *
      * @param BlogRequest $request
      * @return JsonResponse
@@ -167,11 +168,11 @@ class BlogController extends Controller
     {
         Blog::whereIn('id', $request->validated('ids'))->delete();
 
-        return response()->json(['message' => 'Blogs deleted successfully.'], 200);
+        return response()->json(['message' => 'Blogs deleted successfully.'], Response::HTTP_OK);
     }
 
     /**
-     * Stores images uploaded through CKEditor.
+     * Store a newly uploaded media in storage using CKEditor.
      *
      * @param Request $request
      * @return JsonResponse
@@ -191,17 +192,15 @@ class BlogController extends Controller
     }
 
     /**
-     * Toggles the publication status of a blog.
+     * Update the specified resource in storage.
      *
      * @param Blog $blog
      * @return JsonResponse
      */
     public function published(Blog $blog): JsonResponse
     {
-        $blog->update([
-            'is_publish' => !$blog->is_publish
-        ]);
+        $blog->update(['is_publish' => !$blog->is_publish]);
 
-        return response()->json(['message' => 'Blog updated successfully.'], 200);
+        return response()->json(['message' => 'Blog updated successfully.'], Response::HTTP_OK);
     }
 }

@@ -16,7 +16,7 @@
                 </tr>
 
                 <tr>
-                    <th>Name</th>
+                    <th>Product Name</th>
                     <td>{{ $product->name }}</td>
                 </tr>
 
@@ -33,25 +33,25 @@
                                target="_blank">
                                 <img class="m-1"
                                      src="{{ $image->preview_url }}"
-                                     width="120" />
+                                     style="width: 150px; height: 150px; object-fit: cover" />
                             </a>
                         @endforeach
                     </td>
                 </tr>
 
                 <tr>
-                    <th>Product Category</th>
+                    <th>Category</th>
                     <td>{{ $product->category?->name }}</td>
                 </tr>
 
                 <tr>
-                    <th>Product Brand</th>
+                    <th>Brand</th>
                     <td>{{ $product->brand?->name }}</td>
                 </tr>
 
                 <tr>
-                    <th>Weight (gram)</th>
-                    <td>{{ $product->weight }}</td>
+                    <th>Weight</th>
+                    <td>{{ $product->weight }} gram</td>
                 </tr>
 
                 <tr>
@@ -73,7 +73,7 @@
                     <th>Published</th>
                     <td>
                         <input {{ $product->is_publish ? 'checked' : '' }}
-                               disabled
+                               onclick="return false;"
                                type="checkbox" />
                     </td>
                 </tr>
@@ -81,11 +81,6 @@
                 <tr>
                     <th>Created At</th>
                     <td>{{ $product->created_at }}</td>
-                </tr>
-
-                <tr>
-                    <th>Updated At</th>
-                    <td>{{ $product->updated_at }}</td>
                 </tr>
             </table>
         </div>

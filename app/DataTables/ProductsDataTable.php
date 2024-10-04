@@ -100,21 +100,55 @@ class ProductsDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::checkbox('&nbsp;')->exportable(false)->printable(false)->width(35),
-            Column::make('id')->title('ID'),
-            Column::computed('image')->addClass('text-center'),
-            Column::make('name'),
-            Column::make('category.name', 'category.name')->title('Category'),
-            Column::make('brand.name', 'brand.name')->title('Brand')->visible(false),
-            Column::computed('sex_label', 'Gender')->visible(false),
+            Column::checkbox('&nbsp;')
+                ->exportable(false)
+                ->printable(false)
+                ->width(35),
+
+            Column::make('id')
+                ->title('ID'),
+
+            Column::computed('image')
+                ->exportable(false)
+                ->printable(false)
+                ->addClass('text-center'),
+
+            Column::make('name')
+                ->title('Product Name'),
+
+            Column::make('slug')
+                ->visible(false),
+
+            Column::make('category.name', 'category.name')
+                ->title('Category'),
+
+            Column::make('brand.name', 'brand.name')
+                ->title('Brand'),
+
+            Column::computed('sex_label', 'Sex')
+                ->visible(false),
+
             Column::make('price'),
+
             Column::make('stock'),
-            Column::make('weight')->title('Weight (gram)')->visible(false),
-            Column::computed('is_publish', 'Published')->visible(false),
-            Column::make('sold_count')->title('Sales')->searchable(false),
-            Column::make('created_at')->visible(false),
-            Column::make('updated_at')->visible(false),
-            Column::computed('action', '&nbsp;')->exportable(false)->printable(false)->addClass('text-center'),
+
+            Column::make('weight')
+                ->visible(false),
+
+            Column::computed('is_publish', 'Published')
+                ->visible(false),
+
+            Column::make('sold_count')
+                ->title('Sales')
+                ->searchable(false),
+
+            Column::make('created_at')
+                ->visible(false),
+
+            Column::computed('action', 'Action')
+                ->exportable(false)
+                ->printable(false)
+                ->addClass('text-center'),
         ];
     }
 

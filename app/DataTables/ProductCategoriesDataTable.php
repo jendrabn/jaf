@@ -96,10 +96,7 @@ class ProductCategoriesDataTable extends DataTable
             Column::make('created_at')
                 ->visible(false),
 
-            Column::make('updated_at')
-                ->visible(false),
-
-            Column::computed('action', '&nbsp;')
+            Column::computed('action', 'Action')
                 ->exportable(false)
                 ->printable(false)
                 ->addClass('text-center'),

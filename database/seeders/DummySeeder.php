@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\Blog;
 use App\Models\BlogCategory;
 use App\Models\BlogTag;
+use App\Models\Ewallet;
+use App\Models\PaymentEwallet;
 use App\Models\User;
 use App\Models\Order;
 use App\Models\Invoice;
@@ -31,7 +33,8 @@ class DummySeeder extends Seeder
             CitySeeder::class,
             ProductCategorySeeder::class,
             ProductBrandSeeder::class,
-            BankSeeder::class
+            BankSeeder::class,
+            EwalletSeeder::class
         ]);
 
         User::create([
@@ -48,10 +51,31 @@ class DummySeeder extends Seeder
 
         Product::factory(25)->hasImages(3)->create();
 
-        for ($i = 0; $i < 50; $i++) {
+        for ($i = 0; $i < 25; $i++) {
             Order::factory()
                 ->has(OrderItem::factory(random_int(1, 5)), 'items')
                 ->has(Invoice::factory()->has(Payment::factory()->has(PaymentBank::factory(), 'bank')))
+                ->has(Shipping::factory())
+                ->for(User::factory()->afterCreating(fn($user) => $user->assignRole(User::ROLE_USER))->create())
+                ->create();
+        }
+
+        $ewallet = Ewallet::inRandomOrder()->first();
+
+        for ($i = 0; $i < 25; $i++) {
+            Order::factory()
+                ->has(OrderItem::factory(random_int(1, 5)), 'items')
+                ->has(Invoice::factory()
+                    ->has(Payment::factory(state: [
+                        'method' => 'ewallet',
+                        'info' => [
+                            'name' => $ewallet->name,
+                            'account_name' => $ewallet->account_name,
+                            'account_username' => $ewallet->account_username,
+                            'phone' => $ewallet->phone
+                        ]
+                    ])
+                        ->has(PaymentEwallet::factory(), 'ewallet')))
                 ->has(Shipping::factory())
                 ->for(User::factory()->afterCreating(fn($user) => $user->assignRole(User::ROLE_USER))->create())
                 ->create();

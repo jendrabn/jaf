@@ -2,7 +2,7 @@
 
 namespace App\DataTables;
 
-use App\Models\BlogCategory;
+use App\Models\Ewallet;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
@@ -12,7 +12,7 @@ use Yajra\DataTables\Html\Editor\Editor;
 use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
-class BlogCategoryDataTable extends DataTable
+class EwalletsDataTable extends DataTable
 {
     /**
      * Build the DataTable class.
@@ -22,16 +22,24 @@ class BlogCategoryDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'admin.blogCategories.partials.action')
-            ->setRowId('id');
+            ->addColumn('action', 'admin.ewallets.action')
+            ->editColumn('logo', function ($row) {
+                return sprintf(
+                    '<a href="%s" target="_blank"><img src="%s" width="50"></a>',
+                    $row->logo?->url,
+                    $row->logo?->preview_url
+                );
+            })
+            ->setRowId('id')
+            ->rawColumns(['action', 'logo']);
     }
 
     /**
      * Get the query source of dataTable.
      */
-    public function query(BlogCategory $model): QueryBuilder
+    public function query(Ewallet $model): QueryBuilder
     {
-        return $model->newQuery()->withCount('blogs');
+        return $model->newQuery();
     }
 
     /**
@@ -40,7 +48,7 @@ class BlogCategoryDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-            ->setTableId('blogcategory-table')
+            ->setTableId('dataTable-ewallets')
             ->columns($this->getColumns())
             ->minifiedAjax()
             //->dom('Bfrtip')
@@ -66,19 +74,30 @@ class BlogCategoryDataTable extends DataTable
     {
         return [
             Column::checkbox('&nbsp;')
-                ->exportable(false)
-                ->printable(false)
                 ->width(35),
+
             Column::make('id')
                 ->title('ID'),
-            Column::make('name'),
-            Column::make('slug'),
-            Column::make('blogs_count'),
+
+            Column::computed('logo')
+                ->exportable(false)
+                ->printable(false)
+                ->addClass('text-center'),
+
+            Column::make('name')
+                ->title('E-Wallet Name'),
+
+            Column::make('account_name'),
+
+            Column::make('account_username'),
+
+            Column::make('phone')
+                ->title('Phone Number'),
+
             Column::make('created_at')
                 ->visible(false),
-            Column::make('updated_at')
-                ->visible(false),
-            Column::computed('action', '&nbsp;')
+
+            Column::computed('action', 'Action')
                 ->exportable(false)
                 ->printable(false)
                 ->addClass('text-center'),
@@ -90,6 +109,6 @@ class BlogCategoryDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'BlogCategory_' . date('YmdHis');
+        return 'Ewallets_' . date('dmY');
     }
 }

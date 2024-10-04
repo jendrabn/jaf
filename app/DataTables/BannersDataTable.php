@@ -71,14 +71,27 @@ class BannersDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::checkbox('&nbsp;')->exportable(false)->printable(false)->width(35),
-            Column::make('id')->title('ID'),
+            Column::checkbox('&nbsp;')
+                ->exportable(false)
+                ->printable(false)
+                ->width(35),
+
+            Column::make('id')
+                ->title('ID'),
+
             Column::make('image'),
+
             Column::make('image_description'),
+
             Column::make('url'),
-            Column::make('created_at')->visible(false),
-            Column::make('updated_at')->visible(false),
-            Column::computed('action', '&nbsp;')->exportable(false)->printable(false)->addClass('text-center'),
+
+            Column::make('created_at')
+                ->visible(false),
+
+            Column::computed('action', 'Action')
+                ->exportable(false)
+                ->printable(false)
+                ->addClass('text-center'),
         ];
     }
 

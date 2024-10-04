@@ -5,23 +5,29 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use DateTimeInterface;
+use Spatie\Image\Enums\Fit;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\MediaLibrary\HasMedia;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
+use Spatie\MediaLibrary\InteractsWithMedia;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable implements CanResetPassword
+class User extends Authenticatable implements CanResetPassword, HasMedia
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, InteractsWithMedia;
 
     public const ROLE_ADMIN = 'admin';
     public const ROLE_USER = 'user';
+
+    public const MEDIA_COLLECTION_NAME = 'user_images';
 
     public const SEX_SELECT = [
         1 => 'Male',
@@ -49,7 +55,8 @@ class User extends Authenticatable implements CanResetPassword
     ];
 
     protected $appends = [
-        'sex_label'
+        'sex_label',
+        'avatar'
     ];
 
     protected function serializeDate(DateTimeInterface $date): string
@@ -97,6 +104,29 @@ class User extends Authenticatable implements CanResetPassword
             get: fn($value) => Carbon::parse($value)->format('d-m-Y'),
             set: fn($value) => Carbon::parse($value)->format('Y-m-d')
         );
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('preview')
+            ->fit(Fit::Crop, 120, 120)
+            ->nonQueued();
+    }
+
+    public function avatar(): Attribute
+    {
+        return Attribute::get(function () {
+
+            $file = $this->getFirstMedia(self::MEDIA_COLLECTION_NAME);
+
+            if ($file) {
+                $file->url = $file->getUrl();
+                $file->preview = $file->getUrl('preview');
+            }
+
+            return $file;
+
+        });
     }
 
 }

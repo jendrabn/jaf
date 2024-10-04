@@ -12,6 +12,11 @@ return new class extends Migration {
     {
         Schema::create('payment_ewallets', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('payment_id')->constrained('payments')->cascadeOnDelete();
+            $table->string('name');
+            $table->string('account_name');
+            $table->string('account_username');
+            $table->string('phone');
             $table->timestamps();
         });
     }

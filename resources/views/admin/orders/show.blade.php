@@ -8,13 +8,6 @@
 
     @endphp
 
-    <div class="callout callout-{{ $status['color'] }}">
-        <h4 class="font-weight-bold mb-0">{{ $status['label'] }}</h4>
-        @if ($order->status === App\Models\Order::STATUS_CANCELLED)
-            <span class="mt-2">{{ $order->cancel_reason }}</span>
-        @endif
-    </div>
-
     <div class="row"
          style="margin-bottom: 10px">
         <div class="col-lg-12">
@@ -59,73 +52,108 @@
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">Payment Information</h3>
-            <span class="float-right font-weight-bold text-uppercase">
+            <span class="float-right font-weight-bold">
                 {{ App\Models\Payment::STATUSES[$payment->status]['label'] }}
             </span>
         </div>
         <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-12 col-md-6 text-md-left">
-                    Total Amount:
-                    <span class="font-weight-bold">@Rp($order->invoice->amount)</span>
-                </div>
-                <div class="col-12 col-md-6 text-md-right">
-                    Due Date:
-                    <span class="font-weight-bold">{{ $order->invoice->due_date }}</span>
-                </div>
-            </div>
-
             <div class="row">
                 <div class="col-12 col-md-6">
-                    <p class="font-weight-bold text-uppercase mb-0">
-                        Transfer From (Buyer)
-                    </p>
-                    @if ($payment->bank)
-                        <table class="table table-sm">
+                    <p class="mb-2">Payment From (Buyer)</p>
+
+                    @if ($payment->method === 'bank' && $payment->bank)
+                        <table class="table table-sm table-borderless">
                             <tbody>
                                 <tr>
-                                    <th>Bank Name</th>
-                                    <td>{{ $payment->bank->name }}</td>
+                                    <th>Bank</th>
+                                    <td>{{ $payment->bank?->name }}</td>
                                 </tr>
                                 <tr>
                                     <th>Account Name</th>
-                                    <td>{{ $payment->bank->account_name }}</td>
+                                    <td>{{ $payment->bank?->account_name }}</td>
                                 </tr>
                                 <tr>
                                     <th>Account Number</th>
-                                    <td>{{ $payment->bank->account_number }}</td>
+                                    <td>{{ $payment->bank?->account_number }}</td>
                                 </tr>
                             </tbody>
                         </table>
-                    @else
+                    @elseif ($payment->method === 'ewallet' && $payment->ewallet)
+                        <table class="table table-sm table-borderless">
+                            <tbody>
+                                <tr>
+                                    <th>E-Wallet</th>
+                                    <td>{{ $payment->ewallet?->name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Account Name</th>
+                                    <td>{{ $payment->ewallet?->account_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Account Username</th>
+                                    <td>{{ $payment->ewallet?->account_username }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Phone Number</th>
+                                    <td>{{ $payment->ewallet?->phone }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     @endif
                 </div>
+
                 <div class="col-12 col-md-6">
-                    <p class="font-weight-bold text-uppercase mb-0">
-                        Transfer To (Seller)
-                    </p>
-                    <table class="table table-sm">
+                    <p class="mb-2">Payment To (Seller)</p>
+                    <table class="table table-sm table-borderless">
                         <tbody>
                             <tr>
-                                <th>Bank Name</th>
-                                <td>{{ $payment->info['name'] }}</td>
+                                <th>Total Amount</th>
+                                <td>
+                                    <span class="h3">@Rp($order->invoice->amount)</span> <br>
+                                    <span class="text-muted text-small">Due date at
+                                        {{ $order->invoice->due_date }}</span></span>
+                                </td>
                             </tr>
-                            <tr>
-                                <th>Account Name</th>
-                                <td>{{ $payment->info['account_name'] }}</td>
-                            </tr>
-                            <tr>
-                                <th>Account Number</th>
-                                <td>{{ $payment->info['account_number'] }}</td>
-                            </tr>
+                            @if ($payment->method === 'bank' && $payment->bank)
+                                <tr>
+                                    <th>Bank</th>
+                                    <td>{{ $payment->info['name'] }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Account Name</th>
+                                    <td>{{ $payment->info['account_name'] }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Account Number</th>
+                                    <td>{{ $payment->info['account_number'] }}</td>
+                                </tr>
+                            @elseif ($payment->method === 'ewallet' && $payment->ewallet)
+                                <tr>
+                                    <th>E-Wallet</th>
+                                    <td>{{ $payment->info['name'] }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Account Name</th>
+                                    <td>{{ $payment->info['account_name'] }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Account Username</th>
+                                    <td>{{ $payment->info['account_username'] }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Phone Number</th>
+                                    <td>{{ $payment->info['phone'] }}</td>
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
+
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-12">
-                    @if ($order->status === App\Models\Order::STATUS_PENDING)
+            @if ($order->status === App\Models\Order::STATUS_PENDING)
+                <div class="row mt-3">
+                    <div class="col-12">
                         <button class="btn btn-primary mr-1"
                                 id="btn-accept-payment"
                                 type="button">
@@ -138,40 +166,22 @@
                             <i class="fa-solid fa-times"></i>
                             Reject
                         </button>
-                    @endif
+                    </div>
                 </div>
-            </div>
+            @endif
         </div>
     </div>
 
     <div class="card">
         <div class="card-header">
-            Shipping Information
+            <h3 class="card-title">Shipping Information</h3>
             <span
-                  class="float-right font-weight-bold text-uppercase">{{ App\Models\Shipping::STATUSES[$shipping->status]['label'] }}</span>
+                  class="float-right font-weight-bold">{{ App\Models\Shipping::STATUSES[$shipping->status]['label'] }}</span>
         </div>
         <div class="card-body">
             <div class="row">
                 <div class="col-12 col-md-6">
-                    <p class="font-weight-bold text-uppercase mb-0">
-                        Shipping Address
-                    </p>
-
-                    <address>
-                        <strong>{{ $shipping->address['name'] }}</strong><br />
-                        {{ $shipping->address['phone'] }}<br />
-                        {{ $shipping->address['address'] }},
-                        {{ $shipping->address['city'] }},
-                        {{ $shipping->address['district'] }},
-                        {{ $shipping->address['province'] }},
-                        {{ $shipping->address['postal_code'] }}
-                    </address>
-                </div>
-                <div class="col-12 col-md-6">
-                    <p class="font-weight-bold text-uppercase mb-0">
-                        Shipping Information
-                    </p>
-                    <table class="table table-sm">
+                    <table class="table table-sm table-borderless">
                         <tr>
                             <th>Courier</th>
                             <td>
@@ -207,67 +217,52 @@
                         </button>
                     @endif
                 </div>
+
+                <div class="col-12 col-md-6">
+                    <p class="mb-2">
+                        Shipping Address
+                    </p>
+
+                    <address>
+                        <strong>{{ $shipping->address['name'] }}</strong><br />
+                        {{ $shipping->address['phone'] }}<br />
+                        {{ $shipping->address['address'] }},
+                        {{ $shipping->address['city'] }},
+                        {{ $shipping->address['district'] }},
+                        {{ $shipping->address['province'] }},
+                        {{ $shipping->address['postal_code'] }}
+                    </address>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="invoice mb-3 p-5"
-         id="invoice-root">
-        <div class="row mb-3">
-            <div class="col-12">
-                <h5>
-                    Invoice {{ $order->invoice->number }}
-                    <span class="float-right">Date: {{ $order->created_at->format('d/m/Y') }}</span>
-                </h5>
-            </div>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Order Information</h3>
+
+            <span class="font-weight-bold float-right">{{ $order->invoice->number }}</span>
         </div>
+        <div class="card-body">
 
-        <div class="row invoice-info">
-            <div class="col-sm-4 invoice-col">
-                From
-                <address>
-                    <strong>{{ config('shop.address.name') }}</strong><br />
-                    {{ config('shop.address.phone') }}<br />
-                    {{ config('shop.address.city_name') }},
-                    {{ config('shop.address.province_name') }}
-                </address>
+            <div class="row mb-3">
+                <div class="col-12 col-md-6">
+                    <strong>Order ID: </strong> {{ $order->id }}<br />
+                    <strong>Order Date: </strong>{{ $order->created_at }}<br />
+                    <strong>Order Status: </strong>
+                    <span
+                          class="badge badge-{{ \App\Models\Order::STATUSES[$order->status]['color'] }}">{{ \App\Models\Order::STATUSES[$order->status]['label'] }}</span><br />
+                    <strong>Buyer: </strong>
+                    @if ($order->user)
+                        <a class="text-body"
+                           href="{{ route('admin.users.show', $order->user->id) }}"
+                           target="_blank">{{ $order->user->name }}</a>
+                    @endif
+                </div>
             </div>
 
-            <div class="col-sm-4 invoice-col">
-                To
-                <address>
-                    <strong>{{ $shipping->address['name'] }}</strong><br />
-                    {{ $shipping->address['phone'] }}<br />
-                    {{ $shipping->address['address'] }},
-                    {{ $shipping->address['city'] }},
-                    {{ $shipping->address['district'] }},
-                    {{ $shipping->address['province'] }},
-                    {{ $shipping->address['postal_code'] }}
-                </address>
-            </div>
-
-            <div class="col-sm-4 invoice-col">
-                <strong>Order ID: </strong> {{ $order->id }}<br />
-                <strong>Order Date: </strong>{{ $order->created_at }}<br />
-                <strong>Customer: </strong>
-                @if ($order->user)
-                    <a href="{{ route('admin.users.show', $order->user->id) }}"
-                       target="_blank">{{ $order->user->name }}</a>
-                @endif
-                <br />
-                <strong>Payment Method:</strong>
-                {{ strtoupper($payment->method) . '-' . $payment->info['name'] ?? '' }}
-                <br />
-                <strong>Payment Status:</strong>
-                {{ App\Models\Invoice::STATUSES[$order->invoice->status]['label'] }}
-                <br />
-                <strong>Shipping: </strong>{{ strtoupper($shipping->courier) . '-' . $shipping->service }}
-            </div>
-        </div>
-
-        <div class="row mt-3">
-            <div class="col-12">
-                <table class="table table-sm text-right">
+            <div class="table-responsive">
+                <table class="table table-sm text-right table-borderless">
                     <thead>
                         <tr>
                             <th class="text-center">#</th>
@@ -280,17 +275,18 @@
                     <tbody>
                         @foreach ($order->items as $key => $item)
                             <tr>
-                                <td class="text-center align-middle">{{ ++$key }}</td>
+                                <td class="text-center align-middle">{{ $loop->iteration }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="mr-1">
-                                            <div style="width: 35px; overflow: hidden">
-                                                <img class="img-fluid w-100 h-100"
+                                            <div style="width: 50px; height: 50px">
+                                                <img class="img-fluid"
                                                      src="{{ $item->product?->image->preview_url }}"
                                                      style="object-fit: cover" />
                                             </div>
                                         </div>
-                                        <a href=" {{ $item->product_id ? route('admin.products.show', $item->product_id) : 'javascript:;' }}"
+                                        <a class="text-body"
+                                           href=" {{ $item->product_id ? route('admin.products.show', $item->product_id) : 'javascript:;' }}"
                                            target="_blank">
                                             {{ $item->name }}
                                         </a>
@@ -301,38 +297,28 @@
                                 <td>@Rp((int) $item->price * (int) $item->quantity)</td>
                             </tr>
                         @endforeach
+                        <tr>
+                            <td class="text-right font-weight-bold"
+                                colspan="4">Total Price</td>
+                            <td>@Rp($order->total_price)</td>
+                        </tr>
+                        <tr>
+                            <td class="text-right font-weight-bold"
+                                colspan="4">Shipping Cost</td>
+                            <td>@Rp($order->shipping_cost)</td>
+                        </tr>
+                        <tr>
+                            <td class="text-right font-weight-bold"
+                                colspan="4">Total Amount</td>
+                            <td class="h3">@Rp($order->invoice->amount)</td>
+                        </tr>
+                        <tr>
+                            <td class="text-right font-weight-bold"
+                                colspan="4">Payment Method</td>
+                            <td>{{ strtoupper($payment->method) . ' - ' . $payment->info['name'] }}</td>
+                        </tr>
                     </tbody>
                 </table>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="d-none d-md-block col-md-6"></div>
-            <div class="col-12 col-md-6">
-                <table class="table table-sm table-borderless text-right text-lg">
-                    <tr>
-                        <th>Total Price</th>
-                        <td>@Rp($order->total_price)</td>
-                    </tr>
-                    <tr>
-                        <th>Shipping Cost</th>
-                        <td>@Rp($order->shipping_cost)</td>
-                    </tr>
-                    <tr>
-                        <th>Total Amount</th>
-                        <td>@Rp($order->invoice->amount)</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-
-        <div class="row no-print">
-            <div class="col-12">
-                <button class="btn btn-primary"
-                        id="btn-print-invoice"
-                        type="button">
-                    <i class="fa-solid fa-print"></i> Print
-                </button>
             </div>
         </div>
     </div>

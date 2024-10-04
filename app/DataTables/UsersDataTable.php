@@ -35,10 +35,18 @@ class UsersDataTable extends DataTable
 
             })
             ->editColumn('email', function ($row) {
-                return sprintf('<a href="mailto:%s">%s</a>', $row->email, $row->email);
+                return sprintf(
+                    '<a href="mailto:%s" class="text-body">%s</a>',
+                    $row->email,
+                    $row->email
+                );
             })
             ->editColumn('phone', function ($row) {
-                return sprintf('<a href="https://wa.me/%s" target="_blank">%s</a>', $row->phone, $row->phone);
+                return sprintf(
+                    '<a href="https://wa.me/%s" target="_blank" class="text-body">%s</a>',
+                    $row->phone,
+                    $row->phone
+                );
             })
             ->setRowId('id')
             ->rawColumns(['action', 'roles', 'email', 'phone']);
@@ -53,9 +61,7 @@ class UsersDataTable extends DataTable
             ->with(['roles'])
             ->select('users.*')
             ->withCount([
-                'orders' => function ($q) {
-                    $q->where('status', Order::STATUS_COMPLETED);
-                }
+                'orders' => fn($q) => $q->where('status', Order::STATUS_COMPLETED)
             ]);
     }
 
@@ -91,19 +97,44 @@ class UsersDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::checkbox('&nbsp;')->exportable(false)->printable(false)->width(35),
-            Column::make('id')->title('ID'),
+            Column::checkbox('&nbsp;')
+                ->exportable(false)
+                ->printable(false)
+                ->width(35),
+
+            Column::make('id')
+                ->title('ID'),
+
             Column::make('name'),
+
             Column::make('email'),
-            Column::make('email_verified_at')->visible(false),
-            Column::make('roles', 'roles.name')->orderable(false),
-            Column::make('phone'),
-            Column::make('sex_label', 'sex')->title('Sex')->visible(false),
-            Column::make('birth_date')->visible(false),
-            Column::make('orders_count')->searchable(false),
-            Column::make('created_at')->visible(false),
-            Column::make('updated_at')->visible(false),
-            Column::computed('action', '&nbsp;')->exportable(false)->printable(false)->addClass('text-center'),
+
+            Column::make('email_verified_at')
+                ->visible(false),
+
+            Column::make('roles', 'roles.name')
+                ->orderable(false),
+
+            Column::make('phone')
+                ->title('Phone Number'),
+
+            Column::make('sex_label', 'sex')
+                ->title('Sex')
+                ->visible(false),
+
+            Column::make('birth_date')
+                ->visible(false),
+
+            Column::make('orders_count')
+                ->searchable(false),
+
+            Column::make('created_at')
+                ->visible(false),
+
+            Column::computed('action', 'Action')
+                ->exportable(false)
+                ->printable(false)
+                ->addClass('text-center'),
         ];
     }
 

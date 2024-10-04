@@ -27,30 +27,29 @@
                     @endif
                 </div>
 
-                <div class="form-group">
-                    <label class="required"
-                           for="_image_alt">Image Alt</label>
-                    <input class="form-control {{ $errors->has('image_alt') ? 'is-invalid' : '' }}"
-                           id="_image_alt"
-                           name="image_alt"
-                           required
-                           type="text"
-                           value="{{ old('image_alt', $banner->image_alt) }}">
-                    @if ($errors->has('image_alt'))
-                        <span class="invalid-feedback">{{ $errors->first('image_alt') }}</span>
-                    @endif
-                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="required">Image Description</label>
+                        <input class="form-control {{ $errors->has('image_description') ? 'is-invalid' : '' }}"
+                               name="image_description"
+                               required
+                               type="text"
+                               value="{{ old('image_description', $banner->image_description) }}">
+                        @if ($errors->has('image_description'))
+                            <span class="invalid-feedback">{{ $errors->first('image_description') }}</span>
+                        @endif
+                    </div>
 
-                <div class="form-group">
-                    <label for="_url">Url</label>
-                    <input class="form-control {{ $errors->has('url') ? 'is-invalid' : '' }}"
-                           id="_url"
-                           name="url"
-                           type="text"
-                           value="{{ old('url', $banner->url) }}">
-                    @if ($errors->has('url'))
-                        <span class="invalid-feedback">{{ $errors->first('url') }}</span>
-                    @endif
+                    <div class="form-group">
+                        <label>Url</label>
+                        <input class="form-control {{ $errors->has('url') ? 'is-invalid' : '' }}"
+                               name="url"
+                               type="text"
+                               value="{{ old('url', $banner->url) }}">
+                        @if ($errors->has('url'))
+                            <span class="invalid-feedback">{{ $errors->first('url') }}</span>
+                        @endif
+                    </div>
                 </div>
 
                 <button class="btn btn-primary"

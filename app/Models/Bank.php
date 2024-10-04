@@ -29,12 +29,14 @@ class Bank extends Model implements HasMedia
 
     public function serializeDate(\DateTimeInterface $date)
     {
-        return $date->format('d-m-Y H:i:s');
+        return $date->format('Y-m-d H:i:s');
     }
 
     public function registerMediaConversions(?Media $media = null): void
     {
-        $this->addMediaConversion('preview')->fit(Fit::Crop, 120, 120)->nonQueued();
+        $this->addMediaConversion('preview')
+            ->fit(Fit::Crop, 120, 120)
+            ->nonQueued();
     }
 
     public function logo(): Attribute

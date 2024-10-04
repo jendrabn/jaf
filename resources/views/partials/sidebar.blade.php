@@ -36,8 +36,7 @@
                 <li class="nav-item">
                     <a class="nav-link {{ request()->is('admin/orders') || request()->is('admin/orders/*') ? 'active' : '' }}"
                        href="{{ route('admin.orders.index') }}">
-                        <i class="nav-icon fa-solid fa-shopping-basket">
-                        </i>
+                        <i class="nav-icon fa-solid fa-clipboard"></i>
                         <p>
                             Orders
                             @php
@@ -55,8 +54,7 @@
                     class="nav-item has-treeview {{ request()->is('admin/product-categories*') ? 'menu-open' : '' }} {{ request()->is('admin/product-brands*') ? 'menu-open' : '' }} {{ request()->is('admin/products*') ? 'menu-open' : '' }}">
                     <a class="nav-link nav-dropdown-toggle {{ request()->is('admin/product-categories*') ? 'active' : '' }} {{ request()->is('admin/product-brands*') ? 'active' : '' }} {{ request()->is('admin/product*') ? 'active' : '' }}"
                        href="#">
-                        <i class="nav-icon fa-solid fa-cubes">
-                        </i>
+                        <i class="nav-icon fa-solid fa-bag-shopping"></i>
                         <p>
                             Product
                             <i class="right fa fa-angle-left nav-icon"></i>
@@ -96,13 +94,13 @@
                     </ul>
                 </li>
 
-                <li class="nav-item has-treeview {{ request()->is('admin/banks*') ? 'menu-open' : '' }}">
-                    <a class="nav-link nav-dropdown-toggle {{ request()->is('admin/banks*') ? 'active' : '' }}"
+                <li
+                    class="nav-item has-treeview {{ request()->is('admin/banks*') || request()->is('admin/ewallets*') ? 'menu-open' : '' }}">
+                    <a class="nav-link nav-dropdown-toggle {{ request()->is('admin/banks*') || request()->is('admin/ewallets*') ? 'active' : '' }}"
                        href="#">
-                        <i class="nav-icon fa-solid fa-money-check-alt">
-                        </i>
+                        <i class="nav-icon fa-solid fa-wallet"></i>
                         <p>
-                            Payment
+                            Payment Method
                             <i class="right fa fa-angle-left nav-icon"></i>
                         </p>
                     </a>
@@ -118,8 +116,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link "
-                               href="#">
+                            <a class="nav-link {{ request()->is('admin/ewallets') || request()->is('admin/ewallets/*') ? 'active' : '' }}"
+                               href="{{ route('admin.ewallets.index') }}">
                                 <i class="nav-icon fa-regular fa-folder">
                                 </i>
                                 <p>
@@ -171,7 +169,7 @@
                             <a class="nav-link {{ request()->is('admin/blogs') || request()->is('admin/blogs/*') ? 'active' : '' }}"
                                href="{{ route('admin.blogs.index') }}">
                                 <i class="fa-regular fa-folder nav-icon"></i>
-                                <p>Posts</p>
+                                <p>Blogs</p>
                             </a>
                         </li>
                     </ul>

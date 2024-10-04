@@ -12,7 +12,7 @@ use Yajra\DataTables\Html\Editor\Editor;
 use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
-class BlogDataTable extends DataTable
+class BlogsDataTable extends DataTable
 {
     /**
      * Build the DataTable class.
@@ -25,7 +25,11 @@ class BlogDataTable extends DataTable
             ->addColumn('action', 'admin.blogs.partials.action')
             ->editColumn('is_publish', 'admin.blogs.partials.action-published')
             ->editColumn('featured_image', function ($row) {
-                return '<img src="' . $row->featured_image?->preview_url . '" style="width: 50px;">';
+                return sprintf(
+                    '<a href="%s" target="_blank"><img src="%s" width="50"></a>',
+                    $row->featured_image?->url,
+                    $row->featured_image?->preview_url
+                );
             })
             ->editColumn('tags', function ($row) {
                 $tags = [];
@@ -148,10 +152,7 @@ class BlogDataTable extends DataTable
             Column::make('created_at')
                 ->visible(false),
 
-            Column::make('updated_at')
-                ->visible(false),
-
-            Column::computed('action', '&nbsp;')
+            Column::computed('action', 'Action')
                 ->exportable(false)
                 ->printable(false)
                 ->addClass('text-center')

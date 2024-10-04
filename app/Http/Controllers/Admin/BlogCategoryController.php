@@ -2,30 +2,31 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\DataTables\BlogCategoryDataTable;
+use App\DataTables\BlogCategoriesDataTable;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BlogCategoryRequest;
 use App\Models\BlogCategory;
 use App\Traits\MediaUploadingTrait;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class BlogCategoryController extends Controller
 {
     use MediaUploadingTrait;
 
     /**
-     * Display a listing of the blog categories.
+     * Display a listing of the resource.
      *
-     * @param BlogCategoryDataTable $dataTable
+     * @param BlogCategoriesDataTable $dataTable
      * @return mixed
      */
-    public function index(BlogCategoryDataTable $dataTable): mixed
+    public function index(BlogCategoriesDataTable $dataTable): mixed
     {
         return $dataTable->render('admin.blogCategories.index');
     }
 
     /**
-     * Store a newly created blog category in the database.
+     * Store a newly created resource in storage.
      *
      * @param BlogCategoryRequest $request
      * @return JsonResponse
@@ -34,11 +35,11 @@ class BlogCategoryController extends Controller
     {
         BlogCategory::create($request->validated());
 
-        return response()->json(['message' => 'Blog Category created successfully.'], 200);
+        return response()->json(['message' => 'Blog Category created successfully.'], Response::HTTP_OK);
     }
 
     /**
-     * Updates an existing blog category in the database.
+     * Update the specified resource in storage.
      *
      * @param BlogCategoryRequest $request
      * @param BlogCategory $blogCategory
@@ -48,11 +49,11 @@ class BlogCategoryController extends Controller
     {
         $blogCategory->update($request->validated());
 
-        return response()->json(['message' => 'Blog Category updated successfully.'], 200);
+        return response()->json(['message' => 'Blog Category updated successfully.'], Response::HTTP_OK);
     }
 
     /**
-     * Deletes a specified blog category from the database.
+     * Remove the specified resource from storage.
      *
      * @param BlogCategory $blogCategory
      * @return JsonResponse
@@ -61,11 +62,11 @@ class BlogCategoryController extends Controller
     {
         $blogCategory->delete();
 
-        return response()->json(['message' => 'Blog Category deleted successfully.'], 200);
+        return response()->json(['message' => 'Blog Category deleted successfully.'], status: Response::HTTP_OK);
     }
 
     /**
-     * Deletes multiple blog categories from the database.
+     * Remove the specified resources from storage.
      *
      * @param BlogCategoryRequest $request
      * @return JsonResponse
@@ -74,6 +75,6 @@ class BlogCategoryController extends Controller
     {
         BlogCategory::whereIn('id', $request->validated('ids'))->delete();
 
-        return response()->json(['message' => 'Blog Categories deleted successfully.']);
+        return response()->json(['message' => 'Blog Categories deleted successfully.'], Response::HTTP_OK);
     }
 }
